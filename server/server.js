@@ -4,6 +4,7 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import db from "./src/models/index.js";
+import authRoutes from "/src/routes/authRoutes.js";
 
 dotenv.config();
 
@@ -24,6 +25,8 @@ app.use(limiter);
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
+app.use("/auth", authRoutes);
 
 async function startServer() {
   try {

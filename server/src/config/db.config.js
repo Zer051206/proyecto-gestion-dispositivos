@@ -1,29 +1,35 @@
-import { Sequelize } from "sequelize";
-import dotenv from "dotenv";
+// server/src/config/db.config.js
+import * as dotenv from "dotenv";
+dotenv.config({ path: "../../.env" }); // Asegura la carga de .env desde la raíz
 
-// Cargar variables de entorno si no están cargadas
-dotenv.config({ path: "../../.env" });
-
-// Configuración de Sequelize usando variables de entorno
-const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
-  {
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
+/**
+ * Configuración de conexión a la base de datos MariaDB
+ * Se utiliza el prefijo DB_MARIA_ para evitar conflictos.
+ */
+const config = {
+  // Desarrollo (valores por defecto)
+  development: {
+    username: process.env.DB_MARIA_USER,
+    password: process.env.DB_MARIA_PASSWORD,
+    database: process.env.DB_MARIA_NAME,
+    host: process.env.DB_MARIA_HOST || "localhost",
+    port: process.env.DB_MARIA_PORT || 3306,
     dialect: "mariadb",
     dialectOptions: {
       connectTimeout: 60000,
     },
-    logging: false, // Desactiva logs de SQL por defecto
+    logging: false, // Desactiva los logs de SQL. Cámbialo a console.log para debugging
     pool: {
       max: 5,
       min: 0,
       acquire: 30000,
       idle: 10000,
     },
-  }
-);
+  },
+  // Producción (puedes añadir más configuraciones aquí)
+  production: {
+    // ... configuración de producción
+  },
+};
 
-export default sequelize;
+export default config;
