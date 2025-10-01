@@ -62,6 +62,8 @@ export default (sequelize) => {
   Log.associate = (models) => {
     Log.belongsTo(models.User, {
       foreignKey: "id_usuario",
+      as: "user",
+      onDelete: "RESTRICT",
     });
   };
 

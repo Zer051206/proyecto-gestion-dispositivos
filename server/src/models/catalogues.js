@@ -108,35 +108,35 @@ export default (sequelize) => {
   TiposDispositivos.associate = (models) => {
     TiposDispositivos.hasMany(models.Device, {
       foreignKey: "id_tipo_dispositivo",
-      onDelete: "STRICT",
+      onDelete: "RESTRICT",
     });
   };
 
   Ciudades.associate = (models) => {
     Ciudades.hasMany(models.Person, {
       foreignKey: "id_ciudad",
-      onDelete: "STRICT",
+      onDelete: "RESTRICT",
     });
   };
 
   Sedes.associate = (models) => {
     Sedes.hasMany(models.Person, {
       foreignKey: "id_sede",
-      onDelete: "STRICT",
+      onDelete: "RESTRICT",
     });
   };
 
   TiposIdentificacion.associate = (models) => {
     TiposIdentificacion.hasMany(models.Person, {
       foreignKey: "id_tipo_identificacion",
-      onDelete: "STRICT",
+      onDelete: "RESTRICT",
     });
   };
 
   Areas.associate = (models) => {
     Areas.hasMany(models.Person, {
       foreignKey: "id_area",
-      onDelete: "STRICT",
+      onDelete: "RESTRICT",
     });
   };
 
