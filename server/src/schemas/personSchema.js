@@ -67,3 +67,5 @@ export const personSchema = z.object({
     .min(5, "El teléfono es requerido.")
     .max(20, "Teléfono muy largo."),
 });
+
+export const updatePersonSchema = personSchema.partial();

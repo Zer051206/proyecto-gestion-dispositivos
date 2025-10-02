@@ -43,3 +43,5 @@ export const deviceSchema = z.object({
   // El estado es opcional ya que tiene un DEFAULT en la DB ('Activo')
   estado: DeviceStateEnum.optional().default("Activo"),
 });
+
+export const updateDeviceSchema = deviceSchema.partial();

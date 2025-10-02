@@ -17,7 +17,7 @@ import crypto from "crypto";
  */
 export const generateAccessToken = (user) => {
   const payload = {
-    userId: user.id_usuario,
+    id_usuario: user.id_usuario,
     correo: user.correo,
     rol: user.rol,
   };
@@ -42,17 +42,13 @@ export const generateRefreshToken = () => {
  * @description Esta funcion se encarga de verificar que el token de acceso del usuario es válido.
  * @param {string} token - El token de acceso JWT a verificar.
  * @returns {object} Decoded payload - La carga útil (payload) decodificada del token si es válido.
- * @returns {number} Decoded payload.userId - ID del usuario.
+ * @returns {number} Decoded payload.id_usuario - ID del usuario.
  * @returns {string} Decoded payload.rol - Rol del usuario.
  * @throws {Error} Si el token es inválido o ha expirado.
  */
 export const verifyAccessToken = (token) => {
-  try {
-    // Verifica y decodifica el token usando el secreto
-    return jwt.verify(token, process.env.JWT_SECRET);
-  } catch {
-    throw new Error("Token de acceso inválido o expirado");
-  }
+  // Verifica y decodifica el token usando el secreto
+  return jwt.verify(token, process.env.JWT_SECRET);
 };
 
 /**

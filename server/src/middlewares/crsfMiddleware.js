@@ -16,8 +16,7 @@ import crypto from "crypto";
  * @const {Array<string>} CSRF_EXCLUDED_PATHS
  * @description Rutas que deben ser EXCLUIDAS de la verificación CSRF. Solo se excluye el POST de inicio de sesión.
  */
-// 🚩 AJUSTE: Solo el POST de login se excluye de la verificación del token en el HEADER.
-const CSRF_EXCLUDED_PATHS = ["/api/v1/auth/login"];
+const CSRF_EXCLUDED_PATHS = ["/auth/login"];
 
 /**
  * @const {string} CSRF_TOKEN_HEADER
@@ -30,6 +29,20 @@ const CSRF_TOKEN_HEADER = "x-csrf-token";
  * @description Nombre de la cookie donde se almacena el token CSRF.
  */
 const CSRF_TOKEN_COOKIE = "csrf-token";
+
+/**
+ * @const {object} CSRF_COOKIE_OPTIONS
+ * @description Opciones estándar para la configuración de la cookie CSRF.
+ * SameSite: 'none' en producción requiere 'secure: true' (HTTPS).
+ */
+const CSRF_COOKIE_OPTIONS = {
+  // Debe ser accesible por JavaScript para que el frontend lo lea y lo envíe en el header.
+  httpOnly: false,
+  path: "/",
+  // 'Secure' solo se activa si estamos en producción (requiere HTTPS)
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+};
 
 // ----------------------------------------------------------------------
 // 2. Utilidades
@@ -61,7 +74,7 @@ const csrfMiddleware = (req, res, next) => {
   const method = req.method;
   const originalUrl = req.originalUrl;
 
-  // 🚩 Simplificación de la lógica de exclusión: solo se excluye el método POST en la ruta de login.
+  // Solo el método POST en la ruta de login se excluye de la verificación del token en el HEADER.
   const isLoginPost =
     method === "POST" &&
     CSRF_EXCLUDED_PATHS.some((path) => originalUrl.includes(path));
@@ -76,12 +89,8 @@ const csrfMiddleware = (req, res, next) => {
     // Si no existe la cookie CSRF, la creamos y la enviamos al cliente.
     if (!req.cookies[CSRF_TOKEN_COOKIE]) {
       const token = generateCsrfToken();
-      res.cookie(CSRF_TOKEN_COOKIE, token, {
-        httpOnly: false, // Debe ser accesible por JavaScript para leerlo
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-      });
+      // Usa las opciones estandarizadas
+      res.cookie(CSRF_TOKEN_COOKIE, token, CSRF_COOKIE_OPTIONS);
     }
     return next();
   }
@@ -98,7 +107,10 @@ const csrfMiddleware = (req, res, next) => {
       !tokenFromCookie ||
       tokenFromHeader !== tokenFromCookie
     ) {
-      throw new InvalidTokenError("Token CSRF inválido o faltante.");
+      // No se debe exponer información detallada del error al cliente.
+      throw new InvalidTokenError(
+        "Acceso no autorizado: Token CSRF inválido o faltante."
+      );
     }
     next();
   } catch (error) {
@@ -120,13 +132,8 @@ export const csrfTokenMiddleware = (req, res, _next) => {
   // Renueva o usa el token existente
   const token = req.cookies[CSRF_TOKEN_COOKIE] || generateCsrfToken();
 
-  // Establece la cookie (para el patrón Double Submit Cookie)
-  res.cookie(CSRF_TOKEN_COOKIE, token, {
-    httpOnly: false, // Accesible por JavaScript
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-  });
+  // Establece la cookie (usa las opciones estandarizadas)
+  res.cookie(CSRF_TOKEN_COOKIE, token, CSRF_COOKIE_OPTIONS);
 
   // Envía el token al frontend para que lo ponga en el HEADER
   res.status(200).json({ csrfToken: token });

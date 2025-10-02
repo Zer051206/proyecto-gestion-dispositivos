@@ -39,7 +39,6 @@ const { JsonWebTokenError, TokenExpiredError } = pkg;
  */
 const errorHandler = (err, req, res, _next) => {
   // Usamos _next para evitar el warning del linter
-  // 🚩 Importante: Loguear el error completo en el servidor para debugging
   console.error("❌ Error capturado:", err.name, err.message);
   if (process.env.NODE_ENV !== "production" && err.stack) {
     console.error(err.stack);

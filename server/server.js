@@ -4,12 +4,34 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import db from "./src/models/index.js";
-import authRoutes from "/src/routes/authRoutes.js";
+import authRoutes from "./src/routes/authRoutes.js";
+import assignmentRoutes from "./src/routes/assignmentRoutes.js";
+import csrfMiddleware from "./src/middlewares/crsfMiddleware.js";
+import cookieParser from "cookie-parser";
+import catalogueRoutes from "./src/routes/catalogueRoutes.js";
+import personRoutes from "./src/routes/personRoutes.js";
+import deviceRoutes from "./src/routes/deviceRoutes.js";
 
 dotenv.config();
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  process.env.CLIENT_ORIGIN,
+].filter(Boolean);
+
 const app = express();
-const PORT = process.env.PORT || 3000;
+
+// Middleware de Seguridad
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token"],
+    exposedHeaders: ["set-cookie"],
+  })
+);
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -20,13 +42,20 @@ const limiter = rateLimit({
     "Demasiadas peticiones desde esta IP, intenta de nuevo en 15 minutos.",
 });
 
-// Middleware de Seguridad
-app.use(limiter);
-app.use(helmet());
-app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(csrfMiddleware);
+app.use(helmet());
+app.set("trust proxy", true);
+app.disable("x-powered-by");
 
 app.use("/auth", authRoutes);
+app.use("/asignacion", limiter, assignmentRoutes);
+app.use("/personas", limiter, personRoutes);
+app.use("/dispositivos", limiter, deviceRoutes);
+app.use("/catalogo", limiter, catalogueRoutes);
+const PORT = process.env.PORT || 3000;
 
 async function startServer() {
   try {
