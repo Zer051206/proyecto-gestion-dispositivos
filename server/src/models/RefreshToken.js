@@ -51,7 +51,6 @@ export default (sequelize) => {
   RefreshToken.associate = (models) => {
     RefreshToken.belongsTo(models.User, {
       foreignKey: "id_usuario",
-      as: "user",
       onDelete: "CASCADE",
     });
   };

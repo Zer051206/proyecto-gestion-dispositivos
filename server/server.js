@@ -5,7 +5,7 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import db from "./src/models/index.js";
 import authRoutes from "./src/routes/authRoutes.js";
-import assignmentRoutes from "./src/routes/assignmentRoutes.js";
+import assignmentRoutes from "./src/routes/operationCenterRoutes.js";
 import csrfMiddleware from "./src/middlewares/crsfMiddleware.js";
 import cookieParser from "cookie-parser";
 import catalogueRoutes from "./src/routes/catalogueRoutes.js";
@@ -42,18 +42,17 @@ const limiter = rateLimit({
     "Demasiadas peticiones desde esta IP, intenta de nuevo en 15 minutos.",
 });
 
+app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(csrfMiddleware);
-app.use(helmet());
 app.set("trust proxy", true);
-app.disable("x-powered-by");
 
 app.use("/auth", authRoutes);
-app.use("/asignacion", limiter, assignmentRoutes);
+app.use("/", limiter, assignmentRoutes);
 app.use("/personas", limiter, personRoutes);
-app.use("/dispositivos", limiter, deviceRoutes);
+app.use("/", limiter, deviceRoutes);
 app.use("/catalogo", limiter, catalogueRoutes);
 const PORT = process.env.PORT || 3000;
 

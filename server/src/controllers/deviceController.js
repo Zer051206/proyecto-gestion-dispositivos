@@ -3,7 +3,7 @@ import * as deviceService from "../services/deviceService.js";
 
 export const getDeviceHistorial = async (req, res, next) => {
   try {
-    const deviceHistorial = await deviceService.getDeviceHistorial();
+    const deviceHistorial = await deviceService.fetchDeviceHistorial();
     return res.status(200).json(deviceHistorial);
   } catch (error) {
     next(error);

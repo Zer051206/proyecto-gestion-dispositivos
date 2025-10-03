@@ -4,57 +4,71 @@ export default (sequelize) => {
   const Device = sequelize.define(
     "Device",
     {
-      id_dispositivo: {
+      id_equipo: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
-        field: "id_dispositivo",
       },
-      marca_dispositivo: {
-        type: DataTypes.STRING(120),
-        allowNull: false,
-        field: "marca_dispositivo",
-      },
-      serial: {
-        type: DataTypes.STRING(120),
-        unique: true,
-        allowNull: false,
-        field: "serial",
-      },
-      id_tipo_dispositivo: {
+      id_centro_operacion: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        field: "id_tipo_dispositivo",
-        references: {
-          model: "tipos_dispositivos",
-          key: "id_tipo_dispositivo",
-        },
       },
-      estado: {
-        type: DataTypes.ENUM("Activo", "En mantenimiento", "Baja"),
+      serial: {
+        type: DataTypes.STRING(255),
         allowNull: false,
-        defaultValue: "Activo",
-        field: "estado",
+      },
+      equipo_laptop: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+      },
+      tamano_disco_duro: {
+        type: DataTypes.BIGINT,
+        allowNull: false,
+      },
+      equipo_tarjeta_grafica: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+      },
+      referencia_tarjeta_grafica: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+      },
+      serial_pantalla: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+      },
+      equipo_alquilado: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+      },
+      estado_equipo: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+      },
+      equipo_etiquetado: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+      },
+      equipo_etiqueta: {
+        type: DataTypes.STRING(120),
+        allowNull: true,
       },
     },
     {
-      tableName: "dispositivos",
+      tableName: "equipos",
       timestamps: false,
     }
   );
 
   Device.associate = (models) => {
-    Device.belongsTo(models.TiposDispositivos, {
-      foreignKey: "id_tipo_dispositivo",
-      as: "tipo",
-      onDelete: "RESTRICT",
+    Device.belongsTo(models.OperationCenter, {
+      foreignKey: "id_centro_operacion",
     });
 
-    Device.hasMany(models.Asiggnment, {
-      foreignKey: "id_dispositivo",
-      as: "asignaciones",
-      onDelete: "RESTRICT",
+    Device.hasOne(models.Decommission, {
+      foreignKey: "id_equipo",
     });
   };
+
   return Device;
 };

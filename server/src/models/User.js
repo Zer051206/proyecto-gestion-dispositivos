@@ -1,3 +1,4 @@
+// src/models/User.js
 import { DataTypes } from "sequelize";
 
 export default (sequelize) => {
@@ -8,71 +9,66 @@ export default (sequelize) => {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
-        field: "id_usuario",
       },
       nombre: {
-        type: DataTypes.STRING(80),
+        type: DataTypes.STRING(120),
         allowNull: false,
       },
       apellido: {
-        type: DataTypes.STRING(80),
+        type: DataTypes.STRING(120),
         allowNull: false,
       },
-      correo: {
-        type: DataTypes.STRING(255),
+      // Este es el campo para la clave foránea
+      id_tipo_identificacion: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      identificacion: {
+        type: DataTypes.STRING(20),
         allowNull: false,
         unique: true,
       },
       contrasena_hash: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
+        type: DataTypes.STRING(120),
+        allowNull: false,
         field: "contrasena_hash",
       },
-      id_oauth: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-        unique: true,
-        field: "id_oauth",
-      },
-      proveedor_oauth: {
-        type: DataTypes.ENUM("google", "microsoft"),
-        allowNull: true,
-        field: "proveedor_oauth",
+      telefono: {
+        type: DataTypes.STRING(20),
+        allowNull: false,
       },
       rol: {
-        type: DataTypes.ENUM("admin", "inventario"),
+        type: DataTypes.ENUM("Inventario", "Admin"),
         allowNull: false,
-        defaultValue: "inventario",
-      },
-      activo: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
-      },
-      ultimo_login: {
-        type: DataTypes.DATE,
-        allowNull: true,
-        field: "ultimo_login",
       },
     },
     {
       tableName: "usuarios",
-      timestamps: true,
-      createdAt: "fecha_creacion",
-      updatedAt: "fecha_actualizacion",
+      // Tu tabla no tiene columnas 'createdAt' o 'updatedAt',
+      // así que debemos desactivar los timestamps de Sequelize.
+      timestamps: false,
     }
   );
 
+  // Aquí definimos las relaciones (asociaciones)
   User.associate = (models) => {
+    User.belongsTo(models.IdentificationType, {
+      foreignKey: "id_tipo_identificacion",
+    });
+
+    User.hasMany(models.OperationCenter, {
+      foreignKey: "id_User",
+    });
+
     User.hasMany(models.RefreshToken, {
-      foreignKey: "id_usuario",
+      foreignKey: "id_User",
       onDelete: "CASCADE",
     });
 
     User.hasMany(models.Log, {
-      foreignKey: "id_usuario",
-      onDelete: "RESTRICT",
+      foreignKey: "id_User",
     });
   };
+
   return User;
 };

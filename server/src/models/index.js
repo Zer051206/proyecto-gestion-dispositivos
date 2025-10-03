@@ -118,17 +118,30 @@ if (!sequelize) {
 // 2. Carga Dinámica de Modelos
 // ----------------------------------------------------------------------
 
-// Lee todos los archivos en el directorio actual (src/models)
-const modelFiles = fs
-  .readdirSync(__dirname)
-  // Filtra y solo considera archivos .js que no sean 'index.js'
-  .filter((file) => {
-    return (
-      file.indexOf(".") !== 0 &&
-      file !== path.basename(__filename) &&
-      file.slice(-3) === ".js"
-    );
-  });
+// LÓGICA MEJORADA CON BÚSQUEDA RECURSIVA
+const findModelFiles = (dir) => {
+  let files = [];
+  const items = fs.readdirSync(dir, { withFileTypes: true });
+
+  for (const item of items) {
+    const fullPath = path.join(dir, item.name);
+    if (item.isDirectory()) {
+      // Si es un directorio, busca dentro de él
+      files = [...files, ...findModelFiles(fullPath)];
+    } else if (
+      item.name.indexOf(".") !== 0 &&
+      item.name !== path.basename(__filename) &&
+      item.name.slice(-3) === ".js"
+    ) {
+      // Si es un archivo .js válido, agrégalo
+      files.push(fullPath);
+    }
+  }
+  return files;
+};
+
+// Llama a la nueva función para obtener todos los archivos de modelo
+const modelFiles = findModelFiles(__dirname);
 
 console.log(`Cargando ${modelFiles.length} modelos...`);
 

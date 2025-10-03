@@ -3,7 +3,7 @@ import updatePersonSchema from "../schemas/personSchema.js";
 
 export const getPersonHistorial = async (req, res, next) => {
   try {
-    const personHistorial = await personService.getPersonHistorial();
+    const personHistorial = await personService.fetchPersonHistorial();
     return res.status(200).json(personHistorial);
   } catch (error) {
     next(error);

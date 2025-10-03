@@ -1,4 +1,4 @@
-import * as assignmentService from "../services/assignmentService.js";
+import * as assignmentService from "../services/operationCenterService.js";
 import integratedAssignmentSchema from "../schemas/integratedAssignmentSchema.js";
 
 export const createAssignment = async (req, res, next) => {
