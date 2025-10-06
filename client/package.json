@@ -6,7 +6,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "vite"
+    "dev": "vite",
+    "tailwind": "npx tailwindcss -i ./src/index.css -o ./src/output.css --watch"
   },
   "author": "",
   "license": "ISC",
@@ -19,7 +20,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "postcss": "^8.5.6",
-    "tailwindcss": "^4.1.13"
+    "tailwindcss": "^3.4.18"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.1.0",
@@ -27,7 +28,10 @@
     "@fortawesome/react-fontawesome": "^3.0.2",
     "axios": "^1.12.2",
     "formik": "^2.4.6",
+    "js-cookie": "^3.0.5",
+    "react-icons": "^5.5.0",
     "react-router-dom": "^7.9.3",
-    "yup": "^1.7.1"
+    "yup": "^1.7.1",
+    "zustand": "^5.0.8"
   }
 }

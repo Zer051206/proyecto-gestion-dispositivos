@@ -1,6 +1,4 @@
 // server/src/config/db.config.js
-import * as dotenv from "dotenv";
-dotenv.config({ path: "../../.env" }); // Asegura la carga de .env desde la raíz
 
 /**
  * Configuración de conexión a la base de datos MariaDB

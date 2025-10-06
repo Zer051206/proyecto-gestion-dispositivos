@@ -1,7 +1,9 @@
+import React from "react";
 import { Routes, Route } from "react-router-dom";
 import PrivateRoute from "../components/PrivateRoute.jsx";
 import { WelcomePage } from "../components/WelcomePage.jsx";
 import AuthRedirect from "../components/AuthRedirect.jsx";
+import AuthRoutes from "./AuthRoutes.jsx";
 
 export function AppRoutes() {
   return (
@@ -11,7 +13,7 @@ export function AppRoutes() {
       {/* ==================================== */}
 
       {/* Ruta de la pagina de bienvenida de la aplicacion */}
-      <Route path="/" element={<WelcomePage.jsx />} />
+      <Route path="/" element={<WelcomePage />} />
 
       {/* Rutas de Autenticación (Login, Register) - Rutas anidadas */}
       <Route path="/auth/*" element={<AuthRoutes />} />

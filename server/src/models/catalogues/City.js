@@ -22,7 +22,7 @@ export default (sequelize) => {
 
   City.associate = (models) => {
     City.hasMany(models.OperationCenter, {
-      foreignKey: "id_City",
+      foreignKey: "id_ciudad",
       onDelete: "RESTRICT",
     });
   };

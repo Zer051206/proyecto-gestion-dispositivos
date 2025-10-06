@@ -7,9 +7,9 @@ import {
   InvalidTokenError,
   UserAlreadyExistsError,
   UserNotFoundOrInvalidPasswordError,
-} from "../utils/customErrors";
+} from "../utils/customErrors.js";
 
-export const createUser = async (validateData) => {
+export const registerUser = async (validateData) => {
   const { correo, password } = validateData;
   const userDb = await userRepository.findByEmail(correo);
 
@@ -23,7 +23,7 @@ export const createUser = async (validateData) => {
     contrasena_hash: contrasena_hash,
   };
 
-  const userCreated = await userRepository(userForDb);
+  const userCreated = await userRepository.createUser(userForDb);
 
   return {
     message: "Usuario registrado exitosamente",

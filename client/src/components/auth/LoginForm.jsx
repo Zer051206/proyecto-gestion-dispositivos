@@ -1,145 +1,98 @@
-/**
- * @file LoginForm.jsx
- * @module LoginForm
- * @description Componente funcional que renderiza el formulario de inicio de sesión.
- * Incluye la lógica de visibilidad de la contraseña y navegación, utilizando
- * la paleta de colores de seguridad (Verde Oliva/Esmeralda).
- * * @component
- * @requires react-router-dom/Link
- * @requires @fortawesome/react-fontawesome
- * @requires @fortawesome/free-solid-svg-icons (faSignOutAlt)
- * @requires ../../hooks/auth/useLoginForm
- * @requires ../../hooks/useGoBackHome
- * @requires ../../hooks/utils/usePasswordToggle
- */
+// src/components/auth/LoginForm.jsx (Paleta 1: Profesional)
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-// IMPORT DE HOOKS
 import { useLoginForm } from "../../hooks/auth/useLoginForm.js";
 import { usePasswordToggle } from "../../hooks/utils/usePasswordToggle.js";
-
-// IMPORT DE ICONOS
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 
 export default function LoginForm() {
-  // Hook para la funcionalidad del botón "Volver" a la página de inicio
   const navigate = useNavigate();
-
-  const goBack = () => navigate(-1);
-
-  // Hook para alternar la visibilidad de la contraseña
-  // Icon aquí será el componente <FontAwesomeIcon /> correcto (ej. FaEye o FaEyeSlash)
+  const goBack = () => navigate("/");
   const [inputType, Icon, toggleVisibility] = usePasswordToggle();
+  const formik = useLoginForm();
 
-  // Hook principal para manejar el estado del formulario y la lógica de autenticación
-  const {
-    email,
-    password,
-    handleLogin,
-    handleEmailChange,
-    handlePasswordChange,
-    error,
-  } = useLoginForm();
-
-  // Simulando el error para la demostración de estilo
-  // const error = 'Credenciales incorrectas. Intente de nuevo.';
+  const inputClasses =
+    "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50";
 
   return (
-    <div className="flex flex-col justify-center items-center h-full w-full">
-      {/* Botón de navegación para volver a la página principal */}
+    <div className="flex flex-col justify-center items-center w-full min-h-screen bg-background p-4">
       <button
         type="button"
         onClick={goBack}
-        className="
-            absolute top-1 right-4 
-            bg-red-600 hover:bg-red-700 
-            text-white font-bold 
-            p-4 rounded-lg 
-            flex flex-col items-center justify-center 
-            transition-colors duration-300
-            text-sm w-16 h-16 sm:w-20 sm:h-20
-          "
+        className="absolute top-4 right-4 bg-error hover:bg-red-700 text-white font-bold p-2 rounded-lg flex flex-col items-center justify-center transition-colors duration-300 w-20 h-20 shadow-lg"
       >
-        {/* Ícono de "Volver/Salir" */}
-        <FontAwesomeIcon icon={faSignOutAlt} className="text-xl sm:text-xl" />
-        <span className="text-xs sm:text-sm mt-1">Volver</span>
+        <FontAwesomeIcon icon={faSignOutAlt} className="text-2xl" />
+        <span className="text-sm mt-1">Volver</span>
       </button>
 
       <form
-        className="bg-white p-6 rounded-lg shadow-xl shadow-gray-700 w-[98%] max-w-sm mt-[75px] mb-[50px]"
-        onSubmit={handleLogin}
+        onSubmit={formik.handleSubmit}
+        className="bg-secondary p-8 rounded-lg shadow-xl w-full max-w-sm"
+        noValidate
       >
-        {/* Título */}
-        <h2 className="text-2xl font-bold mb-[10px] text-center text-gray-800">
+        <h2 className="text-2xl font-bold mb-6 text-center text-text-main">
           Acceso de Seguridad
         </h2>
+        <fieldset className="space-y-4">
+          <label className="block">
+            <span className="text-gray-700">Correo electrónico:</span>
+            <input
+              type="email"
+              className={inputClasses}
+              {...formik.getFieldProps("correo")}
+            />
+            {formik.touched.correo && formik.errors.correo ? (
+              <div className="text-error text-sm mt-1">
+                {formik.errors.correo}
+              </div>
+            ) : null}
+          </label>
 
-        <fieldset className="p-4 rounded-md mb-3 border border-gray-400 shadow-md shadow-gray-400">
-          {/* Leyenda */}
-          <legend className="p-2 text-md bg-white font-semibold text-emerald-700">
-            Datos de la cuenta
-          </legend>
-          <div className="space-y-4">
-            {/* Input de Correo Electrónico */}
-            <label className="block">
-              <span className="text-gray-700 text-md">Correo electrónico:</span>
-              <input
-                name="correo"
-                type="email"
-                value={email}
-                onChange={handleEmailChange}
-                className="mt-1 block w-full rounded-md p-[5px] font-semibold outline-0 border-2 border-gray-400 bg-gray-50 shadow-lg focus:border-emerald-700 focus:ring-2 focus:ring-emerald-300 transition-all duration-200 ease-in-out hover:border-emerald-500"
-                autoComplete="off"
-              />
-            </label>
-
-            {/* Input de Contraseña con alternador de visibilidad */}
-            <label className="block relative">
-              <span className="text-gray-700 text-md">Contraseña:</span>
-              <input
-                name="password"
-                type={inputType}
-                value={password}
-                onChange={handlePasswordChange}
-                className="mt-1 block w-full rounded-md font-semibold p-[5px] outline-0 border-2 border-gray-400 bg-gray-50 shadow-lg focus:border-emerald-700 focus:ring-2 focus:ring-emerald-300 transition-all duration-200 ease-in-out hover:border-emerald-500 pr-10"
-                autoComplete="off"
-              />
-              <button
-                type="button"
-                onClick={toggleVisibility}
-                className="absolute inset-y-0 right-[-8px] top-7 flex items-center pr-3 text-gray-400 outline-none"
-              >
-                {/* Ícono de visibilidad de la contraseña (proporcionado por usePasswordToggle) */}
-                <Icon />
-              </button>
-            </label>
-          </div>
+          <label className="block relative">
+            <span className="text-gray-700">Contraseña:</span>
+            <input
+              type={inputType}
+              className={`${inputClasses} pr-10`}
+              {...formik.getFieldProps("password")}
+            />
+            <button
+              type="button"
+              onClick={toggleVisibility}
+              className="absolute inset-y-0 right-0 top-6 flex items-center pr-3 text-gray-500"
+            >
+              <Icon />
+            </button>
+            {formik.touched.password && formik.errors.password ? (
+              <div className="text-error text-sm mt-1">
+                {formik.errors.password}
+              </div>
+            ) : null}
+          </label>
         </fieldset>
 
-        {/* Mensaje de error (si existe) */}
-        {error && (
+        {formik.errors.apiError && (
           <div
-            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md relative text-center mt-[30px] mb-[5px]"
+            className="mt-4 bg-red-100 border-error text-error px-4 py-3 rounded-md"
             role="alert"
           >
-            <span className="block sm:inline">{error}</span>
+            <span>{formik.errors.apiError}</span>
           </div>
         )}
 
-        {/* Botón de envío */}
         <button
           type="submit"
-          className="mt-[20px] w-full bg-emerald-700 text-white py-2 rounded-md hover:bg-emerald-800 transition-colors text-sm"
+          disabled={formik.isSubmitting}
+          className="mt-6 w-full bg-primary text-text-light font-bold py-3 px-4 rounded-md hover:opacity-90 transition-opacity disabled:bg-primary/50 disabled:cursor-not-allowed"
         >
-          Entrar al Sistema
+          {formik.isSubmitting ? "Entrando..." : "Entrar al Sistema"}
         </button>
 
-        {/* Enlace a la página de registro */}
-        <div className="mt-4 text-center text-sm">
+        <div className="mt-6 text-center text-sm">
           <span className="text-gray-600">¿No tienes una cuenta?</span>{" "}
           <Link
             to="/auth/register"
-            className="text-emerald-700 hover:underline"
+            className="text-primary hover:underline font-semibold"
           >
             Solicitar Acceso
           </Link>

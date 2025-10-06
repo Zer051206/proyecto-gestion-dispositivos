@@ -13,11 +13,6 @@ export default (sequelize) => {
       id_usuario: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        field: "id_usuario",
-        references: {
-          model: "usuarios",
-          key: "id_usuario",
-        },
       },
       token: {
         type: DataTypes.STRING(255),
@@ -27,24 +22,18 @@ export default (sequelize) => {
       expira_en: {
         type: DataTypes.DATE,
         allowNull: false,
-        field: "expira_en",
       },
       revocado: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: false,
-        field: "revocado",
-      },
-      created_at: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW,
-        field: "created_at",
       },
     },
     {
       tableName: "refresh_tokens",
-      timestamps: false,
+      timestamps: true,
+      createdAt: "creado_en",
+      updatedAt: false,
     }
   );
 
@@ -54,4 +43,6 @@ export default (sequelize) => {
       onDelete: "CASCADE",
     });
   };
+
+  return RefreshToken;
 };

@@ -1,18 +1,17 @@
+import "./envLoader.js";
 import express from "express";
-import dotenv from "dotenv";
 import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import db from "./src/models/index.js";
 import authRoutes from "./src/routes/authRoutes.js";
-import assignmentRoutes from "./src/routes/operationCenterRoutes.js";
 import csrfMiddleware from "./src/middlewares/crsfMiddleware.js";
 import cookieParser from "cookie-parser";
 import catalogueRoutes from "./src/routes/catalogueRoutes.js";
-import personRoutes from "./src/routes/personRoutes.js";
 import deviceRoutes from "./src/routes/deviceRoutes.js";
-
-dotenv.config();
+import peripheralRoutes from "./src/routes/peripheralRoutes.js";
+import operationCenterRoutes from "./src/routes/operationCenterRoutes.js";
+import authMiddleware from "./src/middlewares/authMiddleware.js";
 
 const allowedOrigins = [
   "http://localhost:5173",
@@ -50,10 +49,12 @@ app.use(csrfMiddleware);
 app.set("trust proxy", true);
 
 app.use("/auth", authRoutes);
-app.use("/", limiter, assignmentRoutes);
-app.use("/personas", limiter, personRoutes);
-app.use("/", limiter, deviceRoutes);
-app.use("/catalogo", limiter, catalogueRoutes);
+app.use("/api", catalogueRoutes);
+app.use("/api", authMiddleware, limiter, [
+  deviceRoutes,
+  peripheralRoutes,
+  operationCenterRoutes,
+]);
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {

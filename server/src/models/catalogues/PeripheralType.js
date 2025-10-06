@@ -1,8 +1,8 @@
 import { DataTypes } from "sequelize";
 
 export default (sequelize) => {
-  const PeriphalType = sequelize.define(
-    "PeriphalType",
+  const PeripheralType = sequelize.define(
+    "PeripheralType",
     {
       id_tipo_periferico: {
         type: DataTypes.INTEGER,
@@ -20,12 +20,12 @@ export default (sequelize) => {
     }
   );
 
-  PeriphalType.associate = (models) => {
-    PeriphalType.hasMany(models.Periphal, {
+  PeripheralType.associate = (models) => {
+    PeripheralType.hasMany(models.Peripheral, {
       foreignKey: "id_tipo_periferico",
       onDelete: "RESTRICT",
     });
   };
 
-  return PeriphalType;
+  return PeripheralType;
 };

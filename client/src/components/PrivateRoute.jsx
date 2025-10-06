@@ -1,34 +1,28 @@
 /**
  * @file PrivateRoute.jsx
- * @module PrivateRoute
- * @description Componente de orden superior (High-Order Component) utilizado para proteger rutas.
- * Este componente es el encargado de verificar el estado de autenticación de un usuario
- * antes de renderizar los componentes hijos (la ruta solicitada).
- * @component
- * @requires react
- * @requires ../hooks/auth/useAuthStatus - Hook que verifica si la sesión está activa y su estado de carga.
- * @requires ./AuthRedirect - Componente que muestra el mensaje de acceso denegado y redirige al login.
+ * @description Componente para proteger rutas que lee el estado de autenticación
+ * desde el store global de Zustand.
  */
-import React from "react";
-import useAuthStatus from "../hooks/auth/useAuthStatus.js";
+import { useAuthStore } from "../stores/authStore.js"; // 1. Importamos el store global
 import AuthRedirect from "./AuthRedirect.jsx";
 
 /**
  * @function PrivateRoute
  * @description Implementa la lógica de protección de rutas:
- * 1. Muestra un estado de carga mientras se verifica el token.
+ * 1. Muestra un estado de carga mientras se verifica el token al inicio de la app.
  * 2. Si el usuario no está autenticado, renderiza el componente AuthRedirect.
  * 3. Si el usuario está autenticado, renderiza los componentes hijos (la ruta protegida).
  *
  * @param {object} props - Las propiedades del componente.
- * @param {React.ReactNode} props.children - Los componentes que se renderizarán si el usuario está autenticado.
- * @returns {JSX.Element} El elemento JSX del contenido protegido, la pantalla de redirección, o el mensaje de carga.
+ * @param {React.ReactNode} props.children - Los componentes hijos a renderizar.
+ * @returns {JSX.Element}
  */
 const PrivateRoute = ({ children }) => {
-  // Obtiene el estado de autenticación y carga del hook personalizado
-  const { isAuthenticated, isLoading } = useAuthStatus();
+  // 2. Leemos el estado directamente del store de Zustand.
+  // Ya no se hace ninguna llamada a la API aquí.
+  const { isAuthenticated, isLoading } = useAuthStore();
 
-  // Si está cargando la verificación de autenticación, muestra un mensaje de espera.
+  // Si el store todavía está verificando la sesión inicial, muestra un loader.
   if (isLoading) {
     return (
       <div className="text-xl text-black bg-white rounded-2xl px-6 py-4">
@@ -37,12 +31,12 @@ const PrivateRoute = ({ children }) => {
     );
   }
 
-  // Si NO está autenticado, redirige forzosamente al componente de acceso denegado.
+  // Si no está autenticado, redirige.
   if (!isAuthenticated) {
     return <AuthRedirect />;
   }
 
-  // Si la autenticación es exitosa, permite el acceso al contenido de la ruta.
+  // Si está autenticado, muestra el contenido protegido.
   return children;
 };
 

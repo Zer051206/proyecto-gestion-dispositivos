@@ -1,102 +1,121 @@
-/**
- * @file useRegisterForm.js
- * @module Hooks
- * @description Hook personalizado que maneja el estado del formulario de registro,
- * la comunicación con la API para crear un nuevo usuario y la navegación posterior.
- *
- * Utiliza el cliente base de Axios y la utilidad para restringir la entrada de texto.
- * @requires react/useState
- * @requires ../../axiosClient
- * @requires react-router-dom/useNavigate
- * @requires ../utils/inputUtilities
- */
-import { useState } from "react";
-import axiosClient from "../../axiosClient.js";
+// src/hooks/auth/useRegisterForm.js
+
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
-import { handleKeyTextDown } from "../../utils/inputUtilities.js";
+import api from "../../config/axios.js";
+import { useEffect, useState } from "react";
 
-/**
- * @function useRegisterForm
- * @description Hook para gestionar el formulario de registro de nuevos usuarios.
- * Mantiene el estado de los campos de entrada y maneja la lógica de envío del formulario.
- *
- * @returns {object} Un objeto que contiene el estado de los campos, el manejador de envío y las funciones de actualización.
- *
- * @property {string} nombre - Estado actual del campo nombre.
- * @property {string} apellido - Estado actual del campo apellido.
- * @property {string} correo - Estado actual del campo correo electrónico.
- * @property {string} password - Estado actual del campo contraseña.
- * @property {Function} handleRegister - Función asíncrona que maneja el envío del formulario a la API.
- * @property {Function} handleClickNombre - Manejador de cambio para el input nombre.
- * @property {Function} handleClickApellido - Manejador de cambio para el input apellido.
- * @property {Function} handleClickCorreo - Manejador de cambio para el input correo.
- * @property {Function} handleClickPassword - Manejador de cambio para el input contraseña.
- * @property {string} error - Mensaje de error a mostrar al usuario, si la petición falla.
- * @property {boolean} isLoading - Indicador de estado de carga (si la petición está en curso).
- * @property {Function} handleKeyTextDown - Utilidad de control de entrada de texto (importada).
- */
-export function useRegisterForm() {
-  const [nombre, setNombre] = useState("");
-  const [apellido, setApellido] = useState("");
-  const [correo, setCorreo] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+const validationSchema = Yup.object({
+  nombre: Yup.string()
+    .required("El nombre es obligatorio.")
+    .min(2, "El nombre debe tener al menos 2 caracteres.")
+    .max(120),
+  apellido: Yup.string()
+    .required("El apellido es obligatorio.")
+    .min(2, "El apellido debe tener al menos 2 caracteres.")
+    .max(120),
+  correo: Yup.string()
+    .email("El formato del correo no es válido.")
+    .required("El correo es obligatorio.")
+    .max(150),
+  id_tipo_identificacion: Yup.number()
+    .required("El tipo de identificación es obligatorio.")
+    .positive("Selecciona un tipo de identificación válido."),
+  identificacion: Yup.string()
+    .required("El número de identificación es obligatorio.")
+    .min(5, "La identificación debe tener al menos 5 caracteres.")
+    .max(20),
+  telefono: Yup.string()
+    .required("El teléfono es obligatorio.")
+    .min(7, "El número de teléfono no es válido.")
+    .max(20),
+  rol: Yup.string()
+    .oneOf(["Inventario", "Admin"], "El rol seleccionado no es válido.")
+    .required("El rol es obligatorio."),
+  password: Yup.string()
+    .required("La contraseña es obligatoria.")
+    .min(6, "La contraseña debe tener al menos 6 caracteres."),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password"), null], "Las contraseñas no coinciden.")
+    .required("Debes confirmar la contraseña."),
+});
+
+export const useRegisterForm = () => {
   const navigate = useNavigate();
+  const [tiposIdentificacion, setTiposIdentificacion] = useState([]);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleClickNombre = (e) => setNombre(e.target.value);
-  const handleClickApellido = (e) => setApellido(e.target.value);
-  const handleClickCorreo = (e) => setCorreo(e.target.value);
-  const handleClickPassword = (e) => setPassword(e.target.value);
-
-  /**
-   * @async
-   * @description Función que se ejecuta al enviar el formulario.
-   * Envía los datos del nuevo usuario al endpoint de registro.
-   * Si tiene éxito, redirige al usuario a la página de login.
-   * @param {Event} e - El evento del formulario (utilizado para prevenir el comportamiento por defecto).
-   * @returns {void}
-   */
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(""); // Limpiar errores anteriores
-
-    try {
-      await axiosClient.post("/auth/register", {
-        nombre,
-        correo,
-        apellido,
-        password,
-      });
-      alert(
-        "Usuario creado exitósamente, será enviado al formulario de inicio de sesión"
-      );
-      navigate("/auth/login");
-    } catch (err) {
-      // Manejo de errores de respuesta de la API
-      if (err.response && err.response.data && err.response.data.message) {
-        setError(err.response.data.message);
-      } else {
-        setError("Error al registrarse. Por favor, inténtalo de nuevo.");
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [tiposIdRes] = await Promise.all([
+          api.get("/api/catalogo/tipos-identificacion"),
+        ]);
+        setTiposIdentificacion(tiposIdRes.data);
+      } catch (error) {
+        setError(
+          "Hubo un error al cargar las opciones. Por favor, intente recargar la página."
+        );
+      } finally {
+        setIsLoading(false);
       }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
+    fetchData();
+  }, []);
+
+  const formik = useFormik({
+    initialValues: {
+      nombre: "",
+      apellido: "",
+      correo: "",
+      id_tipo_identificacion: "", // Inicializamos todos los campos
+      identificacion: "",
+      telefono: "",
+      rol: "Inventario", // Podemos poner un valor por defecto
+      password: "",
+      confirmPassword: "",
+    },
+    validationSchema: validationSchema,
+    onSubmit: async (values, { setFieldError, resetForm }) => {
+      try {
+        // No necesitamos enviar 'confirmPassword' a la API
+        const { confirmPassword, ...userData } = values;
+
+        await api.post("/auth/register", userData);
+
+        // En lugar de un alert, podemos redirigir con un mensaje de éxito
+        navigate("/auth/login", {
+          state: {
+            successMessage: "¡Registro exitoso! Ahora puedes iniciar sesión.",
+          },
+        });
+
+        resetForm();
+      } catch (err) {
+        // Primero, comprobamos si la respuesta del error tiene el array 'errors' de Zod/Sequelize
+        if (err.response?.data?.errors) {
+          // Si es así, recorremos el array
+          err.response.data.errors.forEach((error) => {
+            // Y usamos setFieldError para asignar cada mensaje de error a su campo correspondiente
+            setFieldError(error.path, error.message);
+          });
+        } else {
+          // Si no hay un array, es un error general (como "credenciales incorrectas")
+          // Lo asignamos al campo 'apiError' que ya tienes
+          const errorMessage =
+            err.response?.data?.message || "Ha ocurrido un error inesperado.";
+          setFieldError("apiError", errorMessage);
+        }
+      }
+    },
+  });
 
   return {
-    nombre,
-    correo,
-    password,
-    apellido,
-    handleRegister,
-    handleClickNombre,
-    handleClickCorreo,
-    handleClickApellido,
-    handleClickPassword,
-    error,
+    formik,
+    tiposIdentificacion,
     isLoading,
-    handleKeyTextDown,
+    error,
   };
-}
+};

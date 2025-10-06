@@ -1,91 +1,62 @@
-/**
- * @file useLoginForm.js
- * @module Hooks
- * @description Hook personalizado que maneja el estado del formulario de inicio de sesión,
- * incluyendo la validación, la comunicación con el endpoint de login de la API, y la navegación
- * post-autenticación.
- * @requires react/useState
- * @requires ../../axiosClient
- * @requires react-router-dom/useNavigate
- */
-import { useState } from "react";
-import axiosClient from "../../axiosClient.js";
-import { useNavigate } from "react-router-dom";
+// src/hooks/auth/useLoginForm.js
 
-/**
- * @function useLoginForm
- * @description Hook para gestionar el formulario de inicio de sesión.
- * Mantiene el estado del correo, contraseña, errores y el estado de carga,
- * y proporciona la función `handleLogin` para comunicarse con la API.
- *
- * @returns {object} Un objeto que contiene el estado de los campos, el manejador de envío y las funciones de actualización.
- *
- * @property {string} email - Estado actual del campo de correo electrónico.
- * @property {string} password - Estado actual del campo de contraseña.
- * @property {Function} handleLogin - Función asíncrona que maneja el envío del formulario a la API.
- * @property {Function} handleEmailChange - Manejador de cambio para el input de correo.
- * @property {Function} handlePasswordChange - Manejador de cambio para el input de contraseña.
- * @property {string | null} error - Mensaje de error a mostrar al usuario si la autenticación falla.
- * @property {boolean} isLoading - Indicador de estado de carga mientras se espera la respuesta de la API.
- */
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { useNavigate } from "react-router-dom";
+import api from "../../config/axios.js"; // Usamos la instancia inteligente de Axios
+
+// 1. Definimos el esquema de validación con Yup
+// Esto valida los datos en el frontend ANTES de enviarlos
+const validationSchema = Yup.object({
+  correo: Yup.string()
+    .email("El formato del correo no es válido.")
+    .required("El correo es obligatorio."),
+  password: Yup.string()
+    .min(6, "La contraseña debe tener al menos 6 caracteres.")
+    .required("La contraseña es obligatoria."),
+});
+
 export const useLoginForm = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleEmailChange = (e) => setEmail(e.target.value);
+  // 2. Usamos el hook useFormik para gestionar todo el formulario
+  const formik = useFormik({
+    // Valores iniciales de los campos
+    initialValues: {
+      correo: "",
+      password: "",
+    },
+    // El esquema de validación que creamos con Yup
+    validationSchema: validationSchema,
 
-  const handlePasswordChange = (e) => setPassword(e.target.value);
+    // La función que se ejecuta SOLO si la validación es exitosa
+    onSubmit: async (values, { setFieldError }) => {
+      try {
+        await api.post("/auth/login", values);
 
-  /**
-   * @async
-   * @description Función que se ejecuta al enviar el formulario.
-   * Envía las credenciales al endpoint de login.
-   * Si tiene éxito, redirige al usuario al dashboard.
-   * @param {Event} e - El evento del formulario (utilizado para prevenir el comportamiento por defecto).
-   * @returns {void}
-   */
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Se utiliza withCredentials: true para asegurar que las cookies (tokens) sean enviadas y recibidas
-      await axiosClient.post(
-        "/auth/login",
-        {
-          correo: email,
-          password,
-        },
-        { withCredentials: true }
-      );
-
-      // Navegar a la página principal de la aplicación
-      navigate("/dashboard");
-    } catch (err) {
-      // Manejo de errores de respuesta de la API
-      if (err.response && err.response.data && err.response.data.message) {
-        setError(err.response.data.message);
-      } else {
-        setError(
-          "Error al iniciar sesión. Por favor, verifica tus credenciales."
-        );
+        // Si el login es exitoso, las cookies se establecen automáticamente.
+        // Redirigimos al usuario al dashboard.
+        navigate("/dashboard");
+      } catch (err) {
+        // Primero, comprobamos si la respuesta del error tiene el array 'errors' de Zod/Sequelize
+        if (err.response?.data?.errors) {
+          // Si es así, recorremos el array
+          err.response.data.errors.forEach((error) => {
+            // Y usamos setFieldError para asignar cada mensaje de error a su campo correspondiente
+            setFieldError(error.path, error.message);
+          });
+        } else {
+          // Si no hay un array, es un error general (como "credenciales incorrectas")
+          // Lo asignamos al campo 'apiError' que ya tienes
+          const errorMessage =
+            err.response?.data?.message || "Ha ocurrido un error inesperado.";
+          setFieldError("apiError", errorMessage);
+        }
       }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      // Formik maneja automáticamente el estado de 'isSubmitting'
+    },
+  });
 
-  return {
-    email,
-    password,
-    handleLogin,
-    handleEmailChange,
-    handlePasswordChange,
-    error,
-    isLoading,
-  };
+  // 3. Devolvemos el objeto formik que contiene todo lo que necesitamos
+  return formik;
 };

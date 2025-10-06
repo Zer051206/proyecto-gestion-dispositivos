@@ -57,7 +57,6 @@ export const findValidRefreshToken = async (token) => {
     include: [
       {
         model: User,
-        as: "user", // Usa el alias definido en la asociación (belongsTo)
         // Seleccionamos solo los datos del usuario que necesitamos para el Access Token
         attributes: ["id_usuario", "correo", "rol"],
       },

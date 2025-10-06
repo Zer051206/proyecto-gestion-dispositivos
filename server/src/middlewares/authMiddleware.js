@@ -1,120 +1,89 @@
 /**
  * @file authMiddleware.js
- * @module authMiddleware
- * @description Middleware de autenticación principal. Se encarga de verificar el Access Token,
- * y en caso de que este haya expirado, intenta usar el Refresh Token para generar uno nuevo
- * también verifica que el usuario asociado esté activo.
+ * @description Middleware de autenticación principal conectado a la arquitectura de repositorios.
  */
-
 import { verifyAccessToken, generateAccessToken } from "../utils/tokenUtils.js";
-import * as userModel from "../models/userModel.js";
-import * as refreshTokenModel from "../models/refreshTokenModel.js";
+// 1. Importamos desde los REPOSITORIOS, no de los modelos antiguos.
+import * as userRepository from "../repositories/userRepository.js";
+import * as refreshTokenRepository from "../repositories/refreshTokenRepository.js";
 import {
   InvalidTokenError,
   AccountDisabledError,
 } from "../utils/customErrors.js";
+// 2. Importamos las opciones de cookies centralizadas.
+import {
+  ACCESS_TOKEN_COOKIE_OPTIONS,
+  REFRESH_TOKEN_COOKIE_OPTIONS,
+} from "../config/cookie.config.js";
 
-// Opciones estandarizadas para las Cookies (Aplica la lógica de SameSite)
-const ACCESS_TOKEN_OPTIONS = {
-  httpOnly: true, // No accesible por JavaScript (Seguridad XSS)
-  path: "/",
-  secure: process.env.NODE_ENV === "production", // Solo se envía sobre HTTPS en producción
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Necesario para Front/Back en dominios separados
-  maxAge: 15 * 60 * 1000, // Duración del Access Token (15 minutos)
-};
-
-const REFRESH_TOKEN_OPTIONS = {
-  httpOnly: true,
-  path: "/",
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días de duración, por ejemplo
-};
-
-/**
- * @async
- * @function authMiddleware
- * @description Verifica la autenticación del usuario a través de cookies (Access Token y Refresh Token).
- * @param {object} req - Objeto de solicitud de Express.
- * @param {object} res - Objeto de respuesta de Express.
- * @param {function} next - Función para pasar el control al siguiente middleware.
- * @returns {void} Llama a `next()` si la autenticación es exitosa, o a `next(error)` si falla.
- */
 const authMiddleware = async (req, res, next) => {
   let accessToken = req.cookies.accessToken;
   const refreshToken = req.cookies.refreshToken;
   let decoded = null;
 
   try {
-    // 1. Intenta verificar el Access Token
+    // El flujo de verificación del Access Token no cambia, está perfecto.
     if (accessToken) {
-      // Intenta decodificar el token sin preocuparse por la expiración aquí
       try {
         decoded = verifyAccessToken(accessToken);
       } catch (e) {
-        // Si falla la verificación por expiración, intentaremos renovarlo con el RT
         if (e.name !== "TokenExpiredError") {
-          throw e; // Lanza cualquier otro error de token (mal formato, inválido)
+          throw e;
         }
         accessToken = null; // Fuerza el flujo de renovación
       }
     }
 
-    // 2. Flujo de Renovación (Si el Access Token no existe o expiró)
+    // El flujo de Renovación ahora usa el repositorio.
     if (!accessToken) {
       if (!refreshToken) {
         throw new InvalidTokenError(
-          "Acceso no autorizado. Token no proporcionado o sesión finalizada."
+          "Acceso no autorizado. Token no proporcionado."
         );
       }
 
-      // 2a. Verificar y obtener datos del Refresh Token de la base de datos
-      const tokenData = await refreshTokenModel.findValidRefreshToken(
+      // 3. La llamada ahora usa el refreshTokenRepository importado.
+      const tokenData = await refreshTokenRepository.findValidRefreshToken(
         refreshToken
       );
       if (!tokenData) {
-        // Si el RT no existe o está marcado como revocado/expirado en DB
-        throw new InvalidTokenError(
-          "Sesión expirada o token inválido. Por favor, inicia sesión nuevamente."
-        );
+        throw new InvalidTokenError("Sesión expirada o token inválido.");
       }
 
-      // 2b. Generar nuevo Access Token y establecer cookie
       const newAccessToken = generateAccessToken({
         id_usuario: tokenData.id_usuario,
         correo: tokenData.correo,
         rol: tokenData.rol,
       });
 
-      // Establecer el nuevo Access Token en la respuesta
-      res.cookie("accessToken", newAccessToken, ACCESS_TOKEN_OPTIONS);
+      // Usamos las opciones de cookie importadas.
+      res.cookie("accessToken", newAccessToken, ACCESS_TOKEN_COOKIE_OPTIONS);
 
-      // Decodificar el nuevo token para usar los datos del usuario
       decoded = verifyAccessToken(newAccessToken);
     }
 
-    // 3. Verificar el estado del usuario (usando el ID del token decodificado)
-    // Se usa 'id_usuario' por consistencia con la generación del token
-    const user = await userModel.checkIfUserIsActive(decoded.id_usuario);
-    if (!user) {
+    // 4. Lógica de verificación de usuario activo
+    // Usamos el userRepository para obtener el usuario completo desde la BD.
+    const user = await userRepository.findById(decoded.id_usuario);
+
+    // Verificamos dos cosas: que el usuario exista Y que esté activo.
+    if (!user || !user.activo) {
       throw new AccountDisabledError(
-        "Acceso denegado. La cuenta no está activada o no existe."
+        "Acceso denegado. La cuenta no existe o ha sido desactivada."
       );
     }
 
-    // 4. Autenticación Exitosa: adjunta la información del usuario
+    // 5. Autenticación Exitosa: adjuntamos la info del usuario a la petición.
     req.user = {
-      id_usuario: decoded.id_usuario, // Ajustado a id_usuario
-      correo: decoded.correo,
-      rol: decoded.rol,
+      id_usuario: user.id_usuario,
+      correo: user.correo,
+      rol: user.rol,
     };
     next();
   } catch (error) {
-    // 5. Manejo de Errores: Borra cookies si falla la autenticación por seguridad
-    res.clearCookie("accessToken", ACCESS_TOKEN_OPTIONS);
-    res.clearCookie("refreshToken", REFRESH_TOKEN_OPTIONS); // Limpia el RT
-
-    // Pasa el error al manejador de errores de Express
+    // El manejo de errores al fallar la autenticación no cambia, está perfecto.
+    res.clearCookie("accessToken", ACCESS_TOKEN_COOKIE_OPTIONS);
+    res.clearCookie("refreshToken", REFRESH_TOKEN_COOKIE_OPTIONS);
     next(error);
   }
 };
