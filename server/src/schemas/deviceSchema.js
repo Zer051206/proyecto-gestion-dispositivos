@@ -6,7 +6,7 @@ import { z } from "zod";
  * @description Esquema para validar los datos al crear un nuevo dispositivo/equipo.
  */
 export const createDeviceSchema = z.object({
-  id_centro_operacion: z
+  id_centro_operacion: z.coerce
     .number({ required_error: "El centro de operación es obligatorio." })
     .int()
     .positive(),
@@ -17,7 +17,7 @@ export const createDeviceSchema = z.object({
     required_error: "Debe indicar si es laptop o no.",
   }),
 
-  tamano_disco_duro: z
+  tamano_disco_duro: z.coerce
     .number({ required_error: "El tamaño del disco es obligatorio." })
     .int()
     .positive(),

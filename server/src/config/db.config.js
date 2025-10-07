@@ -9,7 +9,7 @@ const config = {
   development: {
     username: process.env.DB_MARIA_USER,
     password: process.env.DB_MARIA_PASSWORD,
-    database: process.env.DB_MARIA_NAME,
+    database: process.env.DB_MARIA_DATABASE,
     host: process.env.DB_MARIA_HOST || "localhost",
     port: process.env.DB_MARIA_PORT || 3306,
     dialect: "mariadb",

@@ -6,7 +6,7 @@ import { z } from "zod";
  * @description Esquema para validar los datos al crear un nuevo centro de operación.
  */
 export const createOperationCenterSchema = z.object({
-  codigo: z
+  codigo: z.coerce
     .number({
       required_error: "El código es obligatorio.",
       invalid_type_error: "El código debe ser un número.",
@@ -14,14 +14,14 @@ export const createOperationCenterSchema = z.object({
     .int()
     .positive("El código debe ser un número positivo."),
 
-  id_usuario: z
+  id_usuario: z.coerce
     .number({
       required_error: "El ID del usuario responsable es obligatorio.",
     })
     .int()
     .positive(),
 
-  id_ciudad: z
+  id_ciudad: z.coerce
     .number({
       required_error: "El ID de la ciudad es obligatorio.",
     })

@@ -4,6 +4,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
 import api from "../../config/axios.js"; // Usamos la instancia inteligente de Axios
+import { useAuthStore } from "../../stores/authStore.js";
 
 // 1. Definimos el esquema de validación con Yup
 // Esto valida los datos en el frontend ANTES de enviarlos
@@ -18,6 +19,7 @@ const validationSchema = Yup.object({
 
 export const useLoginForm = () => {
   const navigate = useNavigate();
+  const login = useAuthStore((state) => state.login); // Obtenemos la acción de login del store
 
   // 2. Usamos el hook useFormik para gestionar todo el formulario
   const formik = useFormik({
@@ -32,7 +34,13 @@ export const useLoginForm = () => {
     // La función que se ejecuta SOLO si la validación es exitosa
     onSubmit: async (values, { setFieldError }) => {
       try {
-        await api.post("/auth/login", values);
+        const response = await api.post("/auth/login", values);
+
+        login(
+          response.data.user,
+          response.data.accessToken,
+          response.data.refreshToken
+        );
 
         // Si el login es exitoso, las cookies se establecen automáticamente.
         // Redirigimos al usuario al dashboard.

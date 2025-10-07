@@ -1,36 +1,28 @@
-import { loginSchema, registerSchema } from "../schemas/authSchema.js";
 import * as authService from "../services/authService.js";
-import {
-  ACCESS_TOKEN_COOKIE_OPTIONS,
-  REFRESH_TOKEN_COOKIE_OPTIONS,
-} from "../config/cookie.config.js";
+import { registerAdminSchema, loginSchema } from "../schemas/authSchema.js";
 
-export const registerUser = async (req, res, next) => {
+export const registerAdmin = async (req, res, next) => {
   try {
-    const validatedData = registerSchema.parse(req.body);
-    const newUser = await authService.registerUser(validatedData);
-
-    res.status(201).json(newUser);
+    const validatedData = registerAdminSchema.parse(req.body);
+    const newAdmin = await authService.registerAdmin(validatedData);
+    res.status(201).json(newAdmin);
   } catch (error) {
     next(error);
   }
 };
 
-export const loginUser = async (req, res, next) => {
+export const loginAdmin = async (req, res, next) => {
   try {
-    const validateData = loginSchema.parse(req.body);
-    const result = await authService.loginUser(validateData);
+    const validatedData = loginSchema.parse(req.body);
+    const result = await authService.loginAdmin(validatedData);
 
-    res.cookie("accessToken", result.accessToken, ACCESS_TOKEN_COOKIE_OPTIONS);
-    res.cookie(
-      "refreshToken",
-      result.refreshToken,
-      REFRESH_TOKEN_COOKIE_OPTIONS
-    );
-
+    // ¡CORREGIDO! YA NO ESTABLECEMOS COOKIES.
+    // Los tokens ahora viajan en el cuerpo de la respuesta JSON.
     res.status(200).json({
       message: "Inicio de sesión exitoso",
-      user: result.user,
+      admin: result.admin,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
     });
   } catch (error) {
     next(error);
@@ -39,37 +31,31 @@ export const loginUser = async (req, res, next) => {
 
 export const refreshToken = async (req, res, next) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
+    // ¡CORREGIDO! Leemos el refreshToken del BODY, no de las cookies.
+    const { refreshToken } = req.body;
     const result = await authService.refreshAccessToken(refreshToken);
 
-    // Establecer nuevo Access Token (15 minutos)
-    res.cookie("accessToken", result.accessToken, ACCESS_TOKEN_COOKIE_OPTIONS);
-
-    res.status(200).json({
-      message: "Token renovado exitosamente.",
-      user: result.user,
-    });
+    // Devolvemos el nuevo accessToken en el cuerpo del JSON.
+    res.status(200).json(result);
   } catch (error) {
     next(error);
   }
 };
 
-export const logoutUser = async (req, res, next) => {
+export const logoutAdmin = async (req, res, next) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
-    await authService.logoutUser(refreshToken);
-
-    res.clearCookie("accessToken", { path: "/" });
-    res.clearCookie("refreshToken", { path: "/" });
+    const { refreshToken } = req.body;
+    await authService.logoutAdmin(refreshToken);
 
     res.status(200).json({
-      message: "logout exitoso",
+      message: "Logout exitoso",
     });
   } catch (error) {
     next(error);
   }
 };
 
-export const getMe = async (req, res) => {
-  res.status(200).json({ authenticated: true, user: req.user });
+export const getMe = (req, res) => {
+  // El middleware ya nos da req.admin. Solo lo devolvemos.
+  res.status(200).json({ authenticated: true, admin: req.admin });
 };

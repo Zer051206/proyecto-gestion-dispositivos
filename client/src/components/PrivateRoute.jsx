@@ -3,9 +3,9 @@
  * @description Componente para proteger rutas que lee el estado de autenticación
  * desde el store global de Zustand.
  */
-import { useAuthStore } from "../stores/authStore.js"; // 1. Importamos el store global
-import AuthRedirect from "./AuthRedirect.jsx";
-
+import React from "react";
+import { Navigate } from "react-router-dom";
+import { useAuthStore } from "../stores/authStore.js";
 /**
  * @function PrivateRoute
  * @description Implementa la lógica de protección de rutas:
@@ -33,7 +33,7 @@ const PrivateRoute = ({ children }) => {
 
   // Si no está autenticado, redirige.
   if (!isAuthenticated) {
-    return <AuthRedirect />;
+    return <Navigate to="/auth/login" replace />;
   }
 
   // Si está autenticado, muestra el contenido protegido.

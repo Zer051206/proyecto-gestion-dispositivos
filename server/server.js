@@ -5,13 +5,14 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import db from "./src/models/index.js";
 import authRoutes from "./src/routes/authRoutes.js";
-import csrfMiddleware from "./src/middlewares/crsfMiddleware.js";
 import cookieParser from "cookie-parser";
 import catalogueRoutes from "./src/routes/catalogueRoutes.js";
 import deviceRoutes from "./src/routes/deviceRoutes.js";
 import peripheralRoutes from "./src/routes/peripheralRoutes.js";
 import operationCenterRoutes from "./src/routes/operationCenterRoutes.js";
 import authMiddleware from "./src/middlewares/authMiddleware.js";
+import errorHandler from "./src/middlewares/errorMiddleware.js";
+import userRoutes from "./src/routes/userRoutes.js";
 
 const allowedOrigins = [
   "http://localhost:5173",
@@ -45,16 +46,19 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(csrfMiddleware);
-app.set("trust proxy", true);
+app.set("trust proxy", 1);
 
 app.use("/auth", authRoutes);
-app.use("/api", catalogueRoutes);
+app.use("/api/catalogo", catalogueRoutes);
 app.use("/api", authMiddleware, limiter, [
+  userRoutes,
   deviceRoutes,
   peripheralRoutes,
   operationCenterRoutes,
 ]);
+
+app.use(errorHandler);
+
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {

@@ -6,12 +6,12 @@ import { z } from "zod";
  * @description Esquema para validar los datos al crear un nuevo periférico.
  */
 export const createPeripheralSchema = z.object({
-  id_tipo_periferico: z
+  id_tipo_periferico: z.coerce
     .number({ required_error: "El tipo de periférico es obligatorio." })
     .int()
     .positive(),
 
-  id_centro_operacion: z
+  id_centro_operacion: z.coerce
     .number({ required_error: "El centro de operación es obligatorio." })
     .int()
     .positive(),

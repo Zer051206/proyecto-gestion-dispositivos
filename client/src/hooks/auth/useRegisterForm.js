@@ -5,12 +5,16 @@ import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
 import api from "../../config/axios.js";
 import { useEffect, useState } from "react";
+import {
+  handleKeyNumberDown,
+  handleKeyTextDown,
+} from "../../utils/inputUtilities.js";
 
 const validationSchema = Yup.object({
   nombre: Yup.string()
     .required("El nombre es obligatorio.")
     .min(2, "El nombre debe tener al menos 2 caracteres.")
-    .max(120),
+    .max(120, "El nombre no puede exceder los 120 caracteres."),
   apellido: Yup.string()
     .required("El apellido es obligatorio.")
     .min(2, "El apellido debe tener al menos 2 caracteres.")
@@ -18,18 +22,18 @@ const validationSchema = Yup.object({
   correo: Yup.string()
     .email("El formato del correo no es válido.")
     .required("El correo es obligatorio.")
-    .max(150),
+    .max(150, "El correo no puede exceder los 150 caracteres."),
   id_tipo_identificacion: Yup.number()
     .required("El tipo de identificación es obligatorio.")
     .positive("Selecciona un tipo de identificación válido."),
   identificacion: Yup.string()
     .required("El número de identificación es obligatorio.")
     .min(5, "La identificación debe tener al menos 5 caracteres.")
-    .max(20),
+    .max(20, "La identificación no puede exceder los 20 caracteres."),
   telefono: Yup.string()
     .required("El teléfono es obligatorio.")
-    .min(7, "El número de teléfono no es válido.")
-    .max(20),
+    .min(9, "El número de teléfono no puede tener menos de 9 caracteres.")
+    .max(20, "El número de teléfono no es válido."),
   rol: Yup.string()
     .oneOf(["Inventario", "Admin"], "El rol seleccionado no es válido.")
     .required("El rol es obligatorio."),
@@ -117,5 +121,7 @@ export const useRegisterForm = () => {
     tiposIdentificacion,
     isLoading,
     error,
+    handleKeyNumberDown,
+    handleKeyTextDown,
   };
 };

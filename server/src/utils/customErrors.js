@@ -144,3 +144,26 @@ export class CatalogueError extends AppError {
     super(message, status);
   }
 }
+
+export class AdminError extends AppError {
+  constructor(
+    message = "Error en la operación del administrador.",
+    status = 400
+  ) {
+    super(message, status);
+  }
+}
+
+export class AdminAlreadyExistsError extends AdminError {
+  constructor(message = "Ya existe un administrador con el mismo correo.") {
+    super(message, 409);
+  }
+}
+
+export class AdminNotFoundOrInvalidPasswordError extends AuthError {
+  constructor(
+    message = "La cuenta no existe o las credenciales son incorrectas."
+  ) {
+    super(message, 401); // 401 Unauthorized es más estándar para logins fallidos que 404
+  }
+}

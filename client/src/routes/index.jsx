@@ -4,6 +4,7 @@ import PrivateRoute from "../components/PrivateRoute.jsx";
 import { WelcomePage } from "../components/WelcomePage.jsx";
 import AuthRedirect from "../components/AuthRedirect.jsx";
 import AuthRoutes from "./AuthRoutes.jsx";
+import DashboardPage from "../components/Dashboard.jsx";
 
 export function AppRoutes() {
   return (
@@ -24,6 +25,15 @@ export function AppRoutes() {
       {/* ==================================== */}
       {/* Rutas Privadas              */}
       {/* ==================================== */}
+
+      <Route
+        path="/dashboard"
+        element={
+          <PrivateRoute>
+            <DashboardPage />
+          </PrivateRoute>
+        }
+      />
     </Routes>
   );
 }

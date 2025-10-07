@@ -1,83 +1,80 @@
 import bcrypt from "bcrypt";
 import * as tokenUtils from "../utils/tokenUtils.js";
-import * as userRepository from "../repositories/userRepository.js";
+import * as adminRepository from "../repositories/adminRepository.js";
 import * as refreshTokenRepository from "../repositories/refreshTokenRepository.js";
 import {
   AccountDisabledError,
+  AdminAlreadyExistsError,
+  AdminNotFoundOrInvalidPasswordError,
   InvalidTokenError,
-  UserAlreadyExistsError,
-  UserNotFoundOrInvalidPasswordError,
 } from "../utils/customErrors.js";
 
-export const registerUser = async (validateData) => {
+export const registerAdmin = async (validateData) => {
   const { correo, password } = validateData;
-  const userDb = await userRepository.findByEmail(correo);
+  const adminDb = await adminRepository.findByEmail(correo);
 
-  if (userDb) {
-    throw new UserAlreadyExistsError();
+  if (adminDb) {
+    throw new AdminAlreadyExistsError();
   }
 
   const contrasena_hash = await bcrypt.hash(password, 10);
-  const userForDb = {
+  const adminForDb = {
     ...validateData,
     contrasena_hash: contrasena_hash,
   };
 
-  const userCreated = await userRepository.createUser(userForDb);
+  const adminCreated = await adminRepository.create(adminForDb);
 
   return {
-    message: "Usuario registrado exitosamente",
+    message: "Administrador registrado exitosamente",
     usuario: {
-      id: userCreated.id_usuario,
-      nombre: userCreated.nombre,
-      apellido: userCreated.apellido,
-      correo: userCreated.correo,
-      rol: userCreated.rol,
+      id: adminCreated.id_admin,
+      nombre: adminCreated.nombre,
+      correo: adminCreated.correo,
     },
   };
 };
 
-export const loginUser = async (validateData) => {
+export const loginAdmin = async (validateData) => {
   const { correo, password } = validateData;
-  const userDb = await userRepository.findByEmail(correo);
+  const adminDb = await adminRepository.findByEmail(correo);
 
-  if (!userDb) {
-    throw new UserNotFoundOrInvalidPasswordError();
+  if (!adminDb) {
+    throw new AdminNotFoundOrInvalidPasswordError();
   }
 
-  if (!userDb.activo) {
+  if (!adminDb.activo) {
     throw new AccountDisabledError();
   }
 
   const isPasswordCorrect = await bcrypt.compare(
     password,
-    userDb.contrasena_hash
+    adminDb.contrasena_hash
   );
+
   if (!isPasswordCorrect) {
-    throw new UserNotFoundOrInvalidPasswordError();
+    throw new AdminNotFoundOrInvalidPasswordError();
   }
 
-  const accessToken = tokenUtils.generateAccessToken(userDb);
+  const accessToken = tokenUtils.generateAccessToken(adminDb);
   const refreshToken = tokenUtils.generateRefreshToken();
   const refreshTokenExpires = tokenUtils.getRefreshTokenExpiration();
 
   await refreshTokenRepository.saveRefreshToken(
-    userDb.id_usuario,
+    adminDb.id_admin,
     refreshToken,
     refreshTokenExpires
   );
 
-  await userRepository.updateLastLogin(userDb.id_usuario);
+  await adminRepository.updateLastLogin(adminDb.id_admin);
 
   return {
     accessToken,
     refreshToken,
-    user: {
-      id: userDb.id_usuario,
-      nombre: userDb.nombre,
-      apellido: userDb.apellido,
-      correo: userDb.correo,
-      rol: userDb.rol,
+    admin: {
+      id: adminDb.id_admin,
+      nombre: adminDb.nombre,
+      correo: adminDb.correo,
     },
   };
 };
@@ -96,22 +93,20 @@ export const refreshAccessToken = async (refreshToken) => {
   }
 
   const newAccessToken = tokenUtils.generateAccessToken({
-    id_usuario: tokenData.id_usuario,
+    id_admin: tokenData.id_admin,
     correo: tokenData.correo,
-    rol: tokenData.rol,
   });
 
   return {
     accessToken: newAccessToken,
-    user: {
-      id: tokenData.id_usuario,
+    admin: {
+      id: tokenData.id_admin,
       correo: tokenData.correo,
-      rol: tokenData.rol,
     },
   };
 };
 
-export const logoutUser = async (refreshToken) => {
+export const logoutAdmin = async (refreshToken) => {
   if (refreshToken) {
     await refreshTokenRepository.revokeRefreshToken(refreshToken);
   }

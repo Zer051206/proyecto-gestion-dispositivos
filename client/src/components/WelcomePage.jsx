@@ -1,82 +1,57 @@
-/**
- * @file WelcomePage.jsx
- * @description Página de inicio inteligente que redirige a los usuarios autenticados
- * o muestra las opciones de login/registro a los visitantes.
- */
+// src/components/WelcomePage.jsx
 import React from "react";
 import { Link, Navigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faUserPlus, faLock } from "@fortawesome/free-solid-svg-icons";
-import { useAuthStore } from "../stores/authStore.js"; // 1. Importamos nuestro store global
+import { useAuthStore } from "../stores/authStore.js";
 
 export function WelcomePage() {
-  // 2. Obtenemos el estado de autenticación y carga del store
   const { isAuthenticated, isLoading } = useAuthStore();
 
-  // 3. Lógica de renderizado condicional
-
-  // Mientras se verifica el estado de la sesión, mostramos un loader
   if (isLoading) {
-    return (
-      <div className="text-xl text-black bg-white rounded-2xl px-6 py-4">
-        Verificando sesión...
-      </div>
-    );
+    return <div className="text-xl text-text-main">Verificando sesión...</div>;
   }
-
-  // Si el usuario ya está autenticado, lo redirigimos al dashboard
   if (isAuthenticated) {
-    // Usamos el componente Navigate para una redirección declarativa
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Si no está cargando y no está autenticado, mostramos la bienvenida
   return (
-    <div className="flex flex-col items-center gap-10 p-4 w-full min-h-screen justify-center animate-fade-in">
-      {/* Contenedor del logo y el texto de bienvenida */}
-      <div className="flex flex-col items-center mb-10 text-center">
-        <div className="w-24 h-24 mb-8 bg-white rounded-full flex items-center justify-center shadow-xl shadow-gray-500">
-          <FontAwesomeIcon
-            icon={faLock}
-            className="text-4xl text-emerald-700"
-          />
+    <div className="flex flex-col items-center gap-10 p-4 w-full min-h-screen justify-center animate-fade-in bg-background">
+      <div className="flex flex-col items-center mb-5 text-center">
+        <div className="w-24 h-24 mb-8 bg-secondary rounded-full flex items-center justify-center shadow-xl">
+          <FontAwesomeIcon icon={faLock} className="text-4xl text-primary" />
         </div>
-
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-emerald-700 mb-4">
+        <h1 className="text-4xl sm:text-5xl font-extrabold text-primary mb-4">
           GESTIÓN DE DISPOSITIVOS
         </h1>
-
-        <p className="text-lg sm:text-xl text-gray-600 max-w-lg">
+        <p className="text-lg sm:text-xl text-text-main max-w-lg">
           Sistema de control de dispositivos y acceso seguro.
         </p>
       </div>
 
-      {/* Contenedor de los "cajones" de navegación */}
-      <div className="flex flex-col sm:flex-row justify-center items-center gap-6 sm:gap-12 w-full">
-        {/* Cajón de Iniciar Sesión */}
+      <div className="flex flex-col sm:flex-row justify-center items-center gap-8 w-full">
+        {/* Cajón de Iniciar Sesión (usa color primario) */}
         <Link
           to="/auth/login"
-          className="flex flex-col items-center justify-center p-8 w-44 h-44 bg-emerald-100 hover:bg-emerald-300 rounded-lg shadow-gray-700 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-emerald-400"
-          aria-label="Ir a la página de inicio de sesión"
+          className="flex flex-col items-center justify-center p-8 w-48 h-48 bg-primary/10 hover:bg-primary/20 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-primary/50"
         >
-          <div className="text-emerald-700 mb-2 ">
+          <div className="text-primary mb-2">
             <FontAwesomeIcon icon={faUser} className="w-16 h-16" />
           </div>
-          <span className="text-lg font-bold text-gray-800">
+          <span className="text-lg font-bold text-text-main">
             Iniciar Sesión
           </span>
         </Link>
 
-        {/* Cajón de Registrarse */}
+        {/* Cajón de Registrarse (usa color de acento) */}
         <Link
           to="/auth/register"
-          className="flex flex-col items-center justify-center p-8 w-44 h-44 bg-slate-100 hover:bg-slate-300 rounded-lg shadow-gray-700 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-slate-400"
-          aria-label="Ir a la página de registro de nuevo usuario"
+          className="flex flex-col items-center justify-center p-8 w-48 h-48 bg-accent/10 hover:bg-accent/20 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-accent/50"
         >
-          <div className="text-slate-700 mb-2">
+          <div className="text-accent mb-2">
             <FontAwesomeIcon icon={faUserPlus} className="w-16 h-16" />
           </div>
-          <span className="text-lg font-bold text-gray-800">
+          <span className="text-lg font-bold text-text-main">
             Solicitar Acceso
           </span>
         </Link>
