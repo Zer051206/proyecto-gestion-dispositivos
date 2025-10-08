@@ -25,9 +25,19 @@ export const getDeviceById = async (req, res, next) => {
 
 export const createDevice = async (req, res, next) => {
   try {
+    const ip_usuario = req.ip;
+    const id_usuario = req.user.id_usuario;
     const createValidateData = createDeviceSchema.parse(req.body);
-    const newDevice = await deviceService.createDevice(createValidateData);
-    return res.status(201).json(newDevice);
+    const newDevice = await deviceService.createDevice(
+      createValidateData,
+      id_usuario,
+      ip_usuario
+    );
+    return res.status(201).json({
+      message: "Equipo registrado exitosamente.",
+      success: true,
+      device: newDevice,
+    });
   } catch (error) {
     next(error);
   }
@@ -41,7 +51,27 @@ export const updateDevice = async (req, res, next) => {
       updateValidateData,
       id
     );
-    return res.status(200).json(updatedDevice);
+    return res.status(200).json({
+      message: "Equipo actualizado correctamente",
+      success: true,
+      device: updatedDevice,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const decomissionDevice = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const id_usuario = req.user.id_usuario;
+    const ip_usuario = req.ip;
+    await deviceService.decomissionDevice(id, id_usuario, ip_usuario);
+
+    return res.status(200).json({
+      message: "Equipo dado de baja exitosamente",
+      success: true,
+    });
   } catch (error) {
     next(error);
   }

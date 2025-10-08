@@ -19,10 +19,9 @@ const loginLimiter = rateLimit({
 });
 
 // --- Rutas Públicas de Autenticación ---
-router.post("/register", loginLimiter, authController.registerAdmin);
-router.post("/login", loginLimiter, authController.loginAdmin);
+router.post("/login", loginLimiter, authController.loginUser);
 router.post("/refresh", loginLimiter, authController.refreshToken);
-router.post("/logout", authController.logoutAdmin);
+router.post("/logout", authController.logoutUser);
 
 // --- Ruta Protegida de Autenticación ---
 // Esta es la única ruta 'GET' que necesitamos. Sirve para validar una sesión existente.

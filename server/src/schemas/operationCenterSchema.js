@@ -1,30 +1,14 @@
 // src/schemas/operationCenterSchema.js
 import { z } from "zod";
 
-/**
- * @const {z.ZodObject} createOperationCenterSchema
- * @description Esquema para validar los datos al crear un nuevo centro de operación.
- */
 export const createOperationCenterSchema = z.object({
   codigo: z.coerce
-    .number({
-      required_error: "El código es obligatorio.",
-      invalid_type_error: "El código debe ser un número.",
-    })
-    .int()
-    .positive("El código debe ser un número positivo."),
-
-  id_usuario: z.coerce
-    .number({
-      required_error: "El ID del usuario responsable es obligatorio.",
-    })
+    .number({ required_error: "El código es obligatorio." })
     .int()
     .positive(),
 
   id_ciudad: z.coerce
-    .number({
-      required_error: "El ID de la ciudad es obligatorio.",
-    })
+    .number({ required_error: "La ciudad es obligatoria." })
     .int()
     .positive(),
 
@@ -40,9 +24,5 @@ export const createOperationCenterSchema = z.object({
     .max(150),
 });
 
-/**
- * @const {z.ZodObject} updateOperationCenterSchema
- * @description Esquema para validar los datos al actualizar un centro de operación. Todos los campos son opcionales.
- */
 export const updateOperationCenterSchema =
   createOperationCenterSchema.partial();

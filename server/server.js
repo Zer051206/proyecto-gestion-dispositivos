@@ -8,11 +8,11 @@ import authRoutes from "./src/routes/authRoutes.js";
 import cookieParser from "cookie-parser";
 import catalogueRoutes from "./src/routes/catalogueRoutes.js";
 import deviceRoutes from "./src/routes/deviceRoutes.js";
+import userRoutes from "./src/routes/userRoutes.js";
 import peripheralRoutes from "./src/routes/peripheralRoutes.js";
 import operationCenterRoutes from "./src/routes/operationCenterRoutes.js";
 import authMiddleware from "./src/middlewares/authMiddleware.js";
 import errorHandler from "./src/middlewares/errorMiddleware.js";
-import userRoutes from "./src/routes/userRoutes.js";
 
 const allowedOrigins = [
   "http://localhost:5173",
@@ -51,8 +51,8 @@ app.set("trust proxy", 1);
 app.use("/auth", authRoutes);
 app.use("/api/catalogo", catalogueRoutes);
 app.use("/api", authMiddleware, limiter, [
-  userRoutes,
   deviceRoutes,
+  userRoutes,
   peripheralRoutes,
   operationCenterRoutes,
 ]);

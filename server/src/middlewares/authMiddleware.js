@@ -1,6 +1,5 @@
 import { verifyAccessToken } from "../utils/tokenUtils.js";
-// 1. Importamos el repositorio de ADMIN, no el de usuario
-import * as adminRepository from "../repositories/adminRepository.js";
+import * as userRepository from "../repositories/userRepository.js"; // Ahora usamos el repositorio de usuarios
 import {
   InvalidTokenError,
   AccountDisabledError,
@@ -18,25 +17,25 @@ const authMiddleware = async (req, res, next) => {
     const token = authHeader.split(" ")[1];
     const decoded = verifyAccessToken(token);
 
-    // 2. Buscamos un ADMIN por su ID (decoded.id_admin)
-    const admin = await adminRepository.findById(decoded.id_admin);
+    // Buscamos un USUARIO por su ID
+    const user = await userRepository.findById(decoded.id_usuario);
 
-    // 3. Verificamos que el admin exista y esté activo
-    if (!admin || !admin.activo) {
+    if (!user || !user.activo) {
       throw new AccountDisabledError(
-        "Acceso denegado. La cuenta de administrador no existe o ha sido desactivada."
+        "Acceso denegado. La cuenta no existe o ha sido desactivada."
       );
     }
 
-    // 4. Adjuntamos la información del admin a la petición, no del usuario
-    req.admin = {
-      id_admin: admin.id_admin,
-      nombre: admin.nombre,
-      correo: admin.correo,
+    // Adjuntamos la información del usuario (incluyendo su rol) a la petición
+    req.user = {
+      id_usuario: user.id_usuario,
+      nombre: user.nombre,
+      correo: user.correo,
+      rol: user.rol,
+      id_centro_operacion: user.id_centro_operacion,
     };
     next();
   } catch (error) {
-    // Si el token es inválido o expira, el error se pasa al manejador
     next(error);
   }
 };

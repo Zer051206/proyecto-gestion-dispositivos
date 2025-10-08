@@ -19,7 +19,6 @@ export const findAll = async () => {
  * @returns {Promise<Peripheral|null>} El objeto del periférico o null si no se encuentra.
  */
 export const getById = async (id) => {
-  // <--- Nombre actualizado
   return Peripheral.findByPk(id);
 };
 
@@ -28,8 +27,8 @@ export const getById = async (id) => {
  * @param {object} data - Los datos para el nuevo periférico.
  * @returns {Promise<Peripheral>} El objeto del periférico creado.
  */
-export const create = async (data) => {
-  return Peripheral.create(data);
+export const create = async (data, options = {}) => {
+  return Peripheral.create(data, options);
 };
 
 /**
@@ -38,24 +37,14 @@ export const create = async (data) => {
  * @param {object} data - Los nuevos datos para el periférico.
  * @returns {Promise<Peripheral|null>} El objeto del periférico actualizado o null.
  */
-export const update = async (data, id) => {
+export const update = async (data, id, options = {}) => {
   const [rowsAffected] = await Peripheral.update(data, {
     where: { id_periferico: id },
+    ...options,
   });
 
   if (rowsAffected > 0) {
     return getById(id); // <--- Llamada interna actualizada
   }
   return null;
-};
-
-/**
- * Elimina un periférico.
- * @param {number} id - El ID del periférico a eliminar.
- * @returns {Promise<number>} El número de filas eliminadas.
- */
-export const remove = async (id) => {
-  return Peripheral.destroy({
-    where: { id_periferico: id },
-  });
 };

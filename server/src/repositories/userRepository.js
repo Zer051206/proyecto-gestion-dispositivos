@@ -1,18 +1,48 @@
-// src/repositories/userRepository.js
 import db from "../models/index.js";
 const User = db.User;
+const OperationCenter = db.OperationCenter;
 
 /**
- * Busca un usuario por su dirección de correo electrónico.
- * @param {string} correo - El correo del usuario a buscar.
- * @returns {Promise<User|null>} El objeto del usuario si se encuentra, o null.
+ * Busca todos los usuarios. Excluye el hash de la contraseña por seguridad.
+ * @returns {Promise<Array<User>>} Un array de usuarios con su centro de operación.
  */
-export const findByEmail = async (correo) => {
-  return User.findOne({ where: { correo } });
+export const findAll = async () => {
+  return User.findAll({
+    attributes: { exclude: ["contrasena_hash"] },
+    include: [
+      {
+        model: OperationCenter,
+        attributes: ["codigo", "direccion"],
+      },
+    ],
+  });
 };
 
+/**
+ * Busca un usuario por su ID. Excluye el hash de la contraseña.
+ * @param {number} id_usuario - El ID del usuario.
+ * @returns {Promise<User|null>} El objeto del usuario o null si no se encuentra.
+ */
 export const findById = async (id_usuario) => {
-  return User.findOne({ where: { id_usuario: id_usuario } });
+  return User.findByPk(id_usuario, {
+    attributes: { exclude: ["contrasena_hash"] },
+    include: [
+      {
+        model: OperationCenter,
+        attributes: ["codigo", "direccion"],
+      },
+    ],
+  });
+};
+
+/**
+ * Busca un usuario por su correo. Devuelve el hash de la contraseña
+ * porque esta función se usará para el login.
+ * @param {string} correo - El correo del usuario a buscar.
+ * @returns {Promise<User|null>} El objeto del usuario completo o null.
+ */
+export const findByEmail = async (correo, options = {}) => {
+  return User.findOne({ where: { correo } }, options);
 };
 
 /**
@@ -20,16 +50,27 @@ export const findById = async (id_usuario) => {
  * @param {object} userData - Los datos del usuario a crear.
  * @returns {Promise<User>} El objeto del usuario recién creado.
  */
-export const createUser = async (userData) => {
-  return User.create(userData);
+export const create = async (userData, options = {}) => {
+  return User.create(userData, options);
 };
 
 /**
- * Actualiza la fecha del último login de un usuario.
+ * Actualiza un usuario existente.
  * @param {number} id_usuario - El ID del usuario a actualizar.
- * @returns {Promise<[number]>} Un array con el número de filas afectadas.
+ * @param {object} updateData - Los nuevos datos para el usuario.
+ * @returns {Promise<User|null>} El objeto del usuario actualizado o null si no se encontró.
  */
+export const update = async (id_usuario, updateData) => {
+  const [rowsAffected] = await User.update(updateData, {
+    where: { id_usuario },
+  });
+
+  if (rowsAffected > 0) {
+    return findById(id_usuario);
+  }
+  return null;
+};
+
 export const updateLastLogin = async (id_usuario) => {
-  // El primer elemento del array devuelto por update es el número de filas afectadas.
   return User.update({ ultimo_login: new Date() }, { where: { id_usuario } });
 };

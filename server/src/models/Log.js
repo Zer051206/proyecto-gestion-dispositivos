@@ -14,7 +14,6 @@ export default (sequelize) => {
       descripcion: { type: DataTypes.TEXT, allowNull: true },
       ip_usuario: { type: DataTypes.STRING(39), allowNull: false },
       id_usuario: { type: DataTypes.INTEGER, allowNull: true },
-      id_admin: { type: DataTypes.INTEGER, allowNull: true },
     },
     {
       tableName: "logs",
@@ -26,7 +25,6 @@ export default (sequelize) => {
 
   Log.associate = (models) => {
     Log.belongsTo(models.User, { foreignKey: "id_usuario" });
-    Log.belongsTo(models.Admin, { foreignKey: "id_admin" });
   };
   return Log;
 };

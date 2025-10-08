@@ -2,7 +2,7 @@ import React from "react";
 import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 
-const RegisterForm = lazy(() => import("../components/auth/RegisterForm.jsx"));
+const RegisterForm = lazy(() => import("../components/users/CreateUserForm.jsx"));
 const LoginForm = lazy(() => import("../components/auth/LoginForm.jsx"));
 
 export default function AuthRoutes() {
@@ -15,7 +15,6 @@ export default function AuthRoutes() {
       }
     >
       <Routes>
-        <Route path="register" element={<RegisterForm />} />
         <Route path="login" element={<LoginForm />} />
       </Routes>
     </Suspense>

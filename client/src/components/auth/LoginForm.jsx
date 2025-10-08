@@ -20,7 +20,7 @@ export default function LoginForm() {
       <button
         type="button"
         onClick={goBack}
-        className="absolute top-4 right-4 bg-red-600 outline-none hover:bg-red-700 text-text-light font-bold p-2 rounded-lg flex flex-col items-center justify-center transition-colors duration-300 w-20 h-20 shadow-lg"
+        className="absolute top-1 right-2 bg-red-600 outline-none hover:bg-red-700 text-text-light font-bold p-2 rounded-lg flex flex-col items-center justify-center transition-colors duration-300 w-20 h-20 shadow-lg"
       >
         <FontAwesomeIcon icon={faSignOutAlt} className="text-2xl" />
         <span className="text-sm mt-1">Volver</span>
@@ -28,7 +28,7 @@ export default function LoginForm() {
 
       <form
         onSubmit={formik.handleSubmit}
-        className="bg-secondary p-8 rounded-lg shadow-lg shadow-black w-full max-w-sm"
+        className="bg-secondary p-8 rounded-lg shadow-lg mt-[80px] mb-[50px] md:mt-[40px] shadow-black w-full max-w-sm border-2 border-primary"
         noValidate
       >
         <h2 className="text-2xl font-bold mb-6 text-center text-text-main">
@@ -93,15 +93,7 @@ export default function LoginForm() {
           {formik.isSubmitting ? "Entrando..." : "Entrar al Sistema"}
         </button>
 
-        <div className="mt-6 text-center text-sm">
-          <span className="text-gray-600">¿No tienes una cuenta?</span>{" "}
-          <Link
-            to="/auth/register"
-            className="text-primary hover:underline font-semibold"
-          >
-            Solicitar Acceso
-          </Link>
-        </div>
+        <div className="mt-3 text-center text-sm"></div>
       </form>
     </div>
   );

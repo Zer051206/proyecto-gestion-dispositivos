@@ -5,19 +5,21 @@ export default {
   theme: {
     extend: {
       colors: {
-        // --- NOMBRES SEMÁNTICOS ---
-
-        // Paleta 3: Natural y Organizado
-        // Para activarla: comenta las otras y descomenta este bloque.
+        // --- PALETA PRINCIPAL ---
         primary: "#6A994E", // Verde Salvia
-        secondary: "#FFFFFF", // Fondo de tarjetas
+        "primary-dark": "#4F7942", // Verde Bosque (para hover)
+        secondary: "#FFFFFF", // Blanco (para tarjetas)
         accent: "#BC4749", // Terracota
-        "text-main": "#2D3A3A", // Texto principal (Gris Carbón)
-        "text-light": "#FFFFFF", // Texto sobre fondos oscuros
-        background: "#F5F5DC", // Fondo de la página (Lino / Hueso)
+        "accent-secondary": "#D4A017", // Mostaza / Ocre
+        "text-main": "#2D3A3A", // Gris Carbón
+        "text-light": "#FFFFFF",
+        background: "#F5F5DC", // Lino / Hueso
 
-        // --- COLORES DE ESTADO (SEMÁNTICOS) ---
-        // Estos no cambian entre temas.
+        // --- NEUTROS ADICIONALES ---
+        "neutral-taupe": "#8B8589",
+        "neutral-cream": "#FFFFF0",
+
+        // --- COLORES DE ESTADO ---
         success: "#28A745",
         error: "#DC3545",
         warning: "#FFC107",

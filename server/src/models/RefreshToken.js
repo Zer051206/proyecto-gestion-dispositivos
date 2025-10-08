@@ -12,7 +12,7 @@ export default (sequelize) => {
       },
       token: { type: DataTypes.STRING(255), allowNull: false, unique: true },
       expira_en: { type: DataTypes.DATE, allowNull: false },
-      id_admin: { type: DataTypes.INTEGER, allowNull: false },
+      id_usuario: { type: DataTypes.INTEGER, allowNull: false },
     },
     {
       tableName: "refresh_tokens",
@@ -23,8 +23,8 @@ export default (sequelize) => {
   );
 
   RefreshToken.associate = (models) => {
-    RefreshToken.belongsTo(models.Admin, {
-      foreignKey: "id_admin",
+    RefreshToken.belongsTo(models.User, {
+      foreignKey: "id_usuario",
       onDelete: "CASCADE",
     });
   };

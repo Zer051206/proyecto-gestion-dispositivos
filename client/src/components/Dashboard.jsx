@@ -31,18 +31,18 @@ const Sidebar = ({ isOpen, toggleSidebar, navigate }) => {
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
           onClick={toggleSidebar}
         ></div>
       )}
       <div
-        className={`fixed top-0 right-0 h-full w-64 bg-text-main text-text-light z-50 shadow-2xl transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-full w-64 bg-neutral-cream text-neutral-taupe  z-50 shadow-2xl transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
-        } md:hidden`}
+        }`}
       >
         <div className="p-4 flex justify-between items-center border-b border-primary/50">
           <h2 className="text-xl font-bold text-primary">Menú Gestión</h2>
-          <button onClick={toggleSidebar} className="text-text-light">
+          <button onClick={toggleSidebar} className="text-neutral-taupe ">
             <FontAwesomeIcon icon={faTimes} className="text-2xl" />
           </button>
         </div>
@@ -53,17 +53,18 @@ const Sidebar = ({ isOpen, toggleSidebar, navigate }) => {
               navigate("/gestion/personas");
               toggleSidebar();
             }}
-            className="flex items-center w-full p-3 rounded-md font-medium text-gray-300 hover:bg-primary hover:text-white transition-colors"
+            className="flex items-center w-full p-3 rounded-md font-medium hover:bg-primary hover:text-white transition-colors"
           >
             <FontAwesomeIcon icon={faUserCircle} className="mr-3 text-lg" />{" "}
-            Gestión de Personas
+            Gestión
           </button>
+
           <button
             onClick={() => {
               navigate("/gestion/dispositivos");
               toggleSidebar();
             }}
-            className="flex items-center w-full p-3 rounded-md font-medium text-gray-300 hover:bg-primary hover:text-white transition-colors"
+            className="flex items-center w-full p-3 rounded-md font-medium hover:bg-primary hover:text-white transition-colors"
           >
             <FontAwesomeIcon icon={faLaptop} className="mr-3 text-lg" /> Gestión
             de Dispositivos
@@ -105,7 +106,7 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold">
             Bienvenido, {user?.nombre || "Usuario"}
           </h1>
-          <p className="text-gray-500">¿Qué te gustaría hacer hoy?</p>
+          <p className="text-text-main">Rol: {user?.rol || "Desconocido"}</p>
         </div>
 
         {/* Botón de Cerrar Sesión */}
@@ -125,34 +126,42 @@ export default function DashboardPage() {
           <h1 className="text-4xl font-extrabold text-primary md:hidden">
             Bienvenido, {user?.nombre || "Usuario"}
           </h1>
+          <p className="text-text-main md:hidden">
+            Rol: {user?.rol || "Desconocido"}
+          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Acciones Rápidas */}
           <NavButton
             icon={faPlusSquare}
-            text="Nuevo Dispositivo"
-            onClick={() => navigate("/dispositivos/crear")}
+            text="Dispositivos"
+            onClick={() => navigate("/dashboard/dispositivos")}
             colorClass="bg-primary"
           />
-          <NavButton
-            icon={faUserPlus}
-            text="Nueva Persona"
-            onClick={() => navigate("/personas/crear")}
-            colorClass="bg-slate-600 hover:bg-slate-700"
-          />
+
+          {user?.rol === "Admin" && (
+            <NavButton
+              icon={faUserPlus}
+              text="Usuarios"
+              onClick={() => navigate("/usuarios")}
+              colorClass="bg-slate-600 hover:bg-slate-700"
+            />
+          )}
           <NavButton
             icon={faLaptop}
-            text="Ver Dispositivos"
-            onClick={() => navigate("/dispositivos")}
+            text="Centros de operacion"
+            onClick={() => navigate("/centros-operacion")}
             colorClass="bg-slate-500 hover:bg-slate-600"
           />
-          <NavButton
-            icon={faUserCircle}
-            text="Ver Personas"
-            onClick={() => navigate("/personas")}
-            colorClass="bg-slate-500 hover:bg-slate-600"
-          />
+          {user?.rol === "Admin" && (
+            <NavButton
+              icon={faUserCircle}
+              text="Registros"
+              onClick={() => navigate("/registros")}
+              colorClass="bg-slate-500 hover:bg-slate-600"
+            />
+          )}
         </div>
 
         {/* Aquí podrías añadir más secciones del dashboard, como estadísticas, etc. */}

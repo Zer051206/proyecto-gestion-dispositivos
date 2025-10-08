@@ -22,8 +22,7 @@ export const findAll = async () => {
  * @param {number} id - El ID del centro de operación.
  * @returns {Promise<OperationCenter|null>} El objeto del centro de operación o null si no se encuentra.
  */
-export const getById = async (id) => {
-  // <--- Nombre actualizado
+export const findById = async (id) => {
   return OperationCenter.findByPk(id, {
     include: [
       { model: User, attributes: ["id_usuario", "nombre", "apellido"] },
@@ -37,8 +36,7 @@ export const getById = async (id) => {
  * @param {number} codigo - El código del centro de operación.
  * @returns {Promise<OperationCenter|null>} El objeto del centro de operación o null.
  */
-export const getByCode = async (codigo) => {
-  // <--- Nombre actualizado
+export const findByCode = async (codigo) => {
   return OperationCenter.findOne({ where: { codigo } });
 };
 
@@ -47,8 +45,8 @@ export const getByCode = async (codigo) => {
  * @param {object} data - Los datos para el nuevo centro de operación.
  * @returns {Promise<OperationCenter>} El objeto del centro de operación creado.
  */
-export const create = async (data) => {
-  return OperationCenter.create(data);
+export const create = async (data, options = {}) => {
+  return OperationCenter.create(data, options);
 };
 
 /**
@@ -63,7 +61,7 @@ export const update = async (data, id) => {
   });
 
   if (rowsAffected > 0) {
-    return getById(id); // <--- Llamada interna actualizada
+    return findById(id); // <--- Llamada interna actualizada
   }
   return null;
 };

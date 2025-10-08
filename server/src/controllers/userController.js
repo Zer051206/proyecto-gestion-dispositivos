@@ -22,8 +22,9 @@ export const getUserById = async (req, res, next) => {
 
 export const createUser = async (req, res, next) => {
   try {
+    const id_admin = req.admin.id_admin;
     const createValidateData = createUserSchema.parse(req.body);
-    const newUser = await userService.createUser(createValidateData);
+    const newUser = await userService.createUser(createValidateData, id_admin);
     return res.status(201).json(newUser);
   } catch (error) {
     next(error);
@@ -32,8 +33,12 @@ export const createUser = async (req, res, next) => {
 
 export const updateUser = async (req, res, next) => {
   try {
+    const { id_usuario } = req.params;
     const updateValidateData = updateUserSchema.parse(req.body);
-    const updatedUser = await userService.updateUser(updateValidateData);
+    const updatedUser = await userService.updateUser(
+      updateValidateData,
+      id_usuario
+    );
     return res.status(200).json(updatedUser);
   } catch (error) {
     next(error);

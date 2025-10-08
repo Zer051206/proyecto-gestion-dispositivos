@@ -20,7 +20,11 @@ export default (sequelize) => {
       },
       serial_pantalla: { type: DataTypes.STRING(255), allowNull: true },
       equipo_alquilado: { type: DataTypes.BOOLEAN, allowNull: false },
-      estado_equipo: { type: DataTypes.BOOLEAN, allowNull: false },
+      estado_equipo: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true,
+      },
       equipo_etiquetado: { type: DataTypes.BOOLEAN, allowNull: false },
       equipo_etiqueta: { type: DataTypes.STRING(120), allowNull: true },
       activo_fijo: {
@@ -33,14 +37,17 @@ export default (sequelize) => {
         allowNull: true,
         unique: true,
       },
-      id_usuario: { type: DataTypes.INTEGER, allowNull: false },
+      id_usuario_creador: { type: DataTypes.INTEGER, allowNull: false },
       id_centro_operacion: { type: DataTypes.INTEGER, allowNull: false },
     },
     { tableName: "equipos", timestamps: false }
   );
 
   Device.associate = (models) => {
-    Device.belongsTo(models.User, { foreignKey: "id_usuario" });
+    Device.belongsTo(models.User, {
+      as: "Creador",
+      foreignKey: "id_usuario_creador",
+    });
     Device.belongsTo(models.OperationCenter, {
       foreignKey: "id_centro_operacion",
     });

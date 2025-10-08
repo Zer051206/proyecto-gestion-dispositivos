@@ -2,7 +2,7 @@
 import React from "react";
 import { Link, Navigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser, faUserPlus, faLock } from "@fortawesome/free-solid-svg-icons";
+import { faUser, faLock } from "@fortawesome/free-solid-svg-icons";
 import { useAuthStore } from "../stores/authStore.js";
 
 export function WelcomePage() {
@@ -33,26 +33,13 @@ export function WelcomePage() {
         {/* Cajón de Iniciar Sesión (usa color primario) */}
         <Link
           to="/auth/login"
-          className="flex flex-col items-center justify-center p-8 w-48 h-48 bg-primary/10 hover:bg-primary/20 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-primary/50"
+          className="flex flex-col items-center justify-center p-8 w-[250px] h-[200px] bg-primary/10 hover:bg-primary/20 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-primary/50"
         >
           <div className="text-primary mb-2">
             <FontAwesomeIcon icon={faUser} className="w-16 h-16" />
           </div>
           <span className="text-lg font-bold text-text-main">
             Iniciar Sesión
-          </span>
-        </Link>
-
-        {/* Cajón de Registrarse (usa color de acento) */}
-        <Link
-          to="/auth/register"
-          className="flex flex-col items-center justify-center p-8 w-48 h-48 bg-accent/10 hover:bg-accent/20 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-accent/50"
-        >
-          <div className="text-accent mb-2">
-            <FontAwesomeIcon icon={faUserPlus} className="w-16 h-16" />
-          </div>
-          <span className="text-lg font-bold text-text-main">
-            Solicitar Acceso
           </span>
         </Link>
       </div>

@@ -15,9 +15,8 @@ export const findAll = async () => {
  * @param {number} id - El ID del dispositivo.
  * @returns {Promise<Device|null>} El objeto del dispositivo o null si no se encuentra.
  */
-export const getById = async (id) => {
-  // <--- Nombre actualizado
-  return Device.findByPk(id);
+export const findById = async (id_equipo) => {
+  return Device.findByPk(id_equipo);
 };
 
 /**
@@ -25,8 +24,8 @@ export const getById = async (id) => {
  * @param {object} data - Los datos para el nuevo dispositivo.
  * @returns {Promise<Device>} El objeto del dispositivo creado.
  */
-export const create = async (data) => {
-  return Device.create(data);
+export const create = async (data, options = {}) => {
+  return Device.create(data, options);
 };
 
 /**
@@ -35,24 +34,14 @@ export const create = async (data) => {
  * @param {object} data - Los nuevos datos para el dispositivo.
  * @returns {Promise<Device|null>} El objeto del dispositivo actualizado o null.
  */
-export const update = async (data, id) => {
+export const update = async (data, id_equipo, options = {}) => {
   const [rowsAffected] = await Device.update(data, {
-    where: { id_equipo: id },
+    where: { id_equipo: id_equipo },
+    ...options,
   });
 
   if (rowsAffected > 0) {
-    return getById(id); // <--- Llamada interna actualizada
+    return findById(id_equipo);
   }
   return null;
-};
-
-/**
- * Elimina un dispositivo.
- * @param {number} id - El ID del dispositivo a eliminar.
- * @returns {Promise<number>} El número de filas eliminadas.
- */
-export const remove = async (id) => {
-  return Device.destroy({
-    where: { id_equipo: id },
-  });
 };

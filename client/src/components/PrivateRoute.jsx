@@ -33,7 +33,7 @@ const PrivateRoute = ({ children }) => {
 
   // Si no está autenticado, redirige.
   if (!isAuthenticated) {
-    return <Navigate to="/auth/login" replace />;
+    return <Navigate to="/auth-denegado" replace />;
   }
 
   // Si está autenticado, muestra el contenido protegido.

@@ -14,6 +14,11 @@ export default (sequelize) => {
       serial_periferico: { type: DataTypes.STRING(200), allowNull: false },
       periferico_etiquetado: { type: DataTypes.BOOLEAN, allowNull: false },
       etiqueta_periferico: { type: DataTypes.STRING(120), allowNull: true },
+      estado_periferico: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true,
+      },
       activo_fijo: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
@@ -25,19 +30,22 @@ export default (sequelize) => {
         unique: true,
       },
       id_tipo_periferico: { type: DataTypes.INTEGER, allowNull: false },
-      id_usuario: { type: DataTypes.INTEGER, allowNull: false },
+      id_usuario_creador: { type: DataTypes.INTEGER, allowNull: false },
       id_centro_operacion: { type: DataTypes.INTEGER, allowNull: false },
     },
     { tableName: "perifericos", timestamps: false }
   );
 
   Peripheral.associate = (models) => {
-    Peripheral.belongsTo(models.PeripheralType, {
-      foreignKey: "id_tipo_periferico",
+    Peripheral.belongsTo(models.User, {
+      as: "Creador",
+      foreignKey: "id_usuario_creador",
     });
-    Peripheral.belongsTo(models.User, { foreignKey: "id_usuario" });
     Peripheral.belongsTo(models.OperationCenter, {
       foreignKey: "id_centro_operacion",
+    });
+    Peripheral.belongsTo(models.PeripheralType, {
+      foreignKey: "id_tipo_periferico",
     });
     Peripheral.hasOne(models.Baja, { foreignKey: "id_periferico" });
   };
