@@ -29,15 +29,6 @@ export default function CreateUserForm() {
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-background p-4">
       <div className="w-full max-w-4xl">
-        <button
-          type="button"
-          onClick={goBack}
-          className="mb-4 bg-secondary text-text-main font-semibold py-2 px-4 rounded-lg shadow hover:bg-gray-100 transition-colors flex items-center gap-2"
-        >
-          <FontAwesomeIcon icon={faArrowLeft} />
-          Volver
-        </button>
-
         <form
           className="bg-secondary p-8 rounded-lg shadow-xl w-full"
           onSubmit={formik.handleSubmit}

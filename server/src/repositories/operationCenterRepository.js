@@ -17,6 +17,8 @@ export const findAll = async () => {
   });
 };
 
+
+
 /**
  * Busca un centro de operación por su ID.
  * @param {number} id - El ID del centro de operación.

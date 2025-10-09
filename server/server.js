@@ -10,6 +10,7 @@ import catalogueRoutes from "./src/routes/catalogueRoutes.js";
 import deviceRoutes from "./src/routes/deviceRoutes.js";
 import userRoutes from "./src/routes/userRoutes.js";
 import peripheralRoutes from "./src/routes/peripheralRoutes.js";
+import apiRoutes from "./src/routes/apiRoutes.js";
 import operationCenterRoutes from "./src/routes/operationCenterRoutes.js";
 import authMiddleware from "./src/middlewares/authMiddleware.js";
 import errorHandler from "./src/middlewares/errorMiddleware.js";
@@ -55,6 +56,7 @@ app.use("/api", authMiddleware, limiter, [
   userRoutes,
   peripheralRoutes,
   operationCenterRoutes,
+  apiRoutes,
 ]);
 
 app.use(errorHandler);

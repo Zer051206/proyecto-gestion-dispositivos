@@ -45,3 +45,9 @@ export const update = async (data, id_equipo, options = {}) => {
   }
   return null;
 };
+
+export const findByCenterId = async (id_centro_operacion) => {
+  return Device.findAll({
+    where: { id_centro_operacion: id_centro_operacion },
+  });
+};

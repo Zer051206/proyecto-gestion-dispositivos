@@ -48,3 +48,9 @@ export const update = async (data, id, options = {}) => {
   }
   return null;
 };
+
+export const findByCenterId = async (id_centro_operacion) => {
+  return Peripheral.findAll({
+    where: { id_centro_operacion: id_centro_operacion },
+  });
+};

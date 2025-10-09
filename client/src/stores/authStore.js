@@ -51,7 +51,6 @@ export const useAuthStore = create((set, get) => ({
    */
   logout: async () => {
     try {
-      // Opcional: Llama al endpoint de logout del backend para invalidar el refresh token en la BD.
       await api.post("/auth/logout");
     } catch (error) {
       console.error("Error al cerrar sesión en el backend:", error);

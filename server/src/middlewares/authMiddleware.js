@@ -1,5 +1,5 @@
 import { verifyAccessToken } from "../utils/tokenUtils.js";
-import * as userRepository from "../repositories/userRepository.js"; // Ahora usamos el repositorio de usuarios
+import * as userRepository from "../repositories/userRepository.js";
 import {
   InvalidTokenError,
   AccountDisabledError,
@@ -26,7 +26,7 @@ const authMiddleware = async (req, res, next) => {
       );
     }
 
-    // Adjuntamos la información del usuario (incluyendo su rol) a la petición
+    // Adjuntamos la información del usuario a la petición
     req.user = {
       id_usuario: user.id_usuario,
       nombre: user.nombre,
