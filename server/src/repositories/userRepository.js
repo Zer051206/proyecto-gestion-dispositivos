@@ -1,6 +1,7 @@
 import db from "../models/index.js";
 const User = db.User;
 const OperationCenter = db.OperationCenter;
+const IdentificationType = db.IdentificationType;
 
 /**
  * Busca todos los usuarios. Excluye el hash de la contraseña por seguridad.
@@ -14,6 +15,8 @@ export const findAll = async () => {
         model: OperationCenter,
         attributes: ["codigo", "direccion"],
       },
+      { model: IdentificationType, attributes: ["tipo_identificacion"] },
+      { model: User, as: "Creador", attributes: ["nombre"] },
     ],
   });
 };

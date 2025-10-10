@@ -11,6 +11,7 @@ import deviceRoutes from "./src/routes/deviceRoutes.js";
 import userRoutes from "./src/routes/userRoutes.js";
 import peripheralRoutes from "./src/routes/peripheralRoutes.js";
 import apiRoutes from "./src/routes/apiRoutes.js";
+import isAdmin from "./src/middlewares/AdminMiddleware.js";
 import operationCenterRoutes from "./src/routes/operationCenterRoutes.js";
 import authMiddleware from "./src/middlewares/authMiddleware.js";
 import errorHandler from "./src/middlewares/errorMiddleware.js";
@@ -49,15 +50,20 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.set("trust proxy", 1);
 
+// 1. Rutas Públicas (Autenticación y Catálogos)
 app.use("/auth", authRoutes);
-app.use("/api/catalogo", catalogueRoutes);
-app.use("/api", authMiddleware, limiter, [
-  deviceRoutes,
-  userRoutes,
-  peripheralRoutes,
-  operationCenterRoutes,
-  apiRoutes,
-]);
+app.use("/api", catalogueRoutes);
+
+// 2. Rutas Privadas (Requieren estar logueado)
+// Primero, aplicamos el portero general a todo lo que venga después
+app.use("/api", authMiddleware, limiter);
+
+// 3. Sub-sección de Rutas para Admins
+// Después del portero general, aplicamos el guardia VIP 'isAdmin'
+app.use("/api", isAdmin, [userRoutes, operationCenterRoutes]);
+
+// 4. Rutas para Todos los Roles Autenticados (Admins y Encargados)
+app.use("/api", [deviceRoutes, peripheralRoutes, apiRoutes]);
 
 app.use(errorHandler);
 

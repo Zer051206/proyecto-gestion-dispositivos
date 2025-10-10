@@ -8,6 +8,10 @@ import DashboardPage from "../components/Dashboard.jsx";
 import CreateUserForm from "../components/users/CreateUserForm.jsx";
 import Layout from "../components/Layout.jsx";
 import DashboardDevice from "../components/devices/DashboardDevice.jsx";
+import DashboardUser from "../components/users/DashboardUser.jsx";
+import DashboardOperationCenter from "../components/operation-centers/DashboardOperationCenter.jsx";
+import DashboardHistory from "../components/history/DashboardHistory.jsx";
+import AdminRoute from "./AdminRoutes.jsx";
 
 export function AppRoutes() {
   return (
@@ -35,10 +39,17 @@ export function AppRoutes() {
           </PrivateRoute>
         }
       >
-        {/* Todas las rutas que pongas aquí adentro se renderizarán en el <Outlet /> del Layout */}
-        <Route path="/usuarios/crear" element={<CreateUserForm />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/dashboard/dispositivos" element={<DashboardDevice />} />
+        <Route path="/dashboard/historial" element={<DashboardHistory />} />
+
+        <Route element={<AdminRoute />}>
+          <Route path="/dashboard/usuarios" element={<DashboardUser />} />
+          <Route
+            path="/dashboard/centros-operacion"
+            element={<DashboardOperationCenter />}
+          />
+        </Route>
       </Route>
     </Routes>
   );

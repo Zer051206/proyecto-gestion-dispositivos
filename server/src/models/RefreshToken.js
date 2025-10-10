@@ -13,6 +13,11 @@ export default (sequelize) => {
       token: { type: DataTypes.STRING(255), allowNull: false, unique: true },
       expira_en: { type: DataTypes.DATE, allowNull: false },
       id_usuario: { type: DataTypes.INTEGER, allowNull: false },
+      revocado: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
     },
     {
       tableName: "refresh_tokens",

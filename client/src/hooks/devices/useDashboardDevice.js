@@ -11,15 +11,14 @@ export const useDashboardDevice = () => {
 
   // Estados para los filtros
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("todos"); // 'todos', 'activos', 'baja'
+  const [filterStatus, setFilterStatus] = useState("todos");
 
   // Función para obtener los datos, envuelta en useCallback
   const fetchAssets = useCallback(async () => {
     try {
       setIsLoading(true);
-      // El backend ya filtra por rol, aquí solo pedimos los activos
       const response = await api.get("/api/activos");
-      setAssets(response.data);
+      setAssets(response.data.assets || []);
     } catch (err) {
       setError("Error al cargar los activos. Intenta recargar la página.");
       console.error(err);
@@ -37,7 +36,6 @@ export const useDashboardDevice = () => {
   const filteredAssets = useMemo(() => {
     return assets
       .filter((asset) => {
-        // Filtro por estado
         if (filterStatus === "activos")
           return asset.estado_equipo || asset.estado_periferico;
         if (filterStatus === "baja")
@@ -45,7 +43,6 @@ export const useDashboardDevice = () => {
         return true;
       })
       .filter((asset) => {
-        // Filtro por término de búsqueda (en serial o etiqueta)
         const term = searchTerm.toLowerCase();
         const serial = asset.serial || asset.serial_periferico || "";
         const etiqueta =

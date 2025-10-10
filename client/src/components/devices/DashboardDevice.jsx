@@ -15,8 +15,136 @@ import {
   faHdd,
   faMicrochip,
 } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from "react-router-dom";
-import api from "../../config/axios.js";
+
+// Importamos los formularios modales que vamos a renderizar
+import CreateDeviceForm from "./CreateDevicesForm.jsx";
+import CreatePeripheralForm from "./CreatePeripheralsForm.jsx";
+
+// --- SUBCOMPONENTES DE VISTA Y MODALES ---
+const AssetTable = ({ assets, onAction }) => (
+  <div className="overflow-x-auto bg-secondary rounded-lg shadow-md animate-fade-in">
+    <table className="w-full text-left text-text-main">
+      <thead className="bg-gray-100/80">
+        <tr>
+          <th className="p-4 font-semibold">Tipo</th>
+          <th className="p-4 font-semibold">Serial / Etiqueta</th>
+          <th className="p-4 font-semibold hidden md:table-cell">Centro Op.</th>
+          <th className="p-4 font-semibold">Estado</th>
+          <th className="p-4 font-semibold text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {assets.map((asset) => (
+          <tr
+            key={`${asset.type}-${asset.id_equipo || asset.id_periferico}`}
+            className="border-t border-gray-200 hover:bg-gray-50"
+          >
+            <td className="p-4">
+              <FontAwesomeIcon
+                icon={asset.type === "equipo" ? faDesktop : faKeyboard}
+                className="text-lg text-neutral-taupe"
+                title={asset.type}
+              />
+            </td>
+            <td className="p-4">
+              <span className="font-mono">
+                {asset.serial || asset.serial_periferico}
+              </span>
+              <br />
+              <span className="text-xs text-gray-500">
+                {asset.equipo_etiqueta || asset.etiqueta_periferico || ""}
+              </span>
+            </td>
+            <td className="p-4 hidden md:table-cell">
+              {asset.OperationCenter?.codigo || "N/A"}
+            </td>
+            <td className="p-4">
+              <span
+                className={`px-2 py-1 text-xs font-bold rounded-full ${
+                  asset.estado_equipo ?? asset.estado_periferico
+                    ? "bg-success/20 text-success"
+                    : "bg-error/20 text-error"
+                }`}
+              >
+                {asset.estado_equipo ?? asset.estado_periferico
+                  ? "Activo"
+                  : "De Baja"}
+              </span>
+            </td>
+            <td className="p-4 text-center space-x-4">
+              <button
+                onClick={() => onAction("details", asset)}
+                className="text-primary hover:opacity-70"
+                title="Ver Detalles"
+              >
+                <FontAwesomeIcon icon={faEye} />
+              </button>
+              <button
+                onClick={() => onAction("decommission", asset)}
+                className="text-accent hover:opacity-70"
+                title="Dar de Baja"
+              >
+                <FontAwesomeIcon icon={faArrowDown} />
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
+
+const AssetCards = ({ assets, onAction }) => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    {assets.map((asset) => (
+      <div
+        key={`${asset.type}-${asset.id_equipo || asset.id_periferico}`}
+        className="bg-secondary rounded-lg shadow p-4 flex flex-col justify-between animate-fade-in"
+      >
+        <div>
+          <div className="flex justify-between items-start">
+            <span className="font-bold text-lg text-text-main">
+              {asset.equipo_etiqueta ||
+                asset.etiqueta_periferico ||
+                "Sin Etiqueta"}
+            </span>
+            <span
+              className={`px-2 py-1 text-xs font-bold rounded-full ${
+                asset.estado_equipo ?? asset.estado_periferico
+                  ? "bg-success/20 text-success"
+                  : "bg-error/20 text-error"
+              }`}
+            >
+              {asset.estado_equipo ?? asset.estado_periferico
+                ? "Activo"
+                : "De Baja"}
+            </span>
+          </div>
+          <p className="text-sm text-neutral-taupe font-mono">
+            {asset.serial || asset.serial_periferico}
+          </p>
+          <p className="text-sm text-neutral-taupe capitalize">{asset.type}</p>
+        </div>
+        <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end space-x-4">
+          <button
+            onClick={() => onAction("details", asset)}
+            className="text-primary hover:opacity-70"
+            title="Ver Detalles"
+          >
+            <FontAwesomeIcon icon={faEye} />
+          </button>
+          <button
+            onClick={() => onAction("decommission", asset)}
+            className="text-accent hover:opacity-70"
+            title="Dar de Baja"
+          >
+            <FontAwesomeIcon icon={faArrowDown} />
+          </button>
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
 // --- SUBCOMPONENTE: Modal de Confirmación ---
 const ConfirmDecommissionModal = ({
@@ -149,168 +277,44 @@ const AssetDetailModal = ({ asset, onClose }) => {
   );
 };
 
-// --- SUBCOMPONENTE: Tabla de Activos ---
-const AssetTable = ({ assets, onAction }) => (
-  <div className="overflow-x-auto bg-secondary rounded-lg shadow-md animate-fade-in">
-    <table className="w-full text-left text-text-main">
-      <thead className="bg-gray-100">
-        <tr>
-          <th className="p-4 font-semibold">Tipo</th>
-          <th className="p-4 font-semibold">Serial</th>
-          <th className="p-4 font-semibold">Etiqueta</th>
-          <th className="p-4 font-semibold hidden md:table-cell">Centro Op.</th>
-          <th className="p-4 font-semibold">Estado</th>
-          <th className="p-4 font-semibold text-center">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {assets.map((asset) => (
-          <tr
-            key={`${asset.type}-${asset.id_equipo || asset.id_periferico}`}
-            className="border-t border-gray-200 hover:bg-gray-50"
-          >
-            <td className="p-4">
-              <FontAwesomeIcon
-                icon={asset.type === "equipo" ? faDesktop : faKeyboard}
-                className="text-lg text-neutral-taupe"
-                title={asset.type}
-              />
-            </td>
-            <td className="p-4 font-mono">
-              {asset.serial || asset.serial_periferico}
-            </td>
-            <td className="p-4">
-              {asset.equipo_etiqueta || asset.etiqueta_periferico || "N/A"}
-            </td>
-            <td className="p-4 hidden md:table-cell">
-              {asset.OperationCenter?.codigo || "N/A"}
-            </td>
-            <td className="p-4">
-              <span
-                className={`px-2 py-1 text-xs font-bold rounded-full ${
-                  asset.estado_equipo ?? asset.estado_periferico
-                    ? "bg-success/20 text-success"
-                    : "bg-error/20 text-error"
-                }`}
-              >
-                {asset.estado_equipo ?? asset.estado_periferico
-                  ? "Activo"
-                  : "De Baja"}
-              </span>
-            </td>
-            <td className="p-4 text-center space-x-4">
-              <button
-                onClick={() => onAction("details", asset)}
-                className="text-primary hover:opacity-70"
-                title="Ver Detalles"
-              >
-                <FontAwesomeIcon icon={faEye} />
-              </button>
-              <button
-                onClick={() => onAction("decommission", asset)}
-                className="text-accent hover:opacity-70"
-                title="Dar de Baja"
-              >
-                <FontAwesomeIcon icon={faArrowDown} />
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-);
-
-// --- SUBCOMPONENTE: Tarjetas de Activos ---
-const AssetCards = ({ assets, onAction }) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-    {assets.map((asset) => (
-      <div
-        key={`${asset.type}-${asset.id_equipo || asset.id_periferico}`}
-        className="bg-secondary rounded-lg shadow p-4 flex flex-col justify-between animate-fade-in"
-      >
-        <div>
-          <div className="flex justify-between items-start">
-            <span className="font-bold text-lg text-text-main">
-              {asset.equipo_etiqueta ||
-                asset.etiqueta_periferico ||
-                "Sin Etiqueta"}
-            </span>
-            <span
-              className={`px-2 py-1 text-xs font-bold rounded-full ${
-                asset.estado_equipo ?? asset.estado_periferico
-                  ? "bg-success/20 text-success"
-                  : "bg-error/20 text-error"
-              }`}
-            >
-              {asset.estado_equipo ?? asset.estado_periferico
-                ? "Activo"
-                : "De Baja"}
-            </span>
-          </div>
-          <p className="text-sm text-neutral-taupe font-mono">
-            {asset.serial || asset.serial_periferico}
-          </p>
-          <p className="text-sm text-neutral-taupe capitalize">{asset.type}</p>
-        </div>
-        <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end space-x-4">
-          <button
-            onClick={() => onAction("details", asset)}
-            className="text-primary hover:opacity-70"
-            title="Ver Detalles"
-          >
-            <FontAwesomeIcon icon={faEye} />
-          </button>
-          <button
-            onClick={() => onAction("decommission", asset)}
-            className="text-accent hover:opacity-70"
-            title="Dar de Baja"
-          >
-            <FontAwesomeIcon icon={faArrowDown} />
-          </button>
-        </div>
-      </div>
-    ))}
-  </div>
-);
-
 // --- COMPONENTE PRINCIPAL DE LA PÁGINA ---
 export default function DashboardDevice() {
-  const navigate = useNavigate();
   const { user } = useAuthStore();
   const { assets, isLoading, error, refetch, setSearchTerm, setFilterStatus } =
     useDashboardDevice();
 
   const isAdmin = user?.rol === "Admin";
-  const initialView = isAdmin ? "table" : "card";
-  const [viewMode, setViewMode] = useState(initialView);
+  const [viewMode, setViewMode] = useState(isAdmin ? "table" : "card");
 
-  const [detailModalAsset, setDetailModalAsset] = useState(null);
-  const [decommissionModalAsset, setDecommissionModalAsset] = useState(null);
-  const [isDecommissioning, setIsDecommissioning] = useState(false);
+  // 1. Un solo estado para manejar todos los modales
+  const [modal, setModal] = useState({ type: null, data: null }); // type: 'createDevice', 'createPeripheral', 'details', 'decommission'
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleDecommissionConfirm = async () => {
-    if (!decommissionModalAsset) return;
-    setIsDecommissioning(true);
+    if (modal.type !== "decommission") return;
+    setIsSubmitting(true);
     try {
-      const assetId =
-        decommissionModalAsset.id_equipo ||
-        decommissionModalAsset.id_periferico;
-      const assetType = decommissionModalAsset.type;
-      await api.patch(`/api/${assetType}/${assetId}/decommission`);
-      setDecommissionModalAsset(null);
+      const asset = modal.data;
+      const assetId = asset.id_equipo || asset.id_periferico;
+      await api.patch(`/api/${asset.type}s/${assetId}/decommission`);
+      setModal({ type: null, data: null });
       refetch();
     } catch (err) {
       console.error("Error al dar de baja el activo", err);
       // Aquí se podría mostrar un toast de error al usuario
     } finally {
-      setIsDecommissioning(false);
+      setIsSubmitting(false);
     }
   };
-
-  const handleAction = (type, asset) => {
-    if (type === "details") setDetailModalAsset(asset);
-    if (type === "decommission") setDecommissionModalAsset(asset);
+  // Función genérica para abrir cualquier modal
+  const handleAction = (type, asset = null) => setModal({ type, data: asset });
+  // Función para cerrar todos los modales
+  const closeModal = () => setModal({ type: null, data: null });
+  // Función de éxito que recarga los datos y cierra el modal
+  const handleSuccess = (successMessage) => {
+    console.log(successMessage); // Opcional: mostrar un toast de éxito
+    refetch();
+    closeModal();
   };
 
   if (isLoading)
@@ -319,12 +323,7 @@ export default function DashboardDevice() {
         Cargando activos...
       </div>
     );
-  if (error)
-    return (
-      <div className="text-center flex justify-center items-center w-full p-10 text-error font-semibold">
-        {error}
-      </div>
-    );
+  
 
   return (
     <div className="w-full">
@@ -333,15 +332,16 @@ export default function DashboardDevice() {
           Gestión de Activos
         </h1>
         <div className="flex items-center gap-2 md:gap-4">
+          {/* 2. Los botones ahora llaman a handleAction para abrir el modal correcto */}
           <button
-            onClick={() => navigate("/equipos/crear")}
+            onClick={() => handleAction("createDevice")}
             className="bg-primary text-text-light font-semibold py-2 px-3 rounded-lg flex items-center gap-2 hover:bg-primary-dark transition-colors text-sm"
           >
             <FontAwesomeIcon icon={faDesktop} />{" "}
             <span className="hidden sm:inline">Nuevo Equipo</span>
           </button>
           <button
-            onClick={() => navigate("/perifericos/crear")}
+            onClick={() => handleAction("createPeripheral")}
             className="bg-accent-secondary text-text-light font-semibold py-2 px-3 rounded-lg flex items-center gap-2 hover:bg-yellow-600 transition-colors text-sm"
           >
             <FontAwesomeIcon icon={faKeyboard} />{" "}
@@ -393,34 +393,32 @@ export default function DashboardDevice() {
         </select>
       </div>
 
-      {assets.length === 0 && (
+      {assets.length === 0 ? (
         <div className="text-center w-full p-10 text-neutral-taupe">
           No hay activos que coincidan con tu búsqueda.
         </div>
+      ) : viewMode === "table" && isAdmin ? (
+        <AssetTable assets={assets} onAction={handleAction} />
+      ) : (
+        <AssetCards assets={assets} onAction={handleAction} />
       )}
 
-      {assets.length > 0 && (
-        <>
-          {viewMode === "table" && isAdmin ? (
-            <AssetTable assets={assets} onAction={handleAction} />
-          ) : (
-            <AssetCards assets={assets} onAction={handleAction} />
-          )}
-        </>
+      {/* --- 3. RENDERIZADO CONDICIONAL DE TODOS LOS MODALES --- */}
+      {modal.type === "createDevice" && (
+        <CreateDeviceForm onClose={closeModal} onSuccess={handleSuccess} />
       )}
-
-      {detailModalAsset && (
-        <AssetDetailModal
-          asset={detailModalAsset}
-          onClose={() => setDetailModalAsset(null)}
-        />
+      {modal.type === "createPeripheral" && (
+        <CreatePeripheralForm onClose={closeModal} onSuccess={handleSuccess} />
       )}
-      {decommissionModalAsset && (
+      {modal.type === "details" && (
+        <AssetDetailModal asset={modal.data} onClose={closeModal} />
+      )}
+      {modal.type === "decommission" && (
         <ConfirmDecommissionModal
-          asset={decommissionModalAsset}
-          onCancel={() => setDecommissionModalAsset(null)}
+          asset={modal.data}
+          onCancel={closeModal}
           onConfirm={handleDecommissionConfirm}
-          isSubmitting={isDecommissioning}
+          isSubmitting={isSubmitting}
         />
       )}
     </div>

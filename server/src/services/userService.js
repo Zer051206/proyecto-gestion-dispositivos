@@ -15,8 +15,8 @@ import {
 
 // --- Funciones de Autenticación ---
 
-export const loginUser = async (validatedData) => {
-  const { correo, password } = validatedData;
+export const loginUser = async (usersData) => {
+  const { correo, password } = usersData;
   const userDb = await userRepository.findByEmail(correo);
 
   if (!userDb) {
@@ -79,37 +79,43 @@ export const logoutUser = async (refreshToken) => {
 
 // --- Funciones de Gestión de Usuarios (CRUD) ---
 
-export const createUser = async (validatedData, creatorId, ipAddress) => {
+export const createUser = async (usersData, id_usuario, ipAddress) => {
   return db.sequelize.transaction(async (t) => {
-    const { correo, password, ...restOfData } = validatedData;
+    const { correo, password } = usersData;
 
-    const userDb = await userRepository.findByEmail(correo, { transaction: t });
-    if (userDb) {
-      throw new UserAlreadyExistsError("El correo ya está en uso.");
-    }
+    const creationPromises = usersData.map(async (userData) => {
+      const userDb = await userRepository.findByEmail(correo, {
+        transaction: t,
+      });
+      if (userDb) {
+        throw new UserAlreadyExistsError("El correo ya está en uso.");
+      }
 
-    const contrasena_hash = await bcrypt.hash(password, 10);
-    const userForDb = {
-      ...restOfData,
-      correo,
-      contrasena_hash,
-      id_creador: creatorId,
-    };
-    const newUser = await userRepository.create(userForDb, {
-      transaction: t,
+      const contrasena_hash = await bcrypt.hash(password, 10);
+      const userForDb = {
+        ...userData,
+        contrasena_hash: contrasena_hash,
+        id_creador: id_usuario,
+      };
+
+      const newUser = await userRepository.create(userForDb, {
+        transaction: t,
+      });
+
+      await logRepository.create(
+        {
+          accion: "CREAR_USUARIO",
+          id_usuario: id_usuario,
+          descripcion: `El Admin (ID: ${id_usuario}) creó al usuario '${newUser.correo}' (ID: ${newUser.id_usuario}).`,
+          ip_usuario: ipAddress,
+        },
+        { transaction: t }
+      );
+      return newUser;
     });
+    const createdUsers = await Promise.all(creationPromises);
 
-    await logRepository.create(
-      {
-        accion: "CREAR_USUARIO",
-        id_usuario: creatorId,
-        descripcion: `El Admin (ID: ${creatorId}) creó al usuario '${newUser.correo}' (ID: ${newUser.id_usuario}).`,
-        ip_usuario: ipAddress,
-      },
-      { transaction: t }
-    );
-
-    return newUser;
+    return createdUsers;
   });
 };
 

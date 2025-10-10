@@ -1,7 +1,7 @@
 // src/schemas/peripheralSchema.js
 import { z } from "zod";
 
-export const createPeripheralSchema = z.object({
+export const peripheralObjectSchema = z.object({
   id_tipo_periferico: z.coerce
     .number({ required_error: "El tipo de periférico es obligatorio." })
     .int()
@@ -34,4 +34,8 @@ export const createPeripheralSchema = z.object({
   codigo_activo_fijo: z.string().max(80).optional().nullable(),
 });
 
-export const updatePeripheralSchema = createPeripheralSchema.partial();
+export const createPeripheralSchema = z
+  .array(peripheralObjectSchema)
+  .min(1, "Debes agregar al menos un periferico");
+
+export const updatePeripheralSchema = peripheralObjectSchema.partial();

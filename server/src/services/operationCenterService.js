@@ -25,49 +25,51 @@ export const fetchOperationCenterById = async (id_centro_operacion) => {
 };
 
 export const createOperationCenter = async (
-  createValidateData,
+  operationCentersData,
   ip_usuario,
   id_usuario
 ) => {
   return db.sequelize.transaction(async (t) => {
-    const { codigo } = createValidateData;
-    const operationCenterDb = await operationCenterRepository.findByCode(
-      codigo,
-      { transaction: t }
+    const creationPromises = operationCentersData.map(
+      async (operationCenterData) => {
+        const { codigo } = operationCenterData;
+
+        const operationCenterDb = await operationCenterRepository.findByCode(
+          codigo,
+          { transaction: t }
+        );
+
+        if (operationCenterDb) {
+          throw new AlreadyExistsError(
+            "Ya existe un centro de operaciones con el mismo código"
+          );
+        }
+        const opCenterData = {
+          ...operationCenterData,
+          id_admin_creador: id_usuario,
+        };
+
+        const newOperationCenter = await operationCenterRepository.create(
+          opCenterData,
+          { transaction: t }
+        );
+
+        await logRepository.create(
+          {
+            accion: "CREAR_CENTRO_OPERACION",
+            ip_usuario: ip_usuario,
+            descripcion: `Se creó el equipo con codigo '${newOperationCenter.codigo}' (ID: ${newOperationCenter.id_centro_operacion}).`,
+            id_usuario: id_usuario,
+          },
+          { transaction: t }
+        );
+
+        return newOperationCenter;
+      }
     );
+    const createdOperationCenters = await Promise.all(creationPromises);
 
-    if (operationCenterDb) {
-      throw new AlreadyExistsError(
-        "Ya existe un centro de operaciones con el mismo código"
-      );
-    }
-
-    const operationCenterData = {
-      ...createValidateData,
-      id_usuario: id_usuario,
-    };
-
-    const newOperationCenter = await operationCenterRepository.create(
-      operationCenterData,
-      { transaction: t }
-    );
-
-    await logRepository.create(
-      {
-        accion: "CREAR_CENTRO_OPERACION",
-        ip_usuario: ip_usuario,
-        descripcion: `Se creó el equipo con serial '${newOperationCenter.serial}' (ID: ${newOperationCenter.id_centro_operacion}).`,
-        id_usuario: id_usuario,
-      },
-      { transaction: t }
-    );
-
-    return {
-      message: "Centro de operación registrado exitosamente.",
-      operationCenter: {
-        id: newOperationCenter.id_centro_operacion,
-      },
-    };
+    return createdOperationCenters;
   });
 };
 
@@ -105,7 +107,7 @@ export const closeOperationCenter = async (
     await logRepository.create({
       accion: "CERRAR_CENTRO_OPERACION",
       id_usuaio: id_usuario,
-      descripcion: `Se dio de baja al equipo '${operationCenterDb.serial}' (ID: ${id_centro_operacion}).`,
+      descripcion: `Se dio de baja al equipo '${operationCenterDb.codigo}' (ID: ${id_centro_operacion}).`,
       ip_usuario: ip_usuario,
     });
 

@@ -47,7 +47,7 @@ export default (sequelize) => {
     Peripheral.belongsTo(models.PeripheralType, {
       foreignKey: "id_tipo_periferico",
     });
-    Peripheral.hasOne(models.Baja, { foreignKey: "id_periferico" });
+    Peripheral.hasOne(models.Decomission, { foreignKey: "id_periferico" });
   };
   return Peripheral;
 };

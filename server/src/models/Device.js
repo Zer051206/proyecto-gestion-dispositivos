@@ -51,7 +51,7 @@ export default (sequelize) => {
     Device.belongsTo(models.OperationCenter, {
       foreignKey: "id_centro_operacion",
     });
-    Device.hasOne(models.Baja, { foreignKey: "id_equipo" });
+    Device.hasOne(models.Decomission, { foreignKey: "id_equipo" });
   };
   return Device;
 };

@@ -4,10 +4,6 @@ import * as operationCenterController from "../controllers/operationCenterContro
 const router = Router();
 
 router.get(
-  "/centros-operacion",
-  operationCenterController.getAllOperationCenters
-);
-router.get(
   "/centros-operacion/:id",
   operationCenterController.getOperationCenterById
 );

@@ -6,7 +6,7 @@ const RoleEnum = z.enum(["Admin", "Encargado"], {
   }),
 });
 
-export const createUserSchema = z.object({
+export const userObjectSchema = z.object({
   nombre: z.string().trim().min(2, "El nombre es obligatorio."),
   apellido: z
     .string()
@@ -37,4 +37,8 @@ export const loginSchema = z.object({
   password: z.string().min(1, "La contraseña no puede estar vacía."),
 });
 
-export const updateUserSchema = createUserSchema.partial();
+export const createUserSchema = z
+  .array(userObjectSchema)
+  .min(1, "Debes agregar al menos un usuario");
+
+export const updateUserSchema = userObjectSchema.partial();

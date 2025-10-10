@@ -11,6 +11,7 @@ import {
   faBars,
   faTimes,
   faArrowLeft,
+  faHouse,
 } from "@fortawesome/free-solid-svg-icons";
 import { useAuthStore } from "../stores/authStore.js";
 
@@ -22,7 +23,7 @@ const Header = ({ user, logout, toggleSidebar }) => {
   const isSubPage = location.pathname !== "/dashboard";
 
   return (
-    <header className="py-4 flex justify-between items-center border-b border-neutral-taupe/20">
+    <header className="py-4 flex justify-between w-full items-center border-b border-neutral-taupe/20">
       <div className="">
         {user?.rol === "Admin" && (
           <button
@@ -35,12 +36,27 @@ const Header = ({ user, logout, toggleSidebar }) => {
           </button>
         )}
       </div>
+      {user?.rol === "Encargado" && !isSubPage && (
+        <div className="text-left font-semibold fixed t-0">
+          <h2 className="text-primary">
+            Bienvenido, {user?.nombre || "Usuario"}
+          </h2>
+          <p className="text-neutral-taupe">Rol: {user?.rol}</p>
+        </div>
+      )}
+
+      {user.rol === "Encargado" && isSubPage && (
+        <div className="text-left fixed t-0 justify-items-start font-semibold">
+          <h2 className="text-primary">Nombre: {user?.nombre || "Usuario"}</h2>
+          <p className="text-neutral-taupe">Rol: {user?.rol}</p>
+        </div>
+      )}
+
       {isSubPage && (
-        // Si es una subpágina, mostramos el botón de "Volver"
         <div className="justify-items-center flex">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 ml-16 text-text-main font-semibold hover:text-primary transition-colors"
+            className="flex items-center gap-2 md:ml-8 text-text-main font-semibold hover:text-primary transition-colors"
           >
             <FontAwesomeIcon icon={faArrowLeft} />
             <span>Volver</span>
@@ -99,14 +115,12 @@ const Sidebar = ({ isOpen, toggleSidebar, navigate, user }) => {
         </div>
         <hr className="border-primary/20 mx-4" />
         <nav className="p-4 space-y-2">
-          {/* Opciones del Sidebar ahora son condicionales y usan un subcomponente */}
-          {
-            <NavLink
-              icon={faUsersCog}
-              text="Gestión de Usuarios"
-              path="/dashboard/usuarios"
-            />
-          }
+          <NavLink icon={faHouse} text="Página de Inicio" path="/dashboard" />
+          <NavLink
+            icon={faUsersCog}
+            text="Gestión de Usuarios"
+            path="/dashboard/usuarios"
+          />
           <NavLink
             icon={faDesktop}
             text="Gestión de Dispositivos"

@@ -51,7 +51,10 @@ export const useAuthStore = create((set, get) => ({
    */
   logout: async () => {
     try {
-      await api.post("/auth/logout");
+      const refreshToken = localStorage.getItem("refresToken");
+      if (refreshToken) {
+        await api.post("/auth/logout", { refreshToken });
+      }
     } catch (error) {
       console.error("Error al cerrar sesión en el backend:", error);
     } finally {

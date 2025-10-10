@@ -1,9 +1,9 @@
-// src/models/Baja.js
+// src/models/Decomission.js
 import { DataTypes } from "sequelize";
 
 export default (sequelize) => {
-  const Baja = sequelize.define(
-    "Baja",
+  const Decomission = sequelize.define(
+    "Decomission",
     {
       id_baja: {
         type: DataTypes.INTEGER,
@@ -22,10 +22,10 @@ export default (sequelize) => {
     { tableName: "bajas", timestamps: false }
   );
 
-  Baja.associate = (models) => {
-    Baja.belongsTo(models.User, { foreignKey: "id_usuario" });
-    Baja.belongsTo(models.Device, { foreignKey: "id_equipo" });
-    Baja.belongsTo(models.Peripheral, { foreignKey: "id_periferico" });
+  Decomission.associate = (models) => {
+    Decomission.belongsTo(models.User, { foreignKey: "id_usuario" });
+    Decomission.belongsTo(models.Device, { foreignKey: "id_equipo" });
+    Decomission.belongsTo(models.Peripheral, { foreignKey: "id_periferico" });
   };
-  return Baja;
+  return Decomission;
 };

@@ -1,7 +1,7 @@
 // src/schemas/operationCenterSchema.js
 import { z } from "zod";
 
-export const createOperationCenterSchema = z.object({
+export const operationCenterObjectSchema = z.object({
   codigo: z.coerce
     .number({ required_error: "El código es obligatorio." })
     .int()
@@ -18,11 +18,19 @@ export const createOperationCenterSchema = z.object({
     .min(5, "La dirección debe tener al menos 5 caracteres.")
     .max(150),
 
+  telefono: z.coerce
+    .string({ required_error: "El telefono es obligatorio." })
+    .trim()
+    .min(9, "El teleono no es válido")
+    .max(15, "El telefono no es válido."),
+
   correo: z
     .string({ required_error: "El correo es obligatorio." })
     .email("El formato del correo no es válido.")
     .max(150),
 });
 
+export const createOperationCenterSchema = z.array(operationCenterObjectSchema);
+
 export const updateOperationCenterSchema =
-  createOperationCenterSchema.partial();
+  operationCenterObjectSchema.partial();

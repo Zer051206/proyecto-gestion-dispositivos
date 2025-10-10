@@ -20,30 +20,37 @@ export const getPeripheralById = async (id_periferico) => {
 };
 
 export const createPeripheral = async (
-  createValidateData,
+  peripheralsData,
   ip_usuario,
   id_usuario
 ) => {
   return db.sequelize.transaction(async (t) => {
-    const peripheralData = {
-      ...createValidateData,
-      id_usuario_creador: id_usuario,
-    };
-    const newPeripheral = await peripheralRepository.create(peripheralData, {
-      transaction: t,
+    const creationPromises = peripheralsData.map(async (peripheralData) => {
+      const peripheralForDb = {
+        ...peripheralData,
+        id_usuario_creador: id_usuario,
+      };
+
+      const newPeripheral = await peripheralRepository.create(peripheralForDb, {
+        transaction: t,
+      });
+
+      await logRepository.create(
+        {
+          accion: "CREAR_PERIFERICO",
+          ip_usuario: ip_usuario,
+          descripcion: `Se creó el equipo con serial '${newPeripheral.serial}' (ID: ${newPeripheral.id_periferico}).`,
+          id_usuario: id_usuario,
+        },
+        { transaction: t }
+      );
+
+      return newPeripheral;
     });
 
-    await logRepository.create(
-      {
-        accion: "CREAR_PERIFERICO",
-        ip_usuario: ip_usuario,
-        descripcion: `Se creó el equipo con serial '${newPeripheral.serial}' (ID: ${newPeripheral.id_periferico}).`,
-        id_usuario: id_usuario,
-      },
-      { transaction: t }
-    );
+    const createdPeripherals = Promise.all(creationPromises);
 
-    return newPeripheral;
+    return createdPeripherals;
   });
 };
 

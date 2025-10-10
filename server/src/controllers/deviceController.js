@@ -28,7 +28,7 @@ export const createDevice = async (req, res, next) => {
     const ip_usuario = req.ip;
     const id_usuario = req.user.id_usuario;
     const createValidateData = createDeviceSchema.parse(req.body);
-    const newDevice = await deviceService.createDevice(
+    const newDevices = await deviceService.createDevice(
       createValidateData,
       id_usuario,
       ip_usuario
@@ -36,7 +36,7 @@ export const createDevice = async (req, res, next) => {
     return res.status(201).json({
       message: "Equipo registrado exitosamente.",
       success: true,
-      device: newDevice,
+      devices: newDevices,
     });
   } catch (error) {
     next(error);

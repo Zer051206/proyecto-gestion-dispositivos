@@ -18,6 +18,10 @@ export default (sequelize) => {
         allowNull: false,
         validate: { isEmail: true },
       },
+      telefono: {
+        type: DataTypes.STRING(20),
+        allowNull: false,
+      },
       activo: {
         type: DataTypes.BOOLEAN,
         allowNull: false,

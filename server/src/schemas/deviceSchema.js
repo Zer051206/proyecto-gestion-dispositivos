@@ -1,7 +1,7 @@
 // src/schemas/deviceSchema.js
 import { z } from "zod";
 
-export const createDeviceSchema = z.object({
+export const deviceObjectSchema = z.object({
   id_centro_operacion: z.coerce
     .number({ required_error: "El centro de operación es obligatorio." })
     .int()
@@ -38,4 +38,8 @@ export const createDeviceSchema = z.object({
   codigo_activo_fijo: z.string().max(80).optional().nullable(),
 });
 
-export const updateDeviceSchema = createDeviceSchema.partial();
+export const createDeviceSchema = z
+  .array(deviceObjectSchema)
+  .min(1, "Debes agregar al menos un equipo");
+
+export const updateDeviceSchema = deviceObjectSchema.partial();
