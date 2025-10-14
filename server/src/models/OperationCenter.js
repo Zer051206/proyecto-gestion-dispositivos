@@ -10,7 +10,7 @@ export default (sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      codigo: { type: DataTypes.INTEGER, allowNull: false, unique: true },
+      codigo: { type: DataTypes.STRING(10), allowNull: false, unique: true },
       id_ciudad: { type: DataTypes.INTEGER, allowNull: false },
       direccion: { type: DataTypes.STRING(150), allowNull: false },
       correo: {
@@ -38,7 +38,10 @@ export default (sequelize) => {
       foreignKey: "id_admin_creador",
     });
     OperationCenter.belongsTo(models.City, { foreignKey: "id_ciudad" });
-    OperationCenter.hasMany(models.User, { foreignKey: "id_centro_operacion" });
+    OperationCenter.hasMany(models.User, {
+      as: "EncargadosAsignados",
+      foreignKey: "id_centro_operacion",
+    });
     OperationCenter.hasMany(models.Device, {
       foreignKey: "id_centro_operacion",
     });

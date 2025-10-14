@@ -6,6 +6,10 @@ import {
 import { FormikProvider, FieldArray, getIn } from "formik";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash, faTimes } from "@fortawesome/free-solid-svg-icons";
+import {
+  handleKeyNumberDown,
+  handleKeyTextDown,
+} from "../../utils/inputUtilities.js";
 import api from "../../config/axios.js";
 import { usePasswordToggle } from "../../hooks/utils/usePasswordToggle.js";
 
@@ -56,6 +60,8 @@ const UserSubForm = ({
           <span className="text-text-main font-semibold">Nombre:</span>
           <input
             type="text"
+            autoComplete="off"
+            onKeyDown={handleKeyTextDown}
             className={inputClasses}
             {...formik.getFieldProps(`users[${index}].nombre`)}
           />
@@ -67,6 +73,8 @@ const UserSubForm = ({
           <span className="text-text-main font-semibold">Apellido:</span>
           <input
             type="text"
+            autoComplete="off"
+            onKeyDown={handleKeyTextDown}
             className={inputClasses}
             {...formik.getFieldProps(`users[${index}].apellido`)}
           />
@@ -80,6 +88,7 @@ const UserSubForm = ({
           <span className="text-text-main font-semibold">Correo:</span>
           <input
             type="email"
+            autoComplete="off"
             className={inputClasses}
             {...formik.getFieldProps(`users[${index}].correo`)}
           />
@@ -94,7 +103,7 @@ const UserSubForm = ({
             {...formik.getFieldProps(`users[${index}].id_tipo_identificacion`)}
             disabled={isLoadingCatalogs}
           >
-            <option value="">
+            <option value="" hidden>
               {isLoadingCatalogs ? "Cargando..." : "Selecciona..."}
             </option>
             {catalogos.tiposIdentificacion.map((t) => (
@@ -116,6 +125,8 @@ const UserSubForm = ({
           <span className="text-text-main font-semibold">Identificación:</span>
           <input
             type="text"
+            autoComplete="off"
+            onKeyDown={handleKeyNumberDown}
             className={inputClasses}
             {...formik.getFieldProps(`users[${index}].identificacion`)}
           />
@@ -128,7 +139,9 @@ const UserSubForm = ({
         <label className="block">
           <span className="text-text-main font-semibold">Teléfono:</span>
           <input
-            type="tel"
+            type="number"
+            autoComplete="off"
+            onKeyDown={handleKeyNumberDown}
             className={inputClasses}
             {...formik.getFieldProps(`users[${index}].telefono`)}
           />
@@ -145,6 +158,7 @@ const UserSubForm = ({
             <span className="text-text-main font-semibold">Contraseña:</span>
             <input
               type={inputType}
+              autoComplete="off"
               className={`${inputClasses} pr-10`}
               {...formik.getFieldProps(`users[${index}].password`)}
             />
@@ -169,6 +183,7 @@ const UserSubForm = ({
             </span>
             <input
               type={inputTypeConfirm}
+              autoComplete="off"
               className={`${inputClasses} pr-10`}
               {...formik.getFieldProps(`users[${index}].confirmPassword`)}
             />
@@ -211,7 +226,7 @@ const UserSubForm = ({
               {...formik.getFieldProps(`users[${index}].id_centro_operacion`)}
               disabled={isLoadingCatalogs}
             >
-              <option value="">
+              <option value="" hidden>
                 {isLoadingCatalogs ? "Cargando..." : "Selecciona..."}
               </option>
               {catalogos.centrosOperacion.map((c) => (
@@ -250,11 +265,11 @@ export default function CreateUserForm({ onClose, onSuccess }) {
       try {
         const [tiposIdRes, centrosOpRes] = await Promise.all([
           api.get("/api/catalogo/tipos-identificacion"),
-          api.get("/api/catalogo/centros-operacion"),
+          api.get("/api/centros-operacion"),
         ]);
         setCatalogos({
-          tiposIdentificacion: tiposIdRes.data,
-          centrosOperacion: centrosOpRes.data,
+          tiposIdentificacion: tiposIdRes.data.identificationTypes || [],
+          centrosOperacion: centrosOpRes.data.operationCenters || [],
         });
       } catch (error) {
         formik.setFieldError(

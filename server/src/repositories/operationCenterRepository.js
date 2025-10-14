@@ -11,13 +11,15 @@ const City = db.City;
 export const findAll = async () => {
   return OperationCenter.findAll({
     include: [
-      { model: User, attributes: ["id_usuario", "nombre", "apellido"] },
+      {
+        model: User,
+        as: "AdminCreador",
+        attributes: ["id_usuario", "nombre", "apellido"],
+      },
       { model: City, attributes: ["id_ciudad", "nombre_ciudad"] },
     ],
   });
 };
-
-
 
 /**
  * Busca un centro de operación por su ID.
@@ -27,7 +29,11 @@ export const findAll = async () => {
 export const findById = async (id) => {
   return OperationCenter.findByPk(id, {
     include: [
-      { model: User, attributes: ["id_usuario", "nombre", "apellido"] },
+      {
+        model: User,
+        as: "AdminCreador",
+        attributes: ["id_usuario", "nombre", "apellido"],
+      },
       { model: City, attributes: ["id_ciudad", "nombre_ciudad"] },
     ],
   });
@@ -57,24 +63,14 @@ export const create = async (data, options = {}) => {
  * @param {object} data - Los nuevos datos para el centro de operación.
  * @returns {Promise<OperationCenter|null>} El objeto del centro de operación actualizado o null.
  */
-export const update = async (data, id) => {
+export const update = async (id, data, options = {}) => {
   const [rowsAffected] = await OperationCenter.update(data, {
     where: { id_centro_operacion: id },
+    ...options,
   });
 
   if (rowsAffected > 0) {
-    return findById(id); // <--- Llamada interna actualizada
+    return findById(id);
   }
   return null;
-};
-
-/**
- * Elimina un centro de operación.
- * @param {number} id - El ID del centro de operación a eliminar.
- * @returns {Promise<number>} El número de filas eliminadas.
- */
-export const remove = async (id) => {
-  return OperationCenter.destroy({
-    where: { id_centro_operacion: id },
-  });
 };

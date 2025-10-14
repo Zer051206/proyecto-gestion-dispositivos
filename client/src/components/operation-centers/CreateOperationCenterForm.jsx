@@ -6,6 +6,11 @@ import {
 import { FormikProvider, FieldArray, getIn } from "formik";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash, faTimes } from "@fortawesome/free-solid-svg-icons";
+import {
+  handleAddressKeyDown,
+  handleKeyTextDown,
+  handleKeyNumberDown,
+} from "../../utils/inputUtilities.js";
 import api from "../../config/axios.js";
 
 // --- Subcomponente para cada fila del formulario dinámico ---
@@ -45,7 +50,9 @@ const CenterSubForm = ({
         <label className="block">
           <span className="text-text-main font-semibold">Código:</span>
           <input
-            type="number"
+            type="text"
+            autoComplete="off"
+            onKeyDown={handleKeyNumberDown}
             className={inputClasses}
             {...formik.getFieldProps(`centers[${index}].codigo`)}
           />
@@ -79,6 +86,8 @@ const CenterSubForm = ({
           <span className="text-text-main font-semibold">Dirección:</span>
           <input
             type="text"
+            autoComplete="off"
+            onKeyDown={handleAddressKeyDown}
             className={inputClasses}
             {...formik.getFieldProps(`centers[${index}].direccion`)}
           />
@@ -92,6 +101,7 @@ const CenterSubForm = ({
           <span className="text-text-main font-semibold">Correo:</span>
           <input
             type="email"
+            autoComplete="off"
             className={inputClasses}
             {...formik.getFieldProps(`centers[${index}].correo`)}
           />
@@ -103,6 +113,8 @@ const CenterSubForm = ({
           <span className="text-text-main font-semibold">Teléfono:</span>
           <input
             type="tel"
+            autoComplete="off"
+            onKeyDown={handleKeyNumberDown}
             className={inputClasses}
             {...formik.getFieldProps(`centers[${index}].telefono`)}
           />
@@ -127,7 +139,7 @@ export default function CreateOperationCenterForm({ onClose, onSuccess }) {
     const fetchCatalogs = async () => {
       try {
         const response = await api.get("/api/catalogo/ciudades");
-        setCiudades(response.data);
+        setCiudades(response.data.cities || []);
       } catch (error) {
         formik.setFieldError("apiError", "Error al cargar las ciudades.");
       } finally {

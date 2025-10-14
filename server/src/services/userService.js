@@ -11,6 +11,7 @@ import {
   NotFoundError,
   InvalidTokenError,
   AccountDisabledError,
+  AlreadyDesactivated,
 } from "../utils/customErrors.js";
 
 // --- Funciones de Autenticación ---
@@ -79,11 +80,10 @@ export const logoutUser = async (refreshToken) => {
 
 // --- Funciones de Gestión de Usuarios (CRUD) ---
 
-export const createUser = async (usersData, id_usuario, ipAddress) => {
+export const createUser = async (id_usuario, usersData, ip_usuario) => {
   return db.sequelize.transaction(async (t) => {
-    const { correo, password } = usersData;
-
     const creationPromises = usersData.map(async (userData) => {
+      const { correo, password } = userData;
       const userDb = await userRepository.findByEmail(correo, {
         transaction: t,
       });
@@ -107,7 +107,7 @@ export const createUser = async (usersData, id_usuario, ipAddress) => {
           accion: "CREAR_USUARIO",
           id_usuario: id_usuario,
           descripcion: `El Admin (ID: ${id_usuario}) creó al usuario '${newUser.correo}' (ID: ${newUser.id_usuario}).`,
-          ip_usuario: ipAddress,
+          ip_usuario: ip_usuario,
         },
         { transaction: t }
       );
@@ -127,18 +127,67 @@ export const getUserById = async (id) => {
   return user;
 };
 
-export const updateUser = async (id_usuario, updateData) => {
-  const userDb = await userRepository.findById(id_usuario);
+export const updateUser = async (id, updateData) => {
+  const userDb = await userRepository.findById(id);
   if (!userDb) {
     throw new NotFoundError("El usuario que se intenta actualizarn o existe.");
   }
   if (updateData.correo) {
     const existingUser = await userRepository.findByEmail(updateData.correo);
-    if (existingUser && existingUser.id_usuario !== parseInt(id_usuario)) {
+    if (existingUser && existingUser.id !== parseInt(id)) {
       throw new UserAlreadyExistsError(
         "El correo ya está en uso por otro usuario."
       );
     }
   }
-  return userRepository.update(id_usuario, updateData);
+  return userRepository.update(id, updateData);
+};
+
+export const stateUser = async (id, updateData, ip) => {
+  return db.sequelize.transaction(async (t) => {
+    const userDb = await userRepository.findById(id, {
+      transaction: t,
+    });
+    if (!userDb) {
+      throw new NotFoundError(
+        "El usuario que se intenta actualizarn o existe."
+      );
+    }
+    if (updateData.activo !== undefined) {
+      if (updateData.activo === userDb.activo) {
+        const message = userDb.activo
+          ? "El usuario ya está activo"
+          : "El usuario ya está desactivado";
+        throw new AlreadyDesactivated(message);
+      }
+    }
+
+    const updatedUser = await userRepository.update(id, updateData, {
+      transaction: t,
+    });
+
+    if (userDb.activo === false) {
+      await logRepository.create(
+        {
+          accion: "DESACTIVAR_USUARIO",
+          id_usuario: id,
+          descripcion: `El Admin (ID: ${id}) desactivó al usuario '${userDb.nombre}' (ID: ${id}).`,
+          ip_usuario: ip,
+        },
+        { transaction: t }
+      );
+      return updatedUser;
+    }
+
+    await logRepository.create(
+      {
+        accion: "ACTIVAR_USUARIO",
+        id_usuario: id,
+        descripcion: `El Admin (ID: ${id}) activó al usuario '${userDb.nombre}' (ID: ${id}).`,
+        ip_usuario: ip,
+      },
+      { transaction: t }
+    );
+    return updatedUser;
+  });
 };

@@ -3,7 +3,7 @@ import { useAuthStore } from "../../stores/authStore.js";
 import { useDashboardDevice } from "../../hooks/devices/useDashboardDevice.js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faPlus,
+  faUndo,
   faTable,
   faThLarge,
   faEye,
@@ -11,177 +11,74 @@ import {
   faTimes,
   faDesktop,
   faKeyboard,
-  faMemory,
+  faExclamationTriangle,
   faHdd,
   faMicrochip,
 } from "@fortawesome/free-solid-svg-icons";
-
-// Importamos los formularios modales que vamos a renderizar
+import api from "../../config/axios.js";
 import CreateDeviceForm from "./CreateDevicesForm.jsx";
 import CreatePeripheralForm from "./CreatePeripheralsForm.jsx";
 
-// --- SUBCOMPONENTES DE VISTA Y MODALES ---
-const AssetTable = ({ assets, onAction }) => (
-  <div className="overflow-x-auto bg-secondary rounded-lg shadow-md animate-fade-in">
-    <table className="w-full text-left text-text-main">
-      <thead className="bg-gray-100/80">
-        <tr>
-          <th className="p-4 font-semibold">Tipo</th>
-          <th className="p-4 font-semibold">Serial / Etiqueta</th>
-          <th className="p-4 font-semibold hidden md:table-cell">Centro Op.</th>
-          <th className="p-4 font-semibold">Estado</th>
-          <th className="p-4 font-semibold text-center">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {assets.map((asset) => (
-          <tr
-            key={`${asset.type}-${asset.id_equipo || asset.id_periferico}`}
-            className="border-t border-gray-200 hover:bg-gray-50"
-          >
-            <td className="p-4">
-              <FontAwesomeIcon
-                icon={asset.type === "equipo" ? faDesktop : faKeyboard}
-                className="text-lg text-neutral-taupe"
-                title={asset.type}
-              />
-            </td>
-            <td className="p-4">
-              <span className="font-mono">
-                {asset.serial || asset.serial_periferico}
-              </span>
-              <br />
-              <span className="text-xs text-gray-500">
-                {asset.equipo_etiqueta || asset.etiqueta_periferico || ""}
-              </span>
-            </td>
-            <td className="p-4 hidden md:table-cell">
-              {asset.OperationCenter?.codigo || "N/A"}
-            </td>
-            <td className="p-4">
-              <span
-                className={`px-2 py-1 text-xs font-bold rounded-full ${
-                  asset.estado_equipo ?? asset.estado_periferico
-                    ? "bg-success/20 text-success"
-                    : "bg-error/20 text-error"
-                }`}
-              >
-                {asset.estado_equipo ?? asset.estado_periferico
-                  ? "Activo"
-                  : "De Baja"}
-              </span>
-            </td>
-            <td className="p-4 text-center space-x-4">
-              <button
-                onClick={() => onAction("details", asset)}
-                className="text-primary hover:opacity-70"
-                title="Ver Detalles"
-              >
-                <FontAwesomeIcon icon={faEye} />
-              </button>
-              <button
-                onClick={() => onAction("decommission", asset)}
-                className="text-accent hover:opacity-70"
-                title="Dar de Baja"
-              >
-                <FontAwesomeIcon icon={faArrowDown} />
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-);
-
-const AssetCards = ({ assets, onAction }) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-    {assets.map((asset) => (
-      <div
-        key={`${asset.type}-${asset.id_equipo || asset.id_periferico}`}
-        className="bg-secondary rounded-lg shadow p-4 flex flex-col justify-between animate-fade-in"
-      >
-        <div>
-          <div className="flex justify-between items-start">
-            <span className="font-bold text-lg text-text-main">
-              {asset.equipo_etiqueta ||
-                asset.etiqueta_periferico ||
-                "Sin Etiqueta"}
-            </span>
-            <span
-              className={`px-2 py-1 text-xs font-bold rounded-full ${
-                asset.estado_equipo ?? asset.estado_periferico
-                  ? "bg-success/20 text-success"
-                  : "bg-error/20 text-error"
-              }`}
-            >
-              {asset.estado_equipo ?? asset.estado_periferico
-                ? "Activo"
-                : "De Baja"}
-            </span>
-          </div>
-          <p className="text-sm text-neutral-taupe font-mono">
-            {asset.serial || asset.serial_periferico}
-          </p>
-          <p className="text-sm text-neutral-taupe capitalize">{asset.type}</p>
-        </div>
-        <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end space-x-4">
-          <button
-            onClick={() => onAction("details", asset)}
-            className="text-primary hover:opacity-70"
-            title="Ver Detalles"
-          >
-            <FontAwesomeIcon icon={faEye} />
-          </button>
-          <button
-            onClick={() => onAction("decommission", asset)}
-            className="text-accent hover:opacity-70"
-            title="Dar de Baja"
-          >
-            <FontAwesomeIcon icon={faArrowDown} />
-          </button>
-        </div>
-      </div>
-    ))}
-  </div>
-);
-
-// --- SUBCOMPONENTE: Modal de Confirmación ---
-const ConfirmDecommissionModal = ({
+// --- SUBCOMPONENTES ---
+const ConfirmStatusChangeModal = ({
   asset,
   onConfirm,
   onCancel,
   isSubmitting,
-}) => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-fade-in">
-    <div className="bg-secondary rounded-lg shadow-xl p-6 w-full max-w-md text-center">
-      <h3 className="text-xl font-bold text-accent mb-4">¿Estás Seguro?</h3>
-      <p className="text-text-main mb-6">
-        Estás a punto de dar de baja el activo con serial:{" "}
-        <strong className="font-mono">
-          {asset?.serial || asset?.serial_periferico}
-        </strong>
-        . Esta acción cambiará su estado a "De Baja".
-      </p>
-      <div className="flex justify-end gap-4">
-        <button
-          onClick={onCancel}
-          disabled={isSubmitting}
-          className="py-2 px-4 rounded-lg bg-gray-300 hover:bg-gray-400 text-text-main font-semibold disabled:opacity-50"
+}) => {
+  const isActive = asset.estado_equipo ?? asset.estado_periferico;
+  const actionText = isActive ? "dar de baja" : "reactivar";
+  const actionColor = isActive ? "accent" : "success";
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-fade-in">
+      <div className="bg-secondary rounded-lg shadow-xl p-6 w-full max-w-md text-center">
+        <div
+          className={`mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-${actionColor}/10 mb-4`}
         >
-          Cancelar
-        </button>
-        <button
-          onClick={onConfirm}
-          disabled={isSubmitting}
-          className="py-2 px-4 rounded-lg bg-accent text-text-light font-bold hover:opacity-90 disabled:opacity-50"
-        >
-          {isSubmitting ? "Procesando..." : "Sí, Dar de Baja"}
-        </button>
+          <FontAwesomeIcon
+            icon={faExclamationTriangle}
+            className={`h-6 w-6 text-${actionColor}`}
+          />
+        </div>
+        <h3 className="text-xl font-bold text-text-main mb-2">
+          ¿Estás Seguro?
+        </h3>
+        <p className="text-text-main mb-6">
+          Estás a punto de{" "}
+          <strong className={`font-semibold text-${actionColor}`}>
+            {actionText}
+          </strong>{" "}
+          el activo con serial:{" "}
+          <strong className="font-mono">
+            {asset?.serial || asset?.serial_periferico}
+          </strong>
+          .
+        </p>
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={onCancel}
+            disabled={isSubmitting}
+            className="py-2 px-4 rounded-lg bg-gray-300 hover:bg-gray-400 font-semibold"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isSubmitting}
+            className={`py-2 px-4 rounded-lg text-white font-bold hover:opacity-90 bg-${actionColor}`}
+          >
+            {isSubmitting
+              ? "Procesando..."
+              : `Sí, ${
+                  actionText.charAt(0).toUpperCase() + actionText.slice(1)
+                }`}
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // --- SUBCOMPONENTE: Modal de Detalles ---
 const AssetDetailModal = ({ asset, onClose }) => {
@@ -197,7 +94,7 @@ const AssetDetailModal = ({ asset, onClose }) => {
       >
         <div className="flex justify-between items-center border-b border-gray-200 pb-3 mb-4">
           <h3 className="text-xl font-bold text-primary">
-            {asset.type === "equipo"
+            {asset.type === "device"
               ? "Detalle del Equipo"
               : "Detalle del Periférico"}
           </h3>
@@ -213,8 +110,8 @@ const AssetDetailModal = ({ asset, onClose }) => {
             </span>
           </p>
           <p>
-            <strong>Etiqueta:</strong>{" "}
-            {asset.equipo_etiqueta || asset.etiqueta_periferico || "N/A"}
+            <strong>Tipo:</strong>{" "}
+            {asset.equipo_laptop ? "Laptop" : "PC de Escritorio"}
           </p>
           <p>
             <strong>Centro de Operación:</strong>{" "}
@@ -226,12 +123,8 @@ const AssetDetailModal = ({ asset, onClose }) => {
             {asset.Creador?.apellido}
           </p>
           <hr className="my-2 border-primary/20" />
-          {asset.type === "equipo" && (
+          {asset.type === "device" && (
             <>
-              <p>
-                <strong>Tipo:</strong>{" "}
-                {asset.equipo_laptop ? "Laptop" : "PC de Escritorio"}
-              </p>
               <p>
                 <strong>
                   <FontAwesomeIcon
@@ -260,7 +153,7 @@ const AssetDetailModal = ({ asset, onClose }) => {
               </p>
             </>
           )}
-          {asset.type === "periferico" && (
+          {asset.type === "peripheral" && (
             <>
               <p>
                 <strong>Marca:</strong> {asset.marca_periferico}
@@ -277,42 +170,199 @@ const AssetDetailModal = ({ asset, onClose }) => {
   );
 };
 
+const AssetTable = ({ assets, onAction }) => (
+  <div className="overflow-auto max-h-[500px] bg-secondary rounded-lg shadow-md animate-fade-in">
+    <table className="w-full text-left text-text-main">
+      <thead className="bg-gray-100/80">
+        <tr>
+          <th className="p-4 font-semibold">Tipo</th>
+          <th className="p-4 font-semibold">Serial</th>
+          <th className="p-4 font-semibold hidden md:table-cell">Centro Op.</th>
+          <th className="p-4 font-semibold">Estado</th>
+          <th className="p-4 font-semibold text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {assets.map((asset) => {
+          const isActive = asset.estado_equipo ?? asset.estado_periferico;
+          return (
+            <tr
+              key={`${asset.type}-${asset.id_equipo || asset.id_periferico}`}
+              className="border-t border-gray-200 hover:bg-gray-50"
+            >
+              <td className="p-4 whitespace-nowrap">
+                <FontAwesomeIcon
+                  icon={asset.type === "device" ? faDesktop : faKeyboard}
+                  className="text-lg text-neutral-taupe"
+                  title={asset.type}
+                />
+              </td>
+              <td className="p-4 whitespace-nowrap">
+                <span className="font-mono">
+                  {asset.serial || asset.serial_periferico}
+                </span>
+                <br />
+                <span className="text-xs text-gray-500">
+                  {asset.equipo_etiqueta || asset.etiqueta_periferico || ""}
+                </span>
+              </td>
+              <td className="p-4 hidden md:table-cell whitespace-nowrap">
+                {asset.OperationCenter?.codigo || "N/A"}
+              </td>
+              <td className="p-4 whitespace-nowrap">
+                <span
+                  className={`px-2 py-1 text-xs font-bold rounded-full ${
+                    asset.estado_equipo ?? asset.estado_periferico
+                      ? "bg-success/20 text-success"
+                      : "bg-error/20 text-error"
+                  }`}
+                >
+                  {asset.estado_equipo ?? asset.estado_periferico
+                    ? "Activo"
+                    : "De Baja"}
+                </span>
+              </td>
+              <td className="p-4 text-center space-x-4 whitespace-nowrap">
+                <button
+                  onClick={() => onAction("details", asset)}
+                  className="text-primary hover:opacity-70"
+                  title="Ver Detalles"
+                >
+                  <FontAwesomeIcon icon={faEye} />
+                </button>
+                {/* --- BOTÓN DE ACCIÓN CONDICIONAL --- */}
+                {isActive ? (
+                  <button
+                    onClick={() => onAction("status", asset)}
+                    className="text-accent hover:opacity-70"
+                    title="Dar de Baja"
+                  >
+                    <FontAwesomeIcon icon={faArrowDown} />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => onAction("status", asset)}
+                    className="text-success hover:opacity-70"
+                    title="Reactivar"
+                  >
+                    <FontAwesomeIcon icon={faUndo} />
+                  </button>
+                )}
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+);
+
+const AssetCards = ({ assets, onAction }) => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    {assets.map((asset) => {
+      const isActive = asset.estado_equipo ?? asset.estado_periferico;
+      return (
+        <div
+          key={`${asset.type}-${asset.id_equipo || asset.id_periferico}`}
+          className="bg-secondary rounded-lg shadow p-4 flex flex-col justify-between animate-fade-in"
+        >
+          <div>
+            <div className="flex justify-between items-start">
+              <span className="font-bold text-lg text-text-main">
+                {asset.serial || asset.serial_periferico || "Sin Serial"}
+              </span>
+              <span
+                className={`px-2 py-1 text-xs font-bold rounded-full ${
+                  asset.estado_equipo ?? asset.estado_periferico
+                    ? "bg-success/20 text-success"
+                    : "bg-error/20 text-error"
+                }`}
+              >
+                {asset.estado_equipo ?? asset.estado_periferico
+                  ? "Activo"
+                  : "De Baja"}
+              </span>
+            </div>
+            <p className="text-sm text-neutral-taupe font-mono">
+              {asset.serial || asset.serial_periferico}
+            </p>
+            <p className="text-sm text-neutral-taupe capitalize">
+              {asset.type}
+            </p>
+          </div>
+          <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end space-x-4">
+            <button
+              onClick={() => onAction("details", asset)}
+              className="text-primary hover:opacity-70"
+              title="Ver Detalles"
+            >
+              <FontAwesomeIcon icon={faEye} />
+            </button>
+            {/* --- BOTÓN DE ACCIÓN CONDICIONAL --- */}
+            {isActive ? (
+              <button
+                onClick={() => onAction("status", asset)}
+                className="text-accent hover:opacity-70"
+                title="Dar de Baja"
+              >
+                <FontAwesomeIcon icon={faArrowDown} />
+              </button>
+            ) : (
+              <button
+                onClick={() => onAction("status", asset)}
+                className="text-success hover:opacity-70"
+                title="Reactivar"
+              >
+                <FontAwesomeIcon icon={faUndo} />
+              </button>
+            )}
+          </div>
+        </div>
+      );
+    })}
+  </div>
+);
+
 // --- COMPONENTE PRINCIPAL DE LA PÁGINA ---
 export default function DashboardDevice() {
   const { user } = useAuthStore();
-  const { assets, isLoading, error, refetch, setSearchTerm, setFilterStatus } =
-    useDashboardDevice();
-
   const isAdmin = user?.rol === "Admin";
   const [viewMode, setViewMode] = useState(isAdmin ? "table" : "card");
-
-  // 1. Un solo estado para manejar todos los modales
-  const [modal, setModal] = useState({ type: null, data: null }); // type: 'createDevice', 'createPeripheral', 'details', 'decommission'
+  const { assets, isLoading, error, refetch, setSearchTerm, setFilterStatus } =
+    useDashboardDevice();
+  const [modal, setModal] = useState({ type: null, data: null });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleDecommissionConfirm = async () => {
-    if (modal.type !== "decommission") return;
+  const handleStatusChange = async () => {
+    if (modal.type !== "status") return;
     setIsSubmitting(true);
     try {
       const asset = modal.data;
       const assetId = asset.id_equipo || asset.id_periferico;
-      await api.patch(`/api/${asset.type}s/${assetId}/decommission`);
-      setModal({ type: null, data: null });
+      const newState = !(asset.estado_equipo ?? asset.estado_periferico);
+
+      // La API recibe el nuevo estado. El endpoint de 'update' genérico sirve para esto.
+      if (asset.type === "device") {
+        await api.patch(`/api/dispositivos/${assetId}/estado`, {
+          estado_equipo: newState,
+        });
+      } else {
+        await api.patch(`/api/perifericos/${assetId}/estado`, {
+          estado_periferico: newState,
+        });
+      }
+      closeModal();
       refetch();
     } catch (err) {
-      console.error("Error al dar de baja el activo", err);
-      // Aquí se podría mostrar un toast de error al usuario
+      console.error("Error al cambiar el estado del activo", err);
     } finally {
       setIsSubmitting(false);
     }
   };
-  // Función genérica para abrir cualquier modal
+
   const handleAction = (type, asset = null) => setModal({ type, data: asset });
-  // Función para cerrar todos los modales
   const closeModal = () => setModal({ type: null, data: null });
-  // Función de éxito que recarga los datos y cierra el modal
   const handleSuccess = (successMessage) => {
-    console.log(successMessage); // Opcional: mostrar un toast de éxito
     refetch();
     closeModal();
   };
@@ -323,7 +373,8 @@ export default function DashboardDevice() {
         Cargando activos...
       </div>
     );
-  
+  if (error)
+    return <div className="text-center w-full p-10 text-error">{error}</div>;
 
   return (
     <div className="w-full">
@@ -395,7 +446,7 @@ export default function DashboardDevice() {
 
       {assets.length === 0 ? (
         <div className="text-center w-full p-10 text-neutral-taupe">
-          No hay activos que coincidan con tu búsqueda.
+          No hay activos que mostrar.
         </div>
       ) : viewMode === "table" && isAdmin ? (
         <AssetTable assets={assets} onAction={handleAction} />
@@ -413,11 +464,11 @@ export default function DashboardDevice() {
       {modal.type === "details" && (
         <AssetDetailModal asset={modal.data} onClose={closeModal} />
       )}
-      {modal.type === "decommission" && (
-        <ConfirmDecommissionModal
+      {modal.type === "status" && (
+        <ConfirmStatusChangeModal
           asset={modal.data}
           onCancel={closeModal}
-          onConfirm={handleDecommissionConfirm}
+          onConfirm={handleStatusChange}
           isSubmitting={isSubmitting}
         />
       )}

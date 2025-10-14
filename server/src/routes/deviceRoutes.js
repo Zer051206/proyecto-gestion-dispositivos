@@ -11,6 +11,6 @@ router.post("/dispositivos", deviceController.createDevice);
 
 router.patch("/dispositivos/:id", deviceController.updateDevice);
 
-router.patch("/dispositivo/:id/baja", deviceController.decomissionDevice);
+router.patch("/dispositivos/:id/estado", deviceController.stateDevice);
 
 export default router;

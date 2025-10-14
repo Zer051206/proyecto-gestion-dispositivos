@@ -19,7 +19,7 @@ export const userObjectSchema = z.object({
     .number()
     .positive("Debe seleccionar un tipo de ID."),
   identificacion: z.string().trim().min(5, "La identificación es obligatoria."),
-  telefono: z
+  telefono: z.coerce
     .string()
     .trim()
     .min(7, "El teléfono es obligatorio.")

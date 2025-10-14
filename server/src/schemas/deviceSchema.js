@@ -27,11 +27,6 @@ export const deviceObjectSchema = z.object({
   estado_equipo: z.boolean({
     required_error: "El estado del equipo es obligatorio.",
   }),
-  equipo_etiquetado: z.boolean({
-    required_error: "Debe indicar si el equipo está etiquetado.",
-  }),
-  equipo_etiqueta: z.string().max(120).optional().nullable(),
-
   activo_fijo: z.boolean({
     required_error: "Debe indicar si es un activo fijo.",
   }),

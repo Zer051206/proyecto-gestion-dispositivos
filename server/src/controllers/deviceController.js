@@ -48,8 +48,8 @@ export const updateDevice = async (req, res, next) => {
     const { id } = req.params;
     const updateValidateData = updateDeviceSchema.parse(req.body);
     const updatedDevice = await deviceService.updateDevice(
-      updateValidateData,
-      id
+      id,
+      updateValidateData
     );
     return res.status(200).json({
       message: "Equipo actualizado correctamente",
@@ -61,12 +61,13 @@ export const updateDevice = async (req, res, next) => {
   }
 };
 
-export const decomissionDevice = async (req, res, next) => {
+export const stateDevice = async (req, res, next) => {
   try {
     const { id } = req.params;
     const id_usuario = req.user.id_usuario;
     const ip_usuario = req.ip;
-    await deviceService.decomissionDevice(id, id_usuario, ip_usuario);
+    const updateData = req.body;
+    await deviceService.stateDevice(id, updateData, id_usuario, ip_usuario);
 
     return res.status(200).json({
       message: "Equipo dado de baja exitosamente",

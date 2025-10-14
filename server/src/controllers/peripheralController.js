@@ -61,13 +61,15 @@ export const updatePeripheral = async (req, res, next) => {
   }
 };
 
-export const decomissionPeripheral = async (req, res, next) => {
+export const statePeripheral = async (req, res, next) => {
   try {
     const { id } = req.params;
     const id_usuario = req.user.id_usuario;
     const ip_usuario = req.ip;
-    const peripheral = await peripheralService.decomissionPeripheral(
+    const updateData = req.body;
+    const peripheral = await peripheralService.statePeripheral(
       id,
+      updateData,
       id_usuario,
       ip_usuario
     );

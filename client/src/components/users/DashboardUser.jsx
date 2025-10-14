@@ -146,18 +146,20 @@ const ConfirmStatusChangeModal = ({
 
 // --- SUBCOMPONENTE: Tabla de Usuarios ---
 const UserTable = ({ users, onAction }) => (
-  <div className="overflow-x-auto bg-secondary rounded-lg shadow-md animate-fade-in">
+  <div className="overflow-auto bg-secondary rounded-lg shadow-md max-h-[500px] animate-fade-in">
     <table className="w-full text-left text-text-main">
       <thead className="bg-gray-100/80">
         <tr>
-          <th className="p-4 font-semibold">Nombre</th>
-          <th className="p-4 font-semibold hidden sm:table-cell">
+          <th className="p-4 whitespace-nowrap font-semibold">Nombre</th>
+          <th className="p-4 whitespace-nowrap font-semibold hidden sm:table-cell">
             Identificación
           </th>
-          <th className="p-4 font-semibold hidden lg:table-cell">Rol</th>
-          <th className="p-4 font-semibold hidden md:table-cell">Centro Op.</th>
-          <th className="p-4 font-semibold">Estado</th>
-          <th className="p-4 font-semibold text-center">Acciones</th>
+          <th className="p-4 whitespace-nowrap font-semibold">Rol</th>
+          <th className="p-4 whitespace-nowrap font-semibold ">Centro Op.</th>
+          <th className="p-4 whitespace-nowrap font-semibold">Estado</th>
+          <th className="p-4 whitespace-nowrap font-semibold text-center">
+            Acciones
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -166,21 +168,21 @@ const UserTable = ({ users, onAction }) => (
             key={user.id_usuario}
             className="border-t border-gray-200 hover:bg-gray-50"
           >
-            <td className="p-4">
+            <td className="p-4 whitespace-nowrap">
               <p className="font-bold">
                 {user.nombre} {user.apellido}
               </p>
               <p className="text-sm text-gray-500">{user.correo}</p>
             </td>
-            <td className="p-4 font-mono hidden sm:table-cell">
+            <td className="p-4 whitespace-nowrap font-mono hidden md:table-cell">
               {user.identificacion}
             </td>
-            <td className="p-4 hidden lg:table-cell">{user.rol}</td>
-            <td className="p-4 hidden md:table-cell">
+            <td className="p-4 whitespace-nowrap">{user.rol}</td>
+            <td className="p-4 whitespace-nowrap">
               {user.OperationCenter?.codigo ||
                 (user.rol === "Admin" ? "Global" : "N/A")}
             </td>
-            <td className="p-4">
+            <td className="p-4 whitespace-nowrap">
               <span
                 className={`px-2 py-1 text-xs font-bold rounded-full ${
                   user.activo
@@ -191,7 +193,7 @@ const UserTable = ({ users, onAction }) => (
                 {user.activo ? "Activo" : "Inactivo"}
               </span>
             </td>
-            <td className="p-4 text-center space-x-4">
+            <td className="p-4 whitespace-nowrap text-center space-x-4">
               <button
                 onClick={() => onAction("details", user)}
                 className="text-primary hover:opacity-70"
@@ -278,7 +280,6 @@ const UserCards = ({ users, onAction }) => (
 export default function UserDashboard() {
   const { users, isLoading, error, refetch, setSearchTerm, setSortBy } =
     useDashboardUser();
-
   const [viewMode, setViewMode] = useState("table");
   const [modal, setModal] = useState({ type: null, data: null });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -297,7 +298,7 @@ export default function UserDashboard() {
     setIsSubmitting(true);
     try {
       const user = modal.data;
-      await api.patch(`/api/usuarios/${user.id_usuario}`, {
+      await api.patch(`/api/usuarios/${user.id_usuario}/estado`, {
         activo: !user.activo,
       });
       closeModal();

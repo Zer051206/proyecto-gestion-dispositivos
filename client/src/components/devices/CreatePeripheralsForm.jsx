@@ -51,6 +51,7 @@ const PeripheralSubForm = ({
           <span className="text-text-main font-semibold">Serial:</span>
           <input
             type="text"
+            autoComplete="off"
             className={inputClasses}
             {...formik.getFieldProps(`peripherals[${index}].serial_periferico`)}
           />
@@ -65,6 +66,7 @@ const PeripheralSubForm = ({
           <span className="text-text-main font-semibold">Marca:</span>
           <input
             type="text"
+            autoComplete="off"
             className={inputClasses}
             {...formik.getFieldProps(`peripherals[${index}].marca_periferico`)}
           />
@@ -86,7 +88,7 @@ const PeripheralSubForm = ({
             )}
             disabled={isLoadingCatalogs}
           >
-            <option value="">
+            <option value="" hidden>
               {isLoadingCatalogs ? "Cargando..." : "Selecciona..."}
             </option>
             {catalogos.tiposPerifericos.map((t) => (
@@ -113,7 +115,7 @@ const PeripheralSubForm = ({
             )}
             disabled={isLoadingCatalogs}
           >
-            <option value="">
+            <option value="" hidden>
               {isLoadingCatalogs ? "Cargando..." : "Selecciona..."}
             </option>
             {catalogos.centrosOperacion.map((c) => (
@@ -132,6 +134,7 @@ const PeripheralSubForm = ({
         <label className="flex items-center space-x-2 py-2 self-end">
           <input
             type="checkbox"
+            autoComplete="off"
             className="h-4 w-4 rounded"
             {...formik.getFieldProps(`peripherals[${index}].activo_fijo`)}
             checked={peripheral.activo_fijo}
@@ -147,6 +150,7 @@ const PeripheralSubForm = ({
             </span>
             <input
               type="text"
+              autoComplete="off"
               className={inputClasses}
               {...formik.getFieldProps(
                 `peripherals[${index}].codigo_activo_fijo`
@@ -180,11 +184,11 @@ export default function CreatePeripheralForm({ onClose, onSuccess }) {
       try {
         const [tiposRes, centrosRes] = await Promise.all([
           api.get("/api/catalogo/tipos-perifericos"),
-          api.get("/api/catalogo/centros-operacion"),
+          api.get("/api/centros-operacion"),
         ]);
         setCatalogos({
-          tiposPerifericos: tiposRes.data,
-          centrosOperacion: centrosRes.data,
+          tiposPerifericos: tiposRes.data.peripheralTypes || [],
+          centrosOperacion: centrosRes.data.operationCenters || [],
         });
       } catch (err) {
         console.error("Error al cargar los catálogos", err);

@@ -1,8 +1,5 @@
 import * as operationCenterService from "../services/operationCenterService.js";
-import {
-  createOperationCenterSchema,
-  updateOperationCenterSchema,
-} from "../schemas/operationCenterSchema.js";
+import { createOperationCenterSchema } from "../schemas/operationCenterSchema.js";
 
 export const getAllOperationCenters = async (req, res, next) => {
   try {
@@ -49,12 +46,9 @@ export const createOperationCenter = async (req, res, next) => {
 export const updateOperationCenter = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const updateValidateData = updateOperationCenterSchema.parse(req.body);
+    const updateData = req.body;
     const updatedOperationCenter =
-      await operationCenterService.updateOperationCenter(
-        updateValidateData,
-        id
-      );
+      await operationCenterService.updateOperationCenter(id, updateData);
     return res.status(200).json({
       message: "Centro de operacion actualizado con exito.",
       success: true,
@@ -65,14 +59,16 @@ export const updateOperationCenter = async (req, res, next) => {
   }
 };
 
-export const closeOperationCenter = async (req, res, next) => {
+export const stateOperationCenter = async (req, res, next) => {
   try {
     const { id } = req.params;
     const id_usuario = req.user.id_usuario;
     const ip_usuario = req.ip;
-    const closedOperationCenter =
-      await operationCenterService.closeOperationCenter(
+    const updateData = req.body;
+    const updatedOperationCenter =
+      await operationCenterService.stateOperationCenter(
         id,
+        updateData,
         id_usuario,
         ip_usuario
       );
@@ -80,7 +76,7 @@ export const closeOperationCenter = async (req, res, next) => {
     return res.status(200).json({
       message: "Centro de operacion cerrado exitosamente.",
       success: true,
-      operationCenter: closedOperationCenter,
+      operationCenter: updatedOperationCenter,
     });
   } catch (error) {
     next(error);

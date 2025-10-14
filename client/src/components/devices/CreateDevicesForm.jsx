@@ -6,6 +6,7 @@ import {
 import { FieldArray, FormikProvider, getIn } from "formik";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { handleKeyNumberDown } from "../../utils/inputUtilities.js";
 import api from "../../config/axios.js";
 
 // --- Subcomponente para cada fila del formulario dinámico ---
@@ -49,6 +50,7 @@ const DeviceSubForm = ({
           <span className="text-text-main font-semibold">Serial:</span>
           <input
             type="text"
+            autoComplete="off"
             className={inputClasses}
             {...formik.getFieldProps(`devices[${index}].serial`)}
           />
@@ -65,7 +67,7 @@ const DeviceSubForm = ({
             {...formik.getFieldProps(`devices[${index}].id_centro_operacion`)}
             disabled={isLoadingCatalogs}
           >
-            <option value="">
+            <option value="" hidden>
               {isLoadingCatalogs ? "Cargando..." : "Selecciona..."}
             </option>
             {centros.map((c) => (
@@ -86,6 +88,8 @@ const DeviceSubForm = ({
           </span>
           <input
             type="number"
+            onKeyDown={handleKeyNumberDown}
+            autoComplete="off"
             className={inputClasses}
             {...formik.getFieldProps(`devices[${index}].tamano_disco_duro`)}
           />
@@ -123,6 +127,7 @@ const DeviceSubForm = ({
           <label className="flex items-center space-x-2 py-2">
             <input
               type="checkbox"
+              autoComplete="off"
               className="h-4 w-4 rounded"
               {...formik.getFieldProps(`devices[${index}].equipo_alquilado`)}
               checked={device.equipo_alquilado}
@@ -151,6 +156,7 @@ const DeviceSubForm = ({
               </span>
               <input
                 type="text"
+                autoComplete="off"
                 className={inputClasses}
                 {...formik.getFieldProps(`devices[${index}].serial_pantalla`)}
               />
@@ -168,6 +174,7 @@ const DeviceSubForm = ({
               </span>
               <input
                 type="text"
+                autoComplete="off"
                 className={inputClasses}
                 {...formik.getFieldProps(
                   `devices[${index}].referencia_tarjeta_grafica`
@@ -187,6 +194,7 @@ const DeviceSubForm = ({
               </span>
               <input
                 type="text"
+                autoComplete="off"
                 className={inputClasses}
                 {...formik.getFieldProps(
                   `devices[${index}].codigo_activo_fijo`
@@ -214,9 +222,9 @@ export default function CreateDeviceForm({ onClose, onSuccess }) {
   const [isLoadingCatalogs, setIsLoadingCatalogs] = useState(true);
   useEffect(() => {
     api
-      .get("/api/catalogo/centros-operacion")
+      .get("/api/centros-operacion")
       .then((res) => {
-        setCentros(res.data);
+        setCentros(res.data.operationCenters || []);
         setIsLoadingCatalogs(false);
       })
       .catch((err) => {

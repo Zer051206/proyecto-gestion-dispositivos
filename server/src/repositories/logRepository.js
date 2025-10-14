@@ -1,13 +1,19 @@
 import db from "../models/index.js";
 const Log = db.Log;
+const User = db.User;
 
 export const findAll = async (options = {}) => {
-  return Log.findAll(options);
+  return Log.findAll(
+    {
+      include: { model: User, attributes: ["nombre", "apellido", "rol"] },
+    },
+    options
+  );
 };
 
-export const findAllById = async (id_usuario) => {
+export const findAllById = async (id) => {
   return Log.findAll({
-    where: { id_usuario: id_usuario },
+    where: { id_usuario: id },
   });
 };
 

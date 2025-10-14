@@ -17,6 +17,7 @@ const dateTimeOptions = {
   hour: "2-digit",
   minute: "2-digit",
   hour12: false, // Formato de 24 horas
+  timeZone: "America/Bogota",
 };
 
 /**
@@ -40,5 +41,5 @@ export const formatDate = (dateString) => {
   }
 
   // Formatea la fecha usando las opciones definidas
-  return date.toLocaleString("es-ES", dateTimeOptions);
+  return date.toLocaleString("es-CO", dateTimeOptions);
 };

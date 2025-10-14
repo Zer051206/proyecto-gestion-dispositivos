@@ -13,27 +13,31 @@ export const findAll = async () => {
     include: [
       {
         model: OperationCenter,
+        as: "CentroAsignado",
         attributes: ["codigo", "direccion"],
       },
       { model: IdentificationType, attributes: ["tipo_identificacion"] },
-      { model: User, as: "Creador", attributes: ["nombre"] },
+      { model: User, as: "Creador", attributes: ["nombre", "apellido"] },
     ],
   });
 };
 
 /**
  * Busca un usuario por su ID. Excluye el hash de la contraseña.
- * @param {number} id_usuario - El ID del usuario.
+ * @param {number} id - El ID del usuario.
  * @returns {Promise<User|null>} El objeto del usuario o null si no se encuentra.
  */
-export const findById = async (id_usuario) => {
-  return User.findByPk(id_usuario, {
+export const findById = async (id) => {
+  return User.findByPk(id, {
     attributes: { exclude: ["contrasena_hash"] },
     include: [
       {
         model: OperationCenter,
+        as: "CentroAsignado",
         attributes: ["codigo", "direccion"],
       },
+      { model: IdentificationType, attributes: ["tipo_identificacion"] },
+      { model: User, as: "Creador", attributes: ["nombre"] },
     ],
   });
 };
@@ -45,7 +49,7 @@ export const findById = async (id_usuario) => {
  * @returns {Promise<User|null>} El objeto del usuario completo o null.
  */
 export const findByEmail = async (correo, options = {}) => {
-  return User.findOne({ where: { correo } }, options);
+  return User.findOne({ where: { correo: correo } }, options);
 };
 
 /**
@@ -59,21 +63,25 @@ export const create = async (userData, options = {}) => {
 
 /**
  * Actualiza un usuario existente.
- * @param {number} id_usuario - El ID del usuario a actualizar.
+ * @param {number} id - El ID del usuario a actualizar.
  * @param {object} updateData - Los nuevos datos para el usuario.
  * @returns {Promise<User|null>} El objeto del usuario actualizado o null si no se encontró.
  */
-export const update = async (id_usuario, updateData) => {
+export const update = async (id, updateData, options = {}) => {
   const [rowsAffected] = await User.update(updateData, {
-    where: { id_usuario },
+    where: { id_usuario: id },
+    ...options,
   });
 
   if (rowsAffected > 0) {
-    return findById(id_usuario);
+    return findById(id);
   }
   return null;
 };
 
-export const updateLastLogin = async (id_usuario) => {
-  return User.update({ ultimo_login: new Date() }, { where: { id_usuario } });
+export const updateLastLogin = async (id) => {
+  return User.update(
+    { ultimo_login: new Date() },
+    { where: { id_usuario: id } }
+  );
 };

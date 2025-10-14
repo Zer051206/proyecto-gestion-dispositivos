@@ -9,4 +9,6 @@ router.post("/usuarios", userController.createUser);
 
 router.patch("/usuarios/:id", userController.updateUser);
 
+router.patch("/usuarios/:id/estado", userController.stateUser);
+
 export default router;

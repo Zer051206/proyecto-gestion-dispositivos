@@ -41,14 +41,21 @@ export default (sequelize) => {
 
   User.associate = (models) => {
     User.hasMany(models.User, { as: "Creados", foreignKey: "id_creador" });
-    User.belongsTo(models.User, { as: "Creador", foreignKey: "id_creador" });
+    User.belongsTo(models.User, {
+      as: "Creador",
+      foreignKey: "id_creador",
+    });
 
-    // Otras relaciones
     User.belongsTo(models.IdentificationType, {
       foreignKey: "id_tipo_identificacion",
     });
     User.belongsTo(models.OperationCenter, {
+      as: "CentroAsignado",
       foreignKey: "id_centro_operacion",
+    });
+    User.hasMany(models.OperationCenter, {
+      as: "CentrosCreados",
+      foreignKey: "id_admin_creador",
     });
     User.hasMany(models.RefreshToken, { foreignKey: "id_usuario" });
     User.hasMany(models.Log, { foreignKey: "id_usuario" });

@@ -55,7 +55,7 @@ const Header = ({ user, logout, toggleSidebar }) => {
       {isSubPage && (
         <div className="justify-items-center flex">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/")}
             className="flex items-center gap-2 md:ml-8 text-text-main font-semibold hover:text-primary transition-colors"
           >
             <FontAwesomeIcon icon={faArrowLeft} />
@@ -136,7 +136,7 @@ const Sidebar = ({ isOpen, toggleSidebar, navigate, user }) => {
           <NavLink
             icon={faHistory}
             text="Historial"
-            path="/dasghboard/historial"
+            path="/dashboard/historial"
           />
         </nav>
       </div>

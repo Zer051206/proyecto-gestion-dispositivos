@@ -11,9 +11,6 @@ router.post("/perifericos", peripheralController.createPeripheral);
 
 router.patch("/perifericos/:id", peripheralController.updatePeripheral);
 
-router.patch(
-  "/perifericos/:id/baja",
-  peripheralController.decomissionPeripheral
-);
+router.patch("/perifericos/:id/estado", peripheralController.statePeripheral);
 
 export default router;

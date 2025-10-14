@@ -28,7 +28,7 @@ export const useDashboardHistory = () => {
         if (activeTab === "logs") {
           setLogs(response.data.logs || []);
         } else {
-          setBajas(response.data.bajas || []);
+          setBajas(response.data.decomissions || []);
         }
       } catch (err) {
         setError(`Error al cargar el historial de ${activeTab}.`);

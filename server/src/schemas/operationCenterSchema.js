@@ -2,10 +2,7 @@
 import { z } from "zod";
 
 export const operationCenterObjectSchema = z.object({
-  codigo: z.coerce
-    .number({ required_error: "El código es obligatorio." })
-    .int()
-    .positive(),
+  codigo: z.string({ required_error: "El código es obligatorio." }),
 
   id_ciudad: z.coerce
     .number({ required_error: "La ciudad es obligatoria." })

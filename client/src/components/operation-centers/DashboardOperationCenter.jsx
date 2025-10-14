@@ -23,6 +23,7 @@ import CreateOperationCenterForm from "./CreateOperationCenterForm.jsx";
 // --- SUBCOMPONENTES ---
 
 const CenterDetailModal = ({ center, onClose }) => {
+  console.log("🚀 ~ CenterDetailModal ~ center:", center);
   if (!center) return null;
   const DetailRow = ({ label, value, icon }) => (
     <div className="py-3 border-b border-gray-200 last:border-b-0">
@@ -66,7 +67,7 @@ const CenterDetailModal = ({ center, onClose }) => {
           />
           <DetailRow
             label="Creado por (Admin)"
-            value={center.User?.nombre}
+            value={center.AdminCreador?.nombre}
             icon={faUserShield}
           />
         </div>
@@ -122,15 +123,19 @@ const ConfirmStatusChangeModal = ({
 );
 
 const CenterTable = ({ centers, onAction }) => (
-  <div className="overflow-x-auto bg-secondary rounded-lg shadow-md">
+  <div className="overflow-auto bg-secondary rounded-lg max-h-[500px] shadow-md">
     <table className="w-full text-left text-text-main">
       <thead className="bg-gray-100/80">
         <tr>
-          <th className="p-4 font-semibold">Código</th>
-          <th className="p-4 font-semibold hidden sm:table-cell">Dirección</th>
-          <th className="p-4 font-semibold hidden md:table-cell">Ciudad</th>
-          <th className="p-4 font-semibold">Estado</th>
-          <th className="p-4 font-semibold text-center">Acciones</th>
+          <th className="p-4 whitespace-nowrap font-semibold">Código</th>
+          <th className="p-4 whitespace-nowrap font-semibold hidden sm:table-cell">
+            Dirección
+          </th>
+          <th className="p-4 whitespace-nowrap font-semibold">Ciudad</th>
+          <th className="p-4 whitespace-nowrap font-semibold">Estado</th>
+          <th className="p-4 whitespace-nowrap font-semibold text-center">
+            Acciones
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -139,12 +144,14 @@ const CenterTable = ({ centers, onAction }) => (
             key={center.id_centro_operacion}
             className="border-t border-gray-200 hover:bg-gray-50"
           >
-            <td className="p-4 font-bold">{center.codigo}</td>
-            <td className="p-4 hidden sm:table-cell">{center.direccion}</td>
-            <td className="p-4 hidden md:table-cell">
+            <td className="p-4 whitespace-nowrap font-bold">{center.codigo}</td>
+            <td className="p-4 whitespace-nowrap hidden sm:table-cell">
+              {center.direccion}
+            </td>
+            <td className="p-4 whitespace-nowrap">
               {center.City?.nombre_ciudad || "N/A"}
             </td>
-            <td className="p-4">
+            <td className="p-4 whitespace-nowrap">
               <span
                 className={`px-2 py-1 text-xs font-bold rounded-full ${
                   center.activo
@@ -155,7 +162,7 @@ const CenterTable = ({ centers, onAction }) => (
                 {center.activo ? "Activo" : "Inactivo"}
               </span>
             </td>
-            <td className="p-4 text-center space-x-4">
+            <td className="p-4 whitespace-nowrap text-center space-x-4">
               <button
                 onClick={() => onAction("details", center)}
                 className="text-primary hover:opacity-70"

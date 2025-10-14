@@ -12,8 +12,6 @@ export default (sequelize) => {
       },
       marca_periferico: { type: DataTypes.STRING(150), allowNull: false },
       serial_periferico: { type: DataTypes.STRING(200), allowNull: false },
-      periferico_etiquetado: { type: DataTypes.BOOLEAN, allowNull: false },
-      etiqueta_periferico: { type: DataTypes.STRING(120), allowNull: true },
       estado_periferico: {
         type: DataTypes.BOOLEAN,
         allowNull: false,

@@ -69,7 +69,7 @@ export const useCreateDevicesForm = (onSuccess) => {
     }),
     onSubmit: async (values, { setFieldError, setSubmitting }) => {
       try {
-        await api.post("/api/equipos", values.devices);
+        await api.post("/api/dispositivos", values.devices);
         if (onSuccess) {
           onSuccess(
             `¡${values.devices.length} equipo(s) creado(s) exitosamente!`

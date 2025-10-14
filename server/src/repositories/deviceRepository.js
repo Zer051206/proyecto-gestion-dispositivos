@@ -1,13 +1,24 @@
 // src/repositories/deviceRepository.js
 import db from "../models/index.js";
 const Device = db.Device;
+const OperationCenter = db.OperationCenter;
+const User = db.User;
 
 /**
  * Busca todos los dispositivos.
  * @returns {Promise<Array<Device>>} Un array de dispositivos.
  */
 export const findAll = async () => {
-  return Device.findAll();
+  return Device.findAll({
+    include: [
+      { model: OperationCenter, attributes: ["codigo", "direccion"] },
+      {
+        model: User,
+        as: "Creador",
+        attributes: ["nombre", "apellido"],
+      },
+    ],
+  });
 };
 
 /**
@@ -15,8 +26,8 @@ export const findAll = async () => {
  * @param {number} id - El ID del dispositivo.
  * @returns {Promise<Device|null>} El objeto del dispositivo o null si no se encuentra.
  */
-export const findById = async (id_equipo) => {
-  return Device.findByPk(id_equipo);
+export const findById = async (id) => {
+  return Device.findByPk(id);
 };
 
 /**
@@ -34,20 +45,20 @@ export const create = async (data, options = {}) => {
  * @param {object} data - Los nuevos datos para el dispositivo.
  * @returns {Promise<Device|null>} El objeto del dispositivo actualizado o null.
  */
-export const update = async (data, id_equipo, options = {}) => {
+export const update = async (id, data, options = {}) => {
   const [rowsAffected] = await Device.update(data, {
-    where: { id_equipo: id_equipo },
+    where: { id_equipo: id },
     ...options,
   });
 
   if (rowsAffected > 0) {
-    return findById(id_equipo);
+    return findById(id);
   }
   return null;
 };
 
-export const findByCenterId = async (id_centro_operacion) => {
+export const findByCenterId = async (id) => {
   return Device.findAll({
-    where: { id_centro_operacion: id_centro_operacion },
+    where: { id_centro_operacion: id },
   });
 };

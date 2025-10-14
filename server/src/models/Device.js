@@ -25,8 +25,6 @@ export default (sequelize) => {
         allowNull: false,
         defaultValue: true,
       },
-      equipo_etiquetado: { type: DataTypes.BOOLEAN, allowNull: false },
-      equipo_etiqueta: { type: DataTypes.STRING(120), allowNull: true },
       activo_fijo: {
         type: DataTypes.BOOLEAN,
         allowNull: false,

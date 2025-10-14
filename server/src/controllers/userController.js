@@ -22,9 +22,14 @@ export const getUserById = async (req, res, next) => {
 
 export const createUser = async (req, res, next) => {
   try {
-    const id_admin = req.admin.id_admin;
+    const id_admin = req.admin;
+    const ip = req.ip;
     const createValidateData = createUserSchema.parse(req.body);
-    const newUser = await userService.createUser(createValidateData, id_admin);
+    const newUser = await userService.createUser(
+      id_admin,
+      createValidateData,
+      ip
+    );
     return res.status(201).json(newUser);
   } catch (error) {
     next(error);
@@ -40,6 +45,22 @@ export const updateUser = async (req, res, next) => {
       id_usuario
     );
     return res.status(200).json(updatedUser);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const stateUser = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const ip_usuario = req.ip;
+    const updateData = req.body;
+    const updatedUser = await userService.stateUser(id, updateData, ip_usuario);
+    return res.status(200).json({
+      message: "Usuario actualizado exitosamente.",
+      success: true,
+      User: updatedUser,
+    });
   } catch (error) {
     next(error);
   }

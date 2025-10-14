@@ -12,13 +12,11 @@ export const fetchAllOperationCenters = async () => {
   return allOperationCenters;
 };
 
-export const fetchOperationCenterById = async (id_centro_operacion) => {
-  const operationCenter = await operationCenterRepository.findById(
-    id_centro_operacion
-  );
+export const fetchOperationCenterById = async (id) => {
+  const operationCenter = await operationCenterRepository.findById(id);
   if (!operationCenter) {
     throw new NotFoundError(
-      `El centro de operacion con el ID ${id_centro_operacion} no fue encontrado`
+      `El centro de operacion con el ID ${id} no fue encontrado`
     );
   }
   return operationCenter;
@@ -58,7 +56,7 @@ export const createOperationCenter = async (
           {
             accion: "CREAR_CENTRO_OPERACION",
             ip_usuario: ip_usuario,
-            descripcion: `Se creó el equipo con codigo '${newOperationCenter.codigo}' (ID: ${newOperationCenter.id_centro_operacion}).`,
+            descripcion: `Se creó el centro de operacion con codigo '${newOperationCenter.codigo}' (ID: ${newOperationCenter.id_centro_operacion}).`,
             id_usuario: id_usuario,
           },
           { transaction: t }
@@ -73,44 +71,64 @@ export const createOperationCenter = async (
   });
 };
 
-export const updateOperationCenter = async (updateValidateData, id) => {
+export const updateOperationCenter = async (id, updateData) => {
+  const operationCenterDb = await operationCenterRepository.findById(id);
+  if (!operationCenterDb) {
+    throw new NotFoundError(
+      `El centro de operacion con ID ${id} no fue encontrado`
+    );
+  }
   const updatedOperationCenter = await operationCenterRepository.update(
-    updateValidateData,
-    id
+    id,
+    updateData
   );
   return updatedOperationCenter;
 };
 
-export const closeOperationCenter = async (
-  id_centro_operacion,
+export const stateOperationCenter = async (
+  id,
+  updateData,
   id_usuario,
   ip_usuario
 ) => {
   return db.sequelize.transaction(async (t) => {
-    const operationCenterDb = await operationCenterRepository.findById(
-      id_centro_operacion,
-      { transaction: t }
-    );
+    const operationCenterDb = await operationCenterRepository.findById(id, {
+      transaction: t,
+    });
 
-    if (operationCenterDb.estado === false) {
-      throw new AlreadyDesactivated(
-        "El centro de operaciones ya se encuentra desactivado."
-      );
+    if (updateData.activo !== undefined) {
+      if (updateData.activo === operationCenterDb.activo) {
+        const message = operationCenterDb.activo
+          ? "El centro de operacion ya está activo."
+          : "El centro de operacion ya está desactivo";
+        throw new AlreadyDesactivated(message);
+      }
     }
 
-    const closedOperationCenter = await operationCenterRepository.update(
-      id_centro_operacion,
-      { estado: false },
+    const updatedOperationCenter = await operationCenterRepository.update(
+      id,
+      { estado: updateData.activo },
       { transaction: t }
     );
 
+    if (updateData.activo === false) {
+      await logRepository.create({
+        accion: "CERRAR_CENTRO_OPERACION",
+        id_usuario: id_usuario,
+        descripcion: `Se cerró el centro de operacion con codigo '${operationCenterDb.codigo}' (ID: ${id}).`,
+        ip_usuario: ip_usuario,
+      });
+
+      return updatedOperationCenter;
+    }
+
     await logRepository.create({
-      accion: "CERRAR_CENTRO_OPERACION",
-      id_usuaio: id_usuario,
-      descripcion: `Se dio de baja al equipo '${operationCenterDb.codigo}' (ID: ${id_centro_operacion}).`,
+      accion: "REABRIR_CENTRO_OPERACION",
+      id_usuario: id_usuario,
+      descripcion: `Se abrió el centro de operacion con codigo '${operationCenterDb.codigo}' (ID: ${id}).`,
       ip_usuario: ip_usuario,
     });
 
-    return closedOperationCenter;
+    return updatedOperationCenter;
   });
 };

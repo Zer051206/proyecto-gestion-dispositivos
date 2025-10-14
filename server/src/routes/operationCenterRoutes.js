@@ -17,8 +17,8 @@ router.patch(
 );
 
 router.patch(
-  "/centros-operacion/:id/desactivar",
-  operationCenterController.closeOperationCenter
+  "/centros-operacion/:id/estado",
+  operationCenterController.stateOperationCenter
 );
 
 export default router;

@@ -22,12 +22,6 @@ export const peripheralObjectSchema = z.object({
     .trim()
     .min(1)
     .max(200),
-  periferico_etiquetado: z.boolean({
-    required_error: "Debe indicar si el periférico está etiquetado.",
-  }),
-  etiqueta_periferico: z.string().max(120).optional().nullable(),
-
-  // --- Campos nuevos ---
   activo_fijo: z.boolean({
     required_error: "Debe indicar si es un activo fijo.",
   }),

@@ -10,9 +10,9 @@ import {
   faCalendarAlt,
   faInfoCircle,
 } from "@fortawesome/free-solid-svg-icons";
+import { formatDate } from "../../utils/dateFormat.js";
 
 // --- SUBCOMPONENTES ---
-
 const DetailModal = ({ item, onClose, type }) => {
   if (!item) return null;
   const DetailRow = ({ label, value, icon }) => (
@@ -58,7 +58,7 @@ const DetailModal = ({ item, onClose, type }) => {
               />
               <DetailRow
                 label="Fecha"
-                value={new Date(item.fecha_log).toLocaleString()}
+                value={formatDate(item.fecha_log)}
                 icon={faCalendarAlt}
               />
               <DetailRow label="Dirección IP" value={item.ip_usuario} />
@@ -67,15 +67,15 @@ const DetailModal = ({ item, onClose, type }) => {
           ) : (
             <>
               <DetailRow
-                label="Activo Dado de Baja"
+                label="Serial del Dispositivo Dado de Baja"
                 value={
-                  item.Equipo?.serial || item.Periferico?.serial_periferico
+                  item.Device?.serial || item.Peripheral?.serial_periferico
                 }
-                icon={item.Equipo ? faDesktop : faKeyboard}
+                icon={item.Device ? faDesktop : faKeyboard}
               />
               <DetailRow
                 label="Tipo"
-                value={item.Equipo ? "Equipo" : "Periférico"}
+                value={item.Device ? "Equipo" : "Periférico"}
               />
               <DetailRow
                 label="Baja realizada por"
@@ -84,7 +84,7 @@ const DetailModal = ({ item, onClose, type }) => {
               />
               <DetailRow
                 label="Fecha de Baja"
-                value={new Date(item.fecha_baja).toLocaleString()}
+                value={formatDate(item.fecha_baja)}
                 icon={faCalendarAlt}
               />
             </>
@@ -96,12 +96,12 @@ const DetailModal = ({ item, onClose, type }) => {
 };
 
 const LogTable = ({ logs, onAction }) => (
-  <div className="overflow-x-auto bg-secondary rounded-lg shadow-md">
+  <div className="overflow-auto max-h-[500px] bg-secondary rounded-lg shadow-md">
     <table className="w-full text-left text-text-main">
       <thead className="bg-gray-100/80">
         <tr>
           <th className="p-4 font-semibold">Acción</th>
-          <th className="p-4 font-semibold hidden sm:table-cell">Usuario</th>
+          <th className="p-4 font-semibold table-cell">Usuario</th>
           <th className="p-4 font-semibold hidden md:table-cell">Fecha</th>
           <th className="p-4 font-semibold text-center">Detalles</th>
         </tr>
@@ -112,12 +112,14 @@ const LogTable = ({ logs, onAction }) => (
             key={log.id_log}
             className="border-t border-gray-200 hover:bg-gray-50"
           >
-            <td className="p-4 font-semibold">{log.accion}</td>
-            <td className="p-4 hidden sm:table-cell">
+            <td className="p-4 font-semibold whitespace-nowrap">
+              {log.accion}
+            </td>
+            <td className="p-4 whitespace-nowrap">
               {log.User?.nombre} ({log.User?.rol})
             </td>
-            <td className="p-4 hidden md:table-cell">
-              {new Date(log.fecha_log).toLocaleDateString()}
+            <td className="p-4 whitespace-nowrap hidden md:table-cell">
+              {formatDate(log.fecha_log)}
             </td>
             <td className="p-4 text-center">
               <button
@@ -136,12 +138,12 @@ const LogTable = ({ logs, onAction }) => (
 );
 
 const BajasTable = ({ bajas, onAction }) => (
-  <div className="overflow-x-auto bg-secondary rounded-lg shadow-md">
+  <div className="overflow-auto bg-secondary rounded-lg max-h-[500px] shadow-md">
     <table className="w-full text-left text-text-main">
       <thead className="bg-gray-100/80">
         <tr>
-          <th className="p-4 font-semibold">Activo</th>
-          <th className="p-4 font-semibold hidden sm:table-cell">Tipo</th>
+          <th className="p-4 font-semibold">Serial</th>
+          <th className="p-4 font-semibold table-cell">Tipo</th>
           <th className="p-4 font-semibold hidden md:table-cell">
             Usuario (Baja)
           </th>
@@ -155,15 +157,17 @@ const BajasTable = ({ bajas, onAction }) => (
             key={baja.id_baja}
             className="border-t border-gray-200 hover:bg-gray-50"
           >
-            <td className="p-4 font-mono">
-              {baja.Equipo?.serial || baja.Periferico?.serial_periferico}
+            <td className="p-4 font-mono whitespace-nowrap">
+              {baja.Device?.serial || baja.Peripheral?.serial_periferico}
             </td>
-            <td className="p-4 hidden sm:table-cell">
-              {baja.Equipo ? "Equipo" : "Periférico"}
+            <td className="p-4 whitespace-nowrap">
+              {baja.Device ? "Equipo" : "Periférico"}
             </td>
-            <td className="p-4 hidden md:table-cell">{baja.User?.nombre}</td>
-            <td className="p-4">
-              {new Date(baja.fecha_baja).toLocaleDateString()}
+            <td className="p-4 whitespace-nowrap hidden md:table-cell">
+              {baja.User?.nombre}
+            </td>
+            <td className="p-4 whitespace-nowrap">
+              {formatDate(baja.fecha_baja)}
             </td>
             <td className="p-4 text-center">
               <button
