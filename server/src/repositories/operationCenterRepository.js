@@ -45,7 +45,7 @@ export const findById = async (id) => {
  * @returns {Promise<OperationCenter|null>} El objeto del centro de operación o null.
  */
 export const findByCode = async (codigo) => {
-  return OperationCenter.findOne({ where: { codigo } });
+  return OperationCenter.findOne({ where: { codigo: codigo } });
 };
 
 /**

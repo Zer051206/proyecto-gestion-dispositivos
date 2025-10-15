@@ -58,5 +58,10 @@ export const update = async (id, data, options = {}) => {
 export const findByCenterId = async (id) => {
   return Peripheral.findAll({
     where: { id_centro_operacion: id },
+    include: [
+      { model: OperationCenter, attributes: ["codigo", "direccion"] },
+      { model: User, as: "Creador", attributes: ["nombre", "apellido", "rol"] },
+      { model: PeripheralType, attributes: ["tipo_periferico"] },
+    ],
   });
 };

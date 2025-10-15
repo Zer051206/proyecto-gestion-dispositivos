@@ -8,9 +8,9 @@ export const peripheralObjectSchema = z.object({
     .positive(),
 
   id_centro_operacion: z.coerce
-    .number({ required_error: "El centro de operación es obligatorio." })
+    .number()
     .int()
-    .positive(),
+    .nullable(),
 
   marca_periferico: z
     .string({ required_error: "La marca es obligatoria." })

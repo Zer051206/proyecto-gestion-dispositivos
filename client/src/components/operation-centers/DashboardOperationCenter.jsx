@@ -23,7 +23,6 @@ import CreateOperationCenterForm from "./CreateOperationCenterForm.jsx";
 // --- SUBCOMPONENTES ---
 
 const CenterDetailModal = ({ center, onClose }) => {
-  console.log("🚀 ~ CenterDetailModal ~ center:", center);
   if (!center) return null;
   const DetailRow = ({ label, value, icon }) => (
     <div className="py-3 border-b border-gray-200 last:border-b-0">
@@ -131,6 +130,9 @@ const CenterTable = ({ centers, onAction }) => (
           <th className="p-4 whitespace-nowrap font-semibold hidden sm:table-cell">
             Dirección
           </th>
+          <th className="p-4 whitespace-nowrap font-semibold hidden sm:table-cell">
+            Telefono
+          </th>
           <th className="p-4 whitespace-nowrap font-semibold">Ciudad</th>
           <th className="p-4 whitespace-nowrap font-semibold">Estado</th>
           <th className="p-4 whitespace-nowrap font-semibold text-center">
@@ -147,6 +149,9 @@ const CenterTable = ({ centers, onAction }) => (
             <td className="p-4 whitespace-nowrap font-bold">{center.codigo}</td>
             <td className="p-4 whitespace-nowrap hidden sm:table-cell">
               {center.direccion}
+            </td>
+            <td className="p-4 whitespace-nowrap hidden sm:table-cell">
+              {center.telefono}
             </td>
             <td className="p-4 whitespace-nowrap">
               {center.City?.nombre_ciudad || "N/A"}

@@ -1,6 +1,7 @@
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import api from "../../config/axios.js";
+import { useAuthStore } from "../../stores/authStore.js";
 
 // 1. Esquema de validación con Yup para UN SOLO periférico.
 const peripheralValidationSchema = Yup.object({
@@ -14,22 +15,18 @@ const peripheralValidationSchema = Yup.object({
   id_tipo_periferico: Yup.number()
     .positive("Debe seleccionar un tipo de periférico.")
     .required("El tipo de periférico es obligatorio."),
-  id_centro_operacion: Yup.number()
-    .positive("Debe seleccionar un centro de operación.")
-    .required("El centro de operación es obligatorio."),
+  // La validación del centro de operación se hará en el hook principal
 });
 
 // 2. Valores iniciales para un nuevo periférico en blanco.
 export const initialPeripheralValues = {
   serial_periferico: "",
   marca_periferico: "",
-  periferico_etiquetado: false,
-  etiqueta_periferico: "",
   activo_fijo: false,
   codigo_activo_fijo: "",
   id_tipo_periferico: "",
   id_centro_operacion: "",
-  estado_periferico: true, // Por defecto, un periférico nuevo está activo
+  estado_periferico: true,
 };
 
 /**
@@ -37,24 +34,29 @@ export const initialPeripheralValues = {
  * @param {Function} onSuccess - Callback a ejecutar cuando la creación es exitosa.
  */
 export const useCreatePeripheralsForm = (onSuccess) => {
+  const { user } = useAuthStore();
+  const isAdmin = user?.rol === "Admin";
+
+  const finalValidationSchema = peripheralValidationSchema.shape({
+    id_centro_operacion: isAdmin
+      ? Yup.number()
+          .positive("Debe seleccionar un centro.")
+          .required("El centro es obligatorio.")
+      : Yup.string().notRequired(),
+  });
+
   const formik = useFormik({
-    // El estado principal es un array de periféricos
     initialValues: {
       peripherals: [initialPeripheralValues],
     },
-    // El esquema valida que el estado sea un array de objetos que cumplan con la forma definida
     validationSchema: Yup.object({
       peripherals: Yup.array()
-        .of(peripheralValidationSchema)
+        .of(finalValidationSchema)
         .min(1, "Debes agregar al menos un periférico."),
     }),
-    // Lógica que se ejecuta al enviar el formulario (solo si es válido)
     onSubmit: async (values, { setFieldError, setSubmitting }) => {
       try {
-        // Enviamos el array de periféricos al endpoint del backend
         await api.post("/api/perifericos", values.peripherals);
-
-        // Si la operación fue exitosa, llamamos al callback 'onSuccess'
         if (onSuccess) {
           onSuccess(
             `¡${values.peripherals.length} periférico(s) creado(s) exitosamente!`

@@ -40,12 +40,23 @@ export const getAssets = async (user) => {
   return [];
 };
 
-export const getOperationCenters = async () => {
-  const operationCenters = await operationCenterRepository.findAll();
-  if (!operationCenters) {
-    return [];
+export const getOperationCenters = async (user) => {
+  if (user.rol === "Admin") {
+    const operationCenters = await operationCenterRepository.findAll();
+    if (!operationCenters) {
+      return [];
+    }
+    return operationCenters;
+  } else if (user.rol === "Encargado") {
+    const operationCenters = await operationCenterRepository.findById(
+      user.id_centro_operacion
+    );
+    if (!operationCenters) {
+      return [];
+    }
+    return operationCenters;
   }
-  return operationCenters;
+  return [];
 };
 
 export const getUsers = async () => {

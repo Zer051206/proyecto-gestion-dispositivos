@@ -22,13 +22,13 @@ export const getUserById = async (req, res, next) => {
 
 export const createUser = async (req, res, next) => {
   try {
-    const id_admin = req.admin;
-    const ip = req.ip;
+    const id_admin = req.user.id_usuario;
+    const ip_admin = req.ip;
     const createValidateData = createUserSchema.parse(req.body);
     const newUser = await userService.createUser(
       id_admin,
       createValidateData,
-      ip
+      ip_admin
     );
     return res.status(201).json(newUser);
   } catch (error) {
@@ -53,9 +53,15 @@ export const updateUser = async (req, res, next) => {
 export const stateUser = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const ip_usuario = req.ip;
+    const id_admin = req.user.id_usuario;
+    const ip_admin = req.ip;
     const updateData = req.body;
-    const updatedUser = await userService.stateUser(id, updateData, ip_usuario);
+    const updatedUser = await userService.stateUser(
+      id,
+      updateData,
+      id_admin,
+      ip_admin
+    );
     return res.status(200).json({
       message: "Usuario actualizado exitosamente.",
       success: true,

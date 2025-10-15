@@ -2,7 +2,6 @@ import React from "react";
 import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 
-const RegisterForm = lazy(() => import("../components/users/CreateUserForm.jsx"));
 const LoginForm = lazy(() => import("../components/auth/LoginForm.jsx"));
 
 export default function AuthRoutes() {

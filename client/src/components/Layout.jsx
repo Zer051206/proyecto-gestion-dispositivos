@@ -46,7 +46,7 @@ const Header = ({ user, logout, toggleSidebar }) => {
       )}
 
       {user.rol === "Encargado" && isSubPage && (
-        <div className="text-left fixed t-0 justify-items-start font-semibold">
+        <div className="text-left md:absolute md:t-0 hidden md:flex flex-col  justify-items-start font-semibold">
           <h2 className="text-primary">Nombre: {user?.nombre || "Usuario"}</h2>
           <p className="text-neutral-taupe">Rol: {user?.rol}</p>
         </div>

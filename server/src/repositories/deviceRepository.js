@@ -60,5 +60,13 @@ export const update = async (id, data, options = {}) => {
 export const findByCenterId = async (id) => {
   return Device.findAll({
     where: { id_centro_operacion: id },
+    include: [
+      { model: OperationCenter, attributes: ["codigo", "direccion"] },
+      {
+        model: User,
+        as: "Creador",
+        attributes: ["nombre", "apellido", "rol"],
+      },
+    ],
   });
 };

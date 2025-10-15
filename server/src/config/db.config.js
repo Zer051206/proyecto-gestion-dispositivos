@@ -16,7 +16,7 @@ const config = {
     dialectOptions: {
       connectTimeout: 60000,
     },
-    logging: false, // Desactiva los logs de SQL. Cámbialo a console.log para debugging
+    logging: false,
     pool: {
       max: 5,
       min: 0,

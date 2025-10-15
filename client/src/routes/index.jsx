@@ -5,7 +5,6 @@ import { WelcomePage } from "../components/WelcomePage.jsx";
 import AuthRedirect from "../components/AuthRedirect.jsx";
 import AuthRoutes from "./AuthRoutes.jsx";
 import DashboardPage from "../components/Dashboard.jsx";
-import CreateUserForm from "../components/users/CreateUserForm.jsx";
 import Layout from "../components/Layout.jsx";
 import DashboardDevice from "../components/devices/DashboardDevice.jsx";
 import DashboardUser from "../components/users/DashboardUser.jsx";

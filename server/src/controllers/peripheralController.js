@@ -26,12 +26,12 @@ export const getPeripheralById = async (req, res, next) => {
 export const createPeripheral = async (req, res, next) => {
   try {
     const ip_usuario = req.ip;
-    const id_usuario = req.user.id_usuario;
+    const user = req.user;
     const createValidateData = createPeripheralSchema.parse(req.body);
     const newPeripheral = await peripheralService.createPeripheral(
       createValidateData,
       ip_usuario,
-      id_usuario
+      user
     );
     return res.status(201).json({
       message: "Periferico creado exitosamente.",

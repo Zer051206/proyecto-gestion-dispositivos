@@ -14,10 +14,17 @@ export const getDeviceById = async (id) => {
   if (!device) throw new NotFoundError(`Equipo con ID ${id} no encontrado.`);
   return device;
 };
-export const createDevice = async (devicesData, id_usuario, ip_usuario) => {
+export const createDevice = async (devicesData, user, ip_usuario) => {
   return db.sequelize.transaction(async (t) => {
     const creationPromises = devicesData.map(async (deviceData) => {
-      const deviceForDb = { ...deviceData, id_usuario_creador: id_usuario };
+      let deviceForDb = {
+        ...deviceData,
+        id_usuario_creador: user.id_usuario,
+      };
+
+      if (user.rol === "Encargado") {
+        deviceForDb.id_centro_operacion = user.id_centro_operacion;
+      }
 
       const newDevice = await deviceRepository.create(deviceForDb, {
         transaction: t,
@@ -26,7 +33,7 @@ export const createDevice = async (devicesData, id_usuario, ip_usuario) => {
       await logRepository.create(
         {
           accion: "CREAR_EQUIPO",
-          id_usuario: id_usuario,
+          id_usuario: user.id_usuario,
           descripcion: `Se creó el equipo con serial '${newDevice.serial}' (ID: ${newDevice.id_equipo}).`,
           ip_usuario: ip_usuario,
         },

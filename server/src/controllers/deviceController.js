@@ -26,11 +26,11 @@ export const getDeviceById = async (req, res, next) => {
 export const createDevice = async (req, res, next) => {
   try {
     const ip_usuario = req.ip;
-    const id_usuario = req.user.id_usuario;
+    const user = req.user;
     const createValidateData = createDeviceSchema.parse(req.body);
     const newDevices = await deviceService.createDevice(
       createValidateData,
-      id_usuario,
+      user,
       ip_usuario
     );
     return res.status(201).json({

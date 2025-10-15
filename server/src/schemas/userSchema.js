@@ -18,7 +18,10 @@ export const userObjectSchema = z.object({
   id_tipo_identificacion: z.coerce
     .number()
     .positive("Debe seleccionar un tipo de ID."),
-  identificacion: z.string().trim().min(5, "La identificación es obligatoria."),
+  identificacion: z.coerce
+    .string()
+    .trim()
+    .min(5, "La identificación es obligatoria."),
   telefono: z.coerce
     .string()
     .trim()
@@ -29,7 +32,7 @@ export const userObjectSchema = z.object({
   password: z
     .string()
     .min(8, "La contraseña debe tener al menos 8 caracteres."),
-  id_centro_operacion: z.coerce.number().positive().optional().nullable(),
+  id_centro_operacion: z.coerce.number().optional().nullable(),
 });
 
 export const loginSchema = z.object({

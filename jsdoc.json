@@ -1,19 +1,24 @@
 {
   "source": {
-    "include": [
-      "server/src/models",
-      "server/src/controllers",
-      "server/src/routes"
-    ],
-    "includePattern": ".+\\.js(doc|x)?$",
+    "include": ["server/src", "client/src"],
+    "includePattern": ".+\\.(js|jsx)$",
     "excludePattern": "(^|\\/|\\\\)_"
   },
   "opts": {
-    "encoding": "utf8",
-    "destination": "./docs",
+    "destination": "./docs/",
     "recurse": true,
-    "readme": "README.md",
+    "readme": "./README.md",
     "template": "node_modules/jsdoc/templates/default"
   },
-  "plugins": []
+  "plugins": ["plugins/markdown"],
+  "templates": {
+    "cleverLinks": true,
+    "monospaceLinks": true,
+    "default": {
+      "outputSourceFiles": true,
+      "staticFiles": {
+        "include": ["./static"]
+      }
+    }
+  }
 }

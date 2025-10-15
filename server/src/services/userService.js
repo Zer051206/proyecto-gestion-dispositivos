@@ -15,7 +15,6 @@ import {
 } from "../utils/customErrors.js";
 
 // --- Funciones de Autenticación ---
-
 export const loginUser = async (usersData) => {
   const { correo, password } = usersData;
   const userDb = await userRepository.findByEmail(correo);
@@ -64,7 +63,7 @@ export const refreshAccessToken = async (refreshToken) => {
 
   const payload = {
     ...userData,
-    rol: userData.rol || (userData.id_admin ? "Admin" : "Encargado"),
+    rol: userData.rol,
   };
   const newAccessToken = tokenUtils.generateAccessToken(payload);
 
@@ -79,11 +78,10 @@ export const logoutUser = async (refreshToken) => {
 };
 
 // --- Funciones de Gestión de Usuarios (CRUD) ---
-
-export const createUser = async (id_usuario, usersData, ip_usuario) => {
+export const createUser = async (id_admin, usersData, ip_admin) => {
   return db.sequelize.transaction(async (t) => {
     const creationPromises = usersData.map(async (userData) => {
-      const { correo, password } = userData;
+      const { correo, password, rol } = userData;
       const userDb = await userRepository.findByEmail(correo, {
         transaction: t,
       });
@@ -95,8 +93,12 @@ export const createUser = async (id_usuario, usersData, ip_usuario) => {
       const userForDb = {
         ...userData,
         contrasena_hash: contrasena_hash,
-        id_creador: id_usuario,
+        id_creador: id_admin,
       };
+
+      if (rol === "Admin") {
+        userForDb.id_centro_operacion = null;
+      }
 
       const newUser = await userRepository.create(userForDb, {
         transaction: t,
@@ -105,9 +107,9 @@ export const createUser = async (id_usuario, usersData, ip_usuario) => {
       await logRepository.create(
         {
           accion: "CREAR_USUARIO",
-          id_usuario: id_usuario,
-          descripcion: `El Admin (ID: ${id_usuario}) creó al usuario '${newUser.correo}' (ID: ${newUser.id_usuario}).`,
-          ip_usuario: ip_usuario,
+          id_usuario: id_admin,
+          descripcion: `El Admin (ID: ${id_admin}) creó al usuario '${newUser.correo}' (ID: ${newUser.id_usuario}).`,
+          ip_usuario: ip_admin,
         },
         { transaction: t }
       );
@@ -121,31 +123,32 @@ export const createUser = async (id_usuario, usersData, ip_usuario) => {
 
 export const getAllUsers = async () => userRepository.findAll();
 
-export const getUserById = async (id) => {
-  const user = await userRepository.findById(id);
-  if (!user) throw new NotFoundError(`Usuario con ID ${id} no encontrado.`);
+export const getUserById = async (id_usuario) => {
+  const user = await userRepository.findById(id_usuario);
+  if (!user)
+    throw new NotFoundError(`Usuario con ID ${id_usuario} no encontrado.`);
   return user;
 };
 
-export const updateUser = async (id, updateData) => {
-  const userDb = await userRepository.findById(id);
+export const updateUser = async (id_usuario, updateData) => {
+  const userDb = await userRepository.findById(id_usuario);
   if (!userDb) {
     throw new NotFoundError("El usuario que se intenta actualizarn o existe.");
   }
   if (updateData.correo) {
     const existingUser = await userRepository.findByEmail(updateData.correo);
-    if (existingUser && existingUser.id !== parseInt(id)) {
+    if (existingUser && existingUser.id !== parseInt(id_usuario)) {
       throw new UserAlreadyExistsError(
         "El correo ya está en uso por otro usuario."
       );
     }
   }
-  return userRepository.update(id, updateData);
+  return userRepository.update(id_usuario, updateData);
 };
 
-export const stateUser = async (id, updateData, ip) => {
+export const stateUser = async (id_usuario, updateData, id_admin, ip_admin) => {
   return db.sequelize.transaction(async (t) => {
-    const userDb = await userRepository.findById(id, {
+    const userDb = await userRepository.findById(id_usuario, {
       transaction: t,
     });
     if (!userDb) {
@@ -162,7 +165,7 @@ export const stateUser = async (id, updateData, ip) => {
       }
     }
 
-    const updatedUser = await userRepository.update(id, updateData, {
+    const updatedUser = await userRepository.update(id_usuario, updateData, {
       transaction: t,
     });
 
@@ -170,9 +173,9 @@ export const stateUser = async (id, updateData, ip) => {
       await logRepository.create(
         {
           accion: "DESACTIVAR_USUARIO",
-          id_usuario: id,
-          descripcion: `El Admin (ID: ${id}) desactivó al usuario '${userDb.nombre}' (ID: ${id}).`,
-          ip_usuario: ip,
+          id_usuario: id_admin,
+          descripcion: `El Admin (ID: ${id_admin}) desactivó al usuario '${userDb.nombre}' (ID: ${id_usuario}).`,
+          ip_usuario: ip_admin,
         },
         { transaction: t }
       );
@@ -182,9 +185,9 @@ export const stateUser = async (id, updateData, ip) => {
     await logRepository.create(
       {
         accion: "ACTIVAR_USUARIO",
-        id_usuario: id,
-        descripcion: `El Admin (ID: ${id}) activó al usuario '${userDb.nombre}' (ID: ${id}).`,
-        ip_usuario: ip,
+        id_usuario: id_admin,
+        descripcion: `El Admin (ID: ${id_admin}) activó al usuario '${userDb.nombre}' (ID: ${id_usuario}).`,
+        ip_usuario: ip_admin,
       },
       { transaction: t }
     );

@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { handleKeyNumberDown } from "../../utils/inputUtilities.js";
 import api from "../../config/axios.js";
+import { useAuthStore } from "../../stores/authStore.js";
 
 // --- Subcomponente para cada fila del formulario dinámico ---
 const DeviceSubForm = ({
@@ -18,6 +19,8 @@ const DeviceSubForm = ({
   isLoadingCatalogs,
 }) => {
   const device = formik.values.devices[index];
+
+  const { user } = useAuthStore();
 
   // Función auxiliar para obtener errores de campos anidados en Formik
   const getError = (fieldName) => {
@@ -58,30 +61,44 @@ const DeviceSubForm = ({
             <div className="text-error text-sm mt-1">{getError("serial")}</div>
           )}
         </label>
-        <label className="block">
-          <span className="text-text-main font-semibold">
-            Centro de Operación:
-          </span>
-          <select
-            className={inputClasses}
-            {...formik.getFieldProps(`devices[${index}].id_centro_operacion`)}
-            disabled={isLoadingCatalogs}
-          >
-            <option value="" hidden>
-              {isLoadingCatalogs ? "Cargando..." : "Selecciona..."}
-            </option>
-            {centros.map((c) => (
-              <option key={c.id_centro_operacion} value={c.id_centro_operacion}>
-                {c.codigo} - {c.direccion}
+        {user?.rol === "Admin" ? (
+          <label className="block">
+            <span className="text-text-main font-semibold">
+              Centro de Operación:
+            </span>
+            <select
+              className={inputClasses}
+              {...formik.getFieldProps(`devices[${index}].id_centro_operacion`)}
+              disabled={isLoadingCatalogs}
+            >
+              <option value="" hidden>
+                {isLoadingCatalogs ? "Cargando..." : "Selecciona..."}
               </option>
-            ))}
-          </select>
-          {getError("id_centro_operacion") && (
-            <div className="text-error text-sm mt-1">
-              {getError("id_centro_operacion")}
-            </div>
-          )}
-        </label>
+              {centros.map((c) => (
+                <option
+                  key={c.id_centro_operacion}
+                  value={c.id_centro_operacion}
+                >
+                  {c.codigo} - {c.direccion}
+                </option>
+              ))}
+            </select>
+            {getError("id_centro_operacion") && (
+              <div className="text-error text-sm mt-1">
+                {getError("id_centro_operacion")}
+              </div>
+            )}
+          </label>
+        ) : (
+          <div className="block">
+            <span className="text-text-main font-semibold">
+              Centro de Operación:
+            </span>
+            <p className={`${inputClasses} bg-gray-200 text-gray-500`}>
+              {"Asignado a tu centro"}
+            </p>
+          </div>
+        )}
         <label className="block">
           <span className="text-text-main font-semibold">
             Tamaño Disco Duro (GB):
@@ -276,7 +293,6 @@ export default function CreateDeviceForm({ onClose, onSuccess }) {
             </FieldArray>
 
             <hr className="my-8 border-gray-300" />
-
             <footer className="flex justify-end items-center gap-4">
               {formik.errors.apiError && (
                 <div className="text-error text-sm mr-auto">

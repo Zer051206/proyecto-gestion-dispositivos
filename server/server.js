@@ -58,12 +58,12 @@ app.use("/api", catalogueRoutes);
 // Primero, aplicamos el portero general a todo lo que venga después
 app.use("/api", authMiddleware, limiter);
 
-// 3. Sub-sección de Rutas para Admins
+// 3. Rutas para Todos los Roles Autenticados (Admins y Encargados)
+app.use("/api", [deviceRoutes, peripheralRoutes, apiRoutes]);
+
+// 4. Sub-sección de Rutas para Admins
 // Después del portero general, aplicamos el guardia VIP 'isAdmin'
 app.use("/api", isAdmin, [userRoutes, operationCenterRoutes]);
-
-// 4. Rutas para Todos los Roles Autenticados (Admins y Encargados)
-app.use("/api", [deviceRoutes, peripheralRoutes, apiRoutes]);
 
 app.use(errorHandler);
 

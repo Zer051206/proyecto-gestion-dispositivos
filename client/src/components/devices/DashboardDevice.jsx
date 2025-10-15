@@ -1,3 +1,11 @@
+/**
+ * @file DashboardDevice.jsx
+ * @module Components/Devices
+ * @description Página principal para la gestión de activos (equipos y periféricos).
+ * Permite visualizar, buscar, filtrar y gestionar el estado de todos los activos.
+ * Implementa una arquitectura de componentes con modales para las acciones principales
+ * y adapta su interfaz (tabla vs. tarjetas) según el rol del usuario.
+ */
 import React, { useState } from "react";
 import { useAuthStore } from "../../stores/authStore.js";
 import { useDashboardDevice } from "../../hooks/devices/useDashboardDevice.js";
@@ -18,8 +26,20 @@ import {
 import api from "../../config/axios.js";
 import CreateDeviceForm from "./CreateDevicesForm.jsx";
 import CreatePeripheralForm from "./CreatePeripheralsForm.jsx";
+import { toast } from "react-hot-toast";
 
 // --- SUBCOMPONENTES ---
+
+/**
+ * @function ConfirmStatusChangeModal
+ * @description Modal de confirmación para dar de baja o reactivar un activo.
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.asset - El activo sobre el cual se realizará la acción.
+ * @param {Function} props.onConfirm - Callback a ejecutar al confirmar la acción.
+ * @param {Function} props.onCancel - Callback a ejecutar al cancelar.
+ * @param {boolean} props.isSubmitting - Estado de carga para deshabilitar botones.
+ * @returns {JSX.Element}
+ */
 const ConfirmStatusChangeModal = ({
   asset,
   onConfirm,
@@ -80,8 +100,16 @@ const ConfirmStatusChangeModal = ({
   );
 };
 
-// --- SUBCOMPONENTE: Modal de Detalles ---
+/**
+ * @function AssetDetailModal
+ * @description Modal que muestra información detallada de un activo (equipo o periférico).
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.asset - El objeto del activo a mostrar.
+ * @param {Function} props.onClose - Función para cerrar el modal.
+ * @returns {JSX.Element|null}
+ */
 const AssetDetailModal = ({ asset, onClose }) => {
+  console.log("🚀 ~ AssetDetailModal ~ asset:", asset);
   if (!asset) return null;
   return (
     <div
@@ -170,6 +198,14 @@ const AssetDetailModal = ({ asset, onClose }) => {
   );
 };
 
+/**
+ * @function AssetTable
+ * @description Componente que renderiza una tabla de activos.
+ * @param {object} props - Propiedades del componente.
+ * @param {Array<object>} props.assets - El array de activos a mostrar.
+ * @param {Function} props.onAction - Callback para manejar acciones en cada fila.
+ * @returns {JSX.Element}
+ */
 const AssetTable = ({ assets, onAction }) => (
   <div className="overflow-auto max-h-[500px] bg-secondary rounded-lg shadow-md animate-fade-in">
     <table className="w-full text-left text-text-main">
@@ -257,6 +293,14 @@ const AssetTable = ({ assets, onAction }) => (
   </div>
 );
 
+/**
+ * @function AssetCards
+ * @description Componente que renderiza una cuadrícula de tarjetas de activos.
+ * @param {object} props - Propiedades del componente.
+ * @param {Array<object>} props.assets - El array de activos a mostrar.
+ * @param {Function} props.onAction - Callback para manejar acciones en cada tarjeta.
+ * @returns {JSX.Element}
+ */
 const AssetCards = ({ assets, onAction }) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
     {assets.map((asset) => {
@@ -287,7 +331,7 @@ const AssetCards = ({ assets, onAction }) => (
               {asset.serial || asset.serial_periferico}
             </p>
             <p className="text-sm text-neutral-taupe capitalize">
-              {asset.type}
+              {asset.type === "device" ? "Equipo" : "Periferico"}
             </p>
           </div>
           <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end space-x-4">
@@ -323,7 +367,12 @@ const AssetCards = ({ assets, onAction }) => (
   </div>
 );
 
-// --- COMPONENTE PRINCIPAL DE LA PÁGINA ---
+/**
+ * @function DashboardDevice
+ * @description Componente principal de la página de gestión de activos.
+ * Orquesta la obtención de datos, los filtros, el cambio de vistas y la gestión de modales.
+ * @returns {JSX.Element}
+ */
 export default function DashboardDevice() {
   const { user } = useAuthStore();
   const isAdmin = user?.rol === "Admin";
@@ -333,38 +382,64 @@ export default function DashboardDevice() {
   const [modal, setModal] = useState({ type: null, data: null });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleStatusChange = async () => {
-    if (modal.type !== "status") return;
-    setIsSubmitting(true);
-    try {
-      const asset = modal.data;
-      const assetId = asset.id_equipo || asset.id_periferico;
-      const newState = !(asset.estado_equipo ?? asset.estado_periferico);
-
-      // La API recibe el nuevo estado. El endpoint de 'update' genérico sirve para esto.
-      if (asset.type === "device") {
-        await api.patch(`/api/dispositivos/${assetId}/estado`, {
-          estado_equipo: newState,
-        });
-      } else {
-        await api.patch(`/api/perifericos/${assetId}/estado`, {
-          estado_periferico: newState,
-        });
-      }
-      closeModal();
-      refetch();
-    } catch (err) {
-      console.error("Error al cambiar el estado del activo", err);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
+  /**
+   * @function handleAction
+   * @description Centraliza el manejo de apertura de modales.
+   * @param {'createDevice'|'createPeripheral'|'details'|'status'} type - El tipo de modal a abrir.
+   * @param {object|null} [asset=null] - Los datos del activo para los modales de detalle o estado.
+   */
   const handleAction = (type, asset = null) => setModal({ type, data: asset });
+
+  /**
+   * @function closeModal
+   * @description Cierra cualquier modal que esté abierto.
+   */
   const closeModal = () => setModal({ type: null, data: null });
+
+  /**
+   * @function handleSuccess
+   * @description Callback que se ejecuta tras una creación exitosa. Muestra una notificación y recarga los datos.
+   * @param {string} message - El mensaje de éxito a mostrar.
+   */
   const handleSuccess = (successMessage) => {
+    toast.success(successMessage);
     refetch();
     closeModal();
+  };
+
+  /**
+   * @async
+   * @function handleStatusChange
+   * @description Maneja la lógica para cambiar el estado de un activo usando toast.promise.
+   */
+  const handleStatusChange = async () => {
+    if (modal.type !== "status") return;
+
+    const asset = modal.data;
+    const newState = !(asset.estado_equipo ?? asset.estado_periferico);
+    const actionText = newState ? "reactivado" : "dado de baja";
+    const assetId = asset.id_equipo || asset.id_periferico;
+    const endpoint =
+      asset.type === "equipo"
+        ? `/api/equipos/${assetId}/estado`
+        : `/api/perifericos/${assetId}/estado`;
+    const payload =
+      asset.type === "equipo"
+        ? { estado_equipo: newState }
+        : { estado_periferico: newState };
+
+    setIsSubmitting(true);
+
+    await toast.promise(api.patch(endpoint, payload), {
+      loading: `Cambiando estado del activo...`,
+      success: `¡Activo ${actionText} exitosamente!`,
+      error: (err) =>
+        err.response?.data?.message || `Error al cambiar el estado.`,
+    });
+
+    closeModal();
+    refetch();
+    setIsSubmitting(false);
   };
 
   if (isLoading)

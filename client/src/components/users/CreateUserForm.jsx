@@ -124,7 +124,7 @@ const UserSubForm = ({
         <label className="block">
           <span className="text-text-main font-semibold">Identificación:</span>
           <input
-            type="text"
+            type="number"
             autoComplete="off"
             onKeyDown={handleKeyNumberDown}
             className={inputClasses}

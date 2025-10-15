@@ -16,8 +16,8 @@ const userValidationSchema = Yup.object({
   id_tipo_identificacion: Yup.number()
     .positive("Debe seleccionar un tipo de identificación.")
     .required("El tipo de identificación es obligatorio."),
-  identificacion: Yup.string()
-    .min(5, "La identificación debe tener al menos 5 caracteres.")
+  identificacion: Yup.number()
+    .min(500, "La identificación no es válida.")
     .required("La identificación es obligatoria."),
   telefono: Yup.string()
     .min(7, "El teléfono debe tener al menos 7 caracteres.")
@@ -31,7 +31,6 @@ const userValidationSchema = Yup.object({
       schema
         .positive("Un 'Encargado' debe tener un centro de operación.")
         .required("El centro de operación es obligatorio."),
-    // Si es 'Admin', el campo puede ser nulo.
     otherwise: (schema) => schema.nullable().transform(() => null),
   }),
   password: Yup.string()

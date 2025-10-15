@@ -6,9 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "docs": "jsdoc -c jsdoc.json"
+    "docs": "npm run docs:backend && npm run docs:frontend",
+    "docs:backend": "jsdoc -c jsdoc.json -r server/src -d docs/backend",
+    "docs:frontend": "jsdoc -c jsdoc.json -r client/src -d docs/frontend"
   },
   "dependencies": {
     "react": "^19.1.1",
@@ -23,7 +23,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.4.0",
-    "jsdoc": "^4.0.4",
+    "jsdoc": "^4.0.5",
     "vite": "^7.1.7"
   }
 }

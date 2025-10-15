@@ -7,6 +7,7 @@ import { FieldArray, FormikProvider, getIn } from "formik";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash, faTimes } from "@fortawesome/free-solid-svg-icons";
 import api from "../../config/axios.js";
+import { useAuthStore } from "../../stores/authStore.js";
 
 // --- Subcomponente para cada fila del formulario dinámico ---
 const PeripheralSubForm = ({
@@ -17,6 +18,7 @@ const PeripheralSubForm = ({
   isLoadingCatalogs,
 }) => {
   const peripheral = formik.values.peripherals[index];
+  const { user } = useAuthStore();
 
   // Función auxiliar para obtener errores de campos anidados en Formik
   const getError = (fieldName) => {
@@ -104,43 +106,46 @@ const PeripheralSubForm = ({
           )}
         </label>
 
-        <label className="block lg:col-span-2">
-          <span className="text-text-main font-semibold">
-            Centro de Operación:
-          </span>
-          <select
-            className={inputClasses}
-            {...formik.getFieldProps(
-              `peripherals[${index}].id_centro_operacion`
-            )}
-            disabled={isLoadingCatalogs}
-          >
-            <option value="" hidden>
-              {isLoadingCatalogs ? "Cargando..." : "Selecciona..."}
-            </option>
-            {catalogos.centrosOperacion.map((c) => (
-              <option key={c.id_centro_operacion} value={c.id_centro_operacion}>
-                {c.codigo} - {c.direccion}
+        {user?.rol === "Admin" ? (
+          <label className="block">
+            <span className="text-text-main font-semibold">
+              Centro de Operación:
+            </span>
+            <select
+              className={inputClasses}
+              {...formik.getFieldProps(
+                `peripherals[${index}].id_centro_operacion`
+              )}
+              disabled={isLoadingCatalogs}
+            >
+              <option value="" hidden>
+                {isLoadingCatalogs ? "Cargando..." : "Selecciona..."}
               </option>
-            ))}
-          </select>
-          {getError("id_centro_operacion") && (
-            <div className="text-error text-sm mt-1">
-              {getError("id_centro_operacion")}
-            </div>
-          )}
-        </label>
-
-        <label className="flex items-center space-x-2 py-2 self-end">
-          <input
-            type="checkbox"
-            autoComplete="off"
-            className="h-4 w-4 rounded"
-            {...formik.getFieldProps(`peripherals[${index}].activo_fijo`)}
-            checked={peripheral.activo_fijo}
-          />
-          <span className="text-text-main font-semibold">¿Es Activo Fijo?</span>
-        </label>
+              {catalogos.centrosOperacion.map((c) => (
+                <option
+                  key={c.id_centro_operacion}
+                  value={c.id_centro_operacion}
+                >
+                  {c.codigo} - {c.direccion}
+                </option>
+              ))}
+            </select>
+            {getError("id_centro_operacion") && (
+              <div className="text-error text-sm mt-1">
+                {getError("id_centro_operacion")}
+              </div>
+            )}
+          </label>
+        ) : (
+          <div className="block">
+            <span className="text-text-main font-semibold">
+              Centro de Operación:
+            </span>
+            <p className={`${inputClasses} bg-gray-200 text-gray-500`}>
+              {"Asignado a tu centro"}
+            </p>
+          </div>
+        )}
 
         {/* --- INPUT CONDICIONAL --- */}
         {peripheral.activo_fijo && (
@@ -163,6 +168,16 @@ const PeripheralSubForm = ({
             )}
           </label>
         )}
+        <label className="flex items-center justify-center space-x-2 py-2">
+          <input
+            type="checkbox"
+            autoComplete="off"
+            className="h-4 w-4 rounded"
+            {...formik.getFieldProps(`peripherals[${index}].activo_fijo`)}
+            checked={peripheral.activo_fijo}
+          />
+          <span className="text-text-main font-semibold">¿Es Activo Fijo?</span>
+        </label>
       </div>
     </div>
   );

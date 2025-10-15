@@ -8,7 +8,7 @@
  * @const {Intl.DateTimeFormatOptions} dateTimeOptions
  * @description Opciones de configuración para el formato de fecha y hora usando `toLocaleString`.
  * Especifica el formato numérico para año, mes y día, y el formato de 2 dígitos (24 horas)
- * para la hora y los minutos.
+ * para la hora, los minutos y segundos.
  */
 const dateTimeOptions = {
   year: "numeric",
@@ -16,6 +16,7 @@ const dateTimeOptions = {
   day: "numeric",
   hour: "2-digit",
   minute: "2-digit",
+  second: "2-digit",
   hour12: false, // Formato de 24 horas
   timeZone: "America/Bogota",
 };
@@ -41,5 +42,5 @@ export const formatDate = (dateString) => {
   }
 
   // Formatea la fecha usando las opciones definidas
-  return date.toLocaleString("es-CO", dateTimeOptions);
+  return date.toLocaleString("es-ES", dateTimeOptions);
 };

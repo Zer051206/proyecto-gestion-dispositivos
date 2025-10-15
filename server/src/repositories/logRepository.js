@@ -14,6 +14,7 @@ export const findAll = async (options = {}) => {
 export const findAllById = async (id) => {
   return Log.findAll({
     where: { id_usuario: id },
+    include: [{ model: User, attributes: ["nombre", "apellido", "rol"] }],
   });
 };
 

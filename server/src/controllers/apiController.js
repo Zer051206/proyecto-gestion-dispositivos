@@ -16,7 +16,8 @@ export const getAssets = async (req, res, next) => {
 
 export const getOperationCenters = async (req, res, next) => {
   try {
-    const operationCenters = await apiService.getOperationCenters();
+    const user = req.user;
+    const operationCenters = await apiService.getOperationCenters(user);
     return res.status(200).json({
       message: "Centros de operacion obtenidos exitosamente.",
       success: true,

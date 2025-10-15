@@ -2,10 +2,7 @@
 import { z } from "zod";
 
 export const deviceObjectSchema = z.object({
-  id_centro_operacion: z.coerce
-    .number({ required_error: "El centro de operación es obligatorio." })
-    .int()
-    .positive(),
+  id_centro_operacion: z.coerce.number().int().nullable(),
 
   serial: z
     .string({ required_error: "El serial es obligatorio." })

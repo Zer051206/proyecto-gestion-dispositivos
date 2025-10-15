@@ -1,3 +1,11 @@
+/**
+ * @file DashboardUser.jsx
+ * @module Components/Users
+ * @description Página principal para la gestión de usuarios. Permite a los administradores
+ * visualizar, buscar, filtrar y gestionar el estado de todos los usuarios del sistema.
+ * Incluye funcionalidades para cambiar entre vistas de tabla y tarjetas, y modales para
+ * ver detalles y cambiar el estado de un usuario.
+ */
 import React, { useState } from "react";
 import { useDashboardUser } from "../../hooks/users/useDashboardUser.js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -17,8 +25,18 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import api from "../../config/axios.js";
 import CreateUserModal from "./CreateUserForm.jsx";
+import { toast } from "react-hot-toast";
 
-// --- SUBCOMPONENTE: Modal de Detalles del Usuario ---
+// --- SUBCOMPONENTES ---
+
+/**
+ * @function UserDetailModal
+ * @description Modal que muestra información detallada de un usuario.
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.user - El objeto de usuario a mostrar.
+ * @param {Function} props.onClose - Función para cerrar el modal.
+ * @returns {JSX.Element|null}
+ */
 const UserDetailModal = ({ user, onClose }) => {
   if (!user) return null;
 
@@ -74,8 +92,8 @@ const UserDetailModal = ({ user, onClose }) => {
           {user.rol === "Encargado" && (
             <DetailRow
               label="Centro de Operación"
-              value={`${user.OperationCenter?.codigo || ""} - ${
-                user.OperationCenter?.direccion
+              value={`${user.CentroAsignado?.codigo || ""} - ${
+                user.CentroAsignado?.direccion
               }`}
               icon={faBuilding}
             />
@@ -91,7 +109,12 @@ const UserDetailModal = ({ user, onClose }) => {
   );
 };
 
-// --- SUBCOMPONENTE: Modal de Confirmación de Cambio de Estado ---
+/**
+ * @function ConfirmStatusChangeModal
+ * @description Modal de confirmación para activar o desactivar la cuenta de un usuario.
+ * @param {object} props - Propiedades del componente.
+ * @returns {JSX.Element}
+ */
 const ConfirmStatusChangeModal = ({
   user,
   onConfirm,
@@ -144,7 +167,12 @@ const ConfirmStatusChangeModal = ({
   </div>
 );
 
-// --- SUBCOMPONENTE: Tabla de Usuarios ---
+/**
+ * @function UserTable
+ * @description Componente que renderiza una tabla de usuarios.
+ * @param {object} props - Propiedades del componente.
+ * @returns {JSX.Element}
+ */
 const UserTable = ({ users, onAction }) => (
   <div className="overflow-auto bg-secondary rounded-lg shadow-md max-h-[500px] animate-fade-in">
     <table className="w-full text-left text-text-main">
@@ -179,7 +207,7 @@ const UserTable = ({ users, onAction }) => (
             </td>
             <td className="p-4 whitespace-nowrap">{user.rol}</td>
             <td className="p-4 whitespace-nowrap">
-              {user.OperationCenter?.codigo ||
+              {user.CentroAsignado?.codigo ||
                 (user.rol === "Admin" ? "Global" : "N/A")}
             </td>
             <td className="p-4 whitespace-nowrap">
@@ -219,7 +247,12 @@ const UserTable = ({ users, onAction }) => (
   </div>
 );
 
-// --- SUBCOMPONENTE: Tarjetas de Usuarios ---
+/**
+ * @function UserCards
+ * @description Componente que renderiza una cuadrícula de tarjetas de usuarios.
+ * @param {object} props - Propiedades del componente.
+ * @returns {JSX.Element}
+ */
 const UserCards = ({ users, onAction }) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in">
     {users.map((user) => (
@@ -276,7 +309,12 @@ const UserCards = ({ users, onAction }) => (
   </div>
 );
 
-// --- COMPONENTE PRINCIPAL ---
+/**
+ * @function UserDashboard
+ * @description Componente principal de la página de gestión de usuarios.
+ * Orquesta la obtención de datos, los filtros, el cambio de vistas (tabla/tarjetas) y la gestión de modales.
+ * @returns {JSX.Element}
+ */
 export default function UserDashboard() {
   const { users, isLoading, error, refetch, setSearchTerm, setSortBy } =
     useDashboardUser();
@@ -284,30 +322,62 @@ export default function UserDashboard() {
   const [modal, setModal] = useState({ type: null, data: null });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  /**
+   * @function handleAction
+   * @description Abre un modal de un tipo específico con los datos de un usuario.
+   * @param {'createUser'|'details'|'status'} type - El tipo de modal a abrir.
+   * @param {object|null} user - Los datos del usuario para el modal.
+   */
   const handleAction = (type, user = null) => setModal({ type, data: user });
+
+  /**
+   * @function closeModal
+   * @description Cierra cualquier modal que esté abierto.
+   */
   const closeModal = () => setModal({ type: null, data: null });
 
+  /**
+   * @function handleSuccess
+   * @description Callback que se ejecuta tras una creación exitosa de usuario. Muestra una notificación.
+   * @param {string} message - El mensaje de éxito a mostrar.
+   */
   const handleSuccess = (message) => {
-    alert(message); // En el futuro, reemplazar con un toast de notificación
+    toast.success(message);
     refetch();
     closeModal();
   };
 
+  /**
+   * @async
+   * @function handleStatusChange
+   * @description Maneja la lógica para cambiar el estado (activo/inactivo) de un usuario.
+   * Muestra notificaciones de carga, éxito y error.
+   */
   const handleStatusChange = async () => {
     if (modal.type !== "status") return;
+
+    const user = modal.data;
+    const newState = !user.activo;
+    const actionText = newState ? "activado" : "desactivado";
+
     setIsSubmitting(true);
-    try {
-      const user = modal.data;
-      await api.patch(`/api/usuarios/${user.id_usuario}/estado`, {
-        activo: !user.activo,
-      });
-      closeModal();
-      refetch();
-    } catch (err) {
-      console.error("Error al cambiar el estado del usuario", err);
-    } finally {
-      setIsSubmitting(false);
-    }
+
+    await toast.promise(
+      api.patch(`/api/usuarios/${user.id_usuario}/estado`, {
+        activo: newState,
+      }),
+      {
+        loading: `Cambiando estado de ${user.nombre}...`,
+        success: `¡Usuario ${actionText} exitosamente!`,
+        error: (err) =>
+          err.response?.data?.message ||
+          `Error al ${actionText.slice(0, -1)}ar el usuario.`,
+      }
+    );
+
+    closeModal();
+    refetch();
+    setIsSubmitting(false);
   };
 
   if (isLoading)
