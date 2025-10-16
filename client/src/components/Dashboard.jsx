@@ -1,6 +1,15 @@
-// src/components/DashboardPage.jsx
-
-import React, { useState } from "react";
+/**
+ * @file DashboardPage.jsx
+ * @module Components
+ * @description Componente que renderiza la página principal del dashboard para usuarios autenticados.
+ * Muestra un conjunto de "Acciones Rápidas" en forma de botones de navegación, cuyo contenido
+ * se adapta condicionalmente según el rol del usuario ('Admin' o 'Encargado').
+ * @requires react
+ * @requires react-router-dom
+ * @requires @fortawesome/react-fontawesome
+ * @requires ../stores/authStore.js
+ */
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -11,7 +20,16 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useAuthStore } from "../stores/authStore.js";
 
-// --- Subcomponente NavButton (sin cambios, pero con colores temáticos) ---
+/**
+ * @function NavButton
+ * @description Subcomponente reutilizable que renderiza un botón de navegación grande con un icono y texto.
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.icon - El icono de FontAwesome a mostrar.
+ * @param {string} props.text - El texto a mostrar en el botón.
+ * @param {Function} props.onClick - La función a ejecutar al hacer clic.
+ * @param {string} props.colorClass - La clase de Tailwind para el color de fondo.
+ * @returns {JSX.Element}
+ */
 const NavButton = ({ icon, text, onClick, colorClass }) => (
   <button
     onClick={onClick}
@@ -22,6 +40,13 @@ const NavButton = ({ icon, text, onClick, colorClass }) => (
   </button>
 );
 
+/**
+ * @function DashboardPage
+ * @description Renderiza el contenido principal del dashboard.
+ * Utiliza el `useAuthStore` para obtener el rol del usuario actual y muestra
+ * condicionalmente las acciones disponibles para Admins y Encargados.
+ * @returns {JSX.Element}
+ */
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();

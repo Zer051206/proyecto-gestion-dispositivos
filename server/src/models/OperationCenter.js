@@ -48,6 +48,9 @@ export default (sequelize) => {
     OperationCenter.hasMany(models.Peripheral, {
       foreignKey: "id_centro_operacion",
     });
+    OperationCenter.hasMany(models.CenterCost, {
+      foreignKey: "id_centro_operacion",
+    });
   };
   return OperationCenter;
 };

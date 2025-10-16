@@ -1,3 +1,15 @@
+/**
+ * @file CreateOperationCenterForm.jsx
+ * @module Components/OperationCenters
+ * @description Componente de React que renderiza un formulario modal para la creación de uno o más Centros de Operación.
+ * Utiliza un patrón de formulario dinámico con Formik y FieldArray, permitiendo al usuario añadir o quitar
+ * formularios para centros individuales dentro de una misma transacción.
+ * @requires react
+ * @requires formik
+ * @requires @fortawesome/react-fontawesome
+ * @requires ../../hooks/operation-centers/useCreateOperationCenterForm.js
+ * @requires ../../config/axios.js
+ */
 import React, { useEffect, useState } from "react";
 import {
   useCreateOperationCenterForm,
@@ -13,7 +25,17 @@ import {
 } from "../../utils/inputUtilities.js";
 import api from "../../config/axios.js";
 
-// --- Subcomponente para cada fila del formulario dinámico ---
+/**
+ * @function CenterSubForm
+ * @description Subcomponente que renderiza un conjunto de campos para un único Centro de Operación dentro del FieldArray.
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.formik - La instancia de Formik del formulario principal.
+ * @param {number} props.index - El índice del centro actual en el array de `centers`.
+ * @param {Function} props.onRemove - Función de FieldArray para eliminar este sub-formulario.
+ * @param {Array<object>} props.ciudades - Array de ciudades para poblar el select.
+ * @param {boolean} props.isLoadingCatalogs - Estado de carga de los catálogos.
+ * @returns {JSX.Element}
+ */
 const CenterSubForm = ({
   formik,
   index,
@@ -21,6 +43,12 @@ const CenterSubForm = ({
   ciudades,
   isLoadingCatalogs,
 }) => {
+  /**
+   * @function getError
+   * @description Función auxiliar para obtener el mensaje de error de un campo anidado en Formik.
+   * @param {string} fieldName - El nombre del campo.
+   * @returns {string|null} El mensaje de error si el campo ha sido tocado y tiene un error, de lo contrario null.
+   */
   const getError = (fieldName) => {
     const error = getIn(formik.errors, `centers[${index}].${fieldName}`);
     const touched = getIn(formik.touched, `centers[${index}].${fieldName}`);
@@ -129,7 +157,16 @@ const CenterSubForm = ({
   );
 };
 
-// --- Componente Principal (Modal) ---
+/**
+ * @function CreateOperationCenterForm
+ * @description Componente principal del modal para crear Centros de Operación.
+ * Se encarga de obtener los datos de catálogo necesarios (ciudades) y de orquestar
+ * el formulario dinámico.
+ * @param {object} props - Propiedades del componente.
+ * @param {Function} props.onClose - Callback para cerrar el modal.
+ * @param {Function} props.onSuccess - Callback a ejecutar tras una creación exitosa.
+ * @returns {JSX.Element}
+ */
 export default function CreateOperationCenterForm({ onClose, onSuccess }) {
   const formik = useCreateOperationCenterForm(onSuccess);
   const [ciudades, setCiudades] = useState([]);

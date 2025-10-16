@@ -1,19 +1,64 @@
-// src/hooks/devices/useDashboardDevice.js
+/**
+ * @file useDashboardDevice.js
+ * @module Hooks/Devices
+ * @description Hook personalizado para gestionar los datos y el estado de la UI del dashboard de Dispositivos (Equipos y Periféricos).
+ * Se encarga de obtener la lista combinada de dispositivos desde la API, y de manejar la lógica de
+ * búsqueda (filtrado) y filtrado por estado del lado del cliente.
+ * @requires react
+ * @requires ../config/axios.js
+ * @requires ../stores/authStore.js
+ */
 import { useState, useEffect, useMemo, useCallback } from "react";
 import api from "../../config/axios.js";
 import { useAuthStore } from "../../stores/authStore.js";
 
+/**
+ * @function useDashboardDevice
+ * @description Hook de React que encapsula toda la lógica para la página de gestión de dispositivos.
+ * Obtiene los datos, gestiona los estados de carga y error, y proporciona funciones para filtrar la lista.
+ * @returns {{
+ * assets: Array<object>,
+ * isLoading: boolean,
+ * error: string|null,
+ * refetch: Function,
+ * setSearchTerm: React.Dispatch<React.SetStateAction<string>>,
+ * setFilterStatus: React.Dispatch<React.SetStateAction<string>>
+ * }} Un objeto que contiene los dispositivos procesados, el estado de carga, errores, y las funciones para actualizar los filtros y recargar los datos.
+ */
 export const useDashboardDevice = () => {
   const { user } = useAuthStore();
+
+  /**
+   * @state
+   * @description Almacena la lista original de dispositivos (equipos y periféricos) obtenida de la API.
+   * @type {[Array<object>, Function]}
+   */
   const [assets, setAssets] = useState([]);
+
+  /**
+   * @state
+   * @description Indica si se está realizando una petición a la API.
+   * @type {[boolean, Function]}
+   */
   const [isLoading, setIsLoading] = useState(true);
+
+  /**
+   * @state
+   * @description Almacena un mensaje de error si la petición a la API falla.
+   * @type {[string|null, Function]}
+   */
   const [error, setError] = useState(null);
 
   // Estados para los filtros
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("todos");
 
-  // Función para obtener los datos, envuelta en useCallback
+  /**
+   * @function fetchAssets
+   * @description Obtiene la lista combinada de dispositivos desde el endpoint `/api/activos`.
+   * El backend se encarga de filtrar por rol. Se envuelve en `useCallback` para memorización.
+   * @async
+   */
   const fetchAssets = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -27,12 +72,17 @@ export const useDashboardDevice = () => {
     }
   }, []);
 
-  // useEffect para la carga inicial
+  // useEffect para ejecutar la carga de datos inicial cuando el componente se monta.
   useEffect(() => {
     fetchAssets();
   }, [fetchAssets]);
 
-  // Lógica de filtrado en el frontend
+  /**
+   * @const {Array<object>} filteredAssets
+   * @description Memoriza la lista de dispositivos procesada (filtrada) usando `useMemo`.
+   * Se recalcula solo si los activos originales, el término de búsqueda o el filtro de estado cambian,
+   * optimizando el rendimiento.
+   */
   const filteredAssets = useMemo(() => {
     return assets
       .filter((asset) => {
@@ -43,17 +93,14 @@ export const useDashboardDevice = () => {
         return true;
       })
       .filter((asset) => {
+        // Lógica de filtrado por término de búsqueda en serial o etiqueta
         const term = searchTerm.toLowerCase();
         const serial = asset.serial || asset.serial_periferico || "";
-        const etiqueta =
-          asset.equipo_etiqueta || asset.etiqueta_periferico || "";
-        return (
-          serial.toLowerCase().includes(term) ||
-          etiqueta.toLowerCase().includes(term)
-        );
+        return serial.toLowerCase().includes(term);
       });
   }, [assets, searchTerm, filterStatus]);
 
+  // Devuelve el estado y las funciones que el componente de la UI necesitará
   return {
     assets: filteredAssets,
     isLoading,

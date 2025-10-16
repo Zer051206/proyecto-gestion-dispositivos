@@ -1,4 +1,3 @@
-// src/models/Device.js
 import { DataTypes } from "sequelize";
 
 export default (sequelize) => {
@@ -20,6 +19,7 @@ export default (sequelize) => {
       },
       serial_pantalla: { type: DataTypes.STRING(255), allowNull: true },
       equipo_alquilado: { type: DataTypes.BOOLEAN, allowNull: false },
+      empresa_alquila: { type: DataTypes.STRING(180), allowNull: true },
       estado_equipo: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
@@ -37,6 +37,7 @@ export default (sequelize) => {
       },
       id_usuario_creador: { type: DataTypes.INTEGER, allowNull: false },
       id_centro_operacion: { type: DataTypes.INTEGER, allowNull: false },
+      id_centro_costo: { type: DataTypes.INTEGER, allowNull: true },
     },
     { tableName: "equipos", timestamps: false }
   );
@@ -50,6 +51,10 @@ export default (sequelize) => {
       foreignKey: "id_centro_operacion",
     });
     Device.hasOne(models.Decomission, { foreignKey: "id_equipo" });
+
+    Device.belongsTo(models.CenterCost, {
+      foreignKey: "id_centro_costo",
+    });
   };
   return Device;
 };

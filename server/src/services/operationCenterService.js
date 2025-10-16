@@ -107,7 +107,7 @@ export const stateOperationCenter = async (
 
     const updatedOperationCenter = await operationCenterRepository.update(
       id,
-      { estado: updateData.activo },
+      updateData,
       { transaction: t }
     );
 

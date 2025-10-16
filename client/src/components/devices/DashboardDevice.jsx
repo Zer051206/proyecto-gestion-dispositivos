@@ -368,6 +368,52 @@ const AssetCards = ({ assets, onAction }) => (
 );
 
 /**
+ * @function DashboardSkeleton
+ * @description Componente de esqueleto de carga que imita la estructura del Dashboard de Dispositivos.
+ * @returns {JSX.Element}
+ */
+const DashboardSkeleton = () => (
+  <div className="w-full animate-pulse">
+    {/* Esqueleto de la Cabecera */}
+    <header className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+      <div className="h-10 bg-gray-200 rounded w-2/5"></div>
+      <div className="flex items-center gap-4">
+        <div className="h-10 bg-gray-200 rounded w-36"></div>
+        <div className="h-10 bg-gray-200 rounded w-36"></div>
+        <div className="h-10 bg-gray-200 rounded w-20"></div>
+      </div>
+    </header>
+
+    {/* Esqueleto de los Filtros */}
+    <div className="flex flex-col md:flex-row gap-4 mb-6">
+      <div className="h-10 bg-gray-200 rounded w-full md:w-1/2"></div>
+      <div className="h-10 bg-gray-200 rounded w-full md:w-48"></div>
+    </div>
+
+    {/* Esqueleto de la Tabla */}
+    <div className="bg-secondary rounded-lg shadow-md p-4">
+      <div className="space-y-3">
+        {[...Array(5)].map((_, i) => (
+          <div
+            key={i}
+            className="grid grid-cols-5 items-center gap-4 p-2 border-b border-gray-200 last:border-b-0"
+          >
+            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+            <div className="flex-1 space-y-2">
+              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+            </div>
+            <div className="h-4 bg-gray-200 rounded w-1/2 hidden md:block"></div>
+            <div className="h-6 bg-gray-200 rounded-full w-20"></div>
+            <div className="h-6 bg-gray-200 rounded w-16 ml-auto"></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+/**
  * @function DashboardDevice
  * @description Componente principal de la página de gestión de activos.
  * Orquesta la obtención de datos, los filtros, el cambio de vistas y la gestión de modales.
@@ -442,17 +488,12 @@ export default function DashboardDevice() {
     setIsSubmitting(false);
   };
 
-  if (isLoading)
-    return (
-      <div className="text-center w-full p-10 font-semibold text-text-main">
-        Cargando activos...
-      </div>
-    );
+  if (isLoading) return <DashboardSkeleton />;
   if (error)
     return <div className="text-center w-full p-10 text-error">{error}</div>;
 
   return (
-    <div className="w-full">
+    <div className="w-full mb-10">
       <header className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <h1 className="text-4xl font-bold text-text-main">
           Gestión de Activos

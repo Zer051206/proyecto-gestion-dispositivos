@@ -1,12 +1,25 @@
+/**
+ * @file useCreateOperationCenterForm.js
+ * @module Hooks/OperationCenters
+ * @description Hook de React para gestionar la lógica del formulario de creación de Centros de Operación.
+ * encapsula la validación con Yup, el manejo de estado con Formik para formularios dinámicos (FieldArray),
+ * y la comunicación con la API para enviar los datos.
+ * @requires formik
+ * @requires yup
+ * @requires ../../config/api.js
+ */
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import api from "../../config/axios.js";
 
-// Esquema de validación con Yup para UN SOLO centro de operación
+/**
+ * @const {object} centerValidationSchema
+ * @description Esquema de validación de Yup para un único Centro de Operación.
+ * Define las reglas que debe cumplir cada objeto de centro en el formulario.
+ */
 const centerValidationSchema = Yup.object({
-  codigo: Yup.number()
+  codigo: Yup.string()
     .typeError("El código debe ser un número.")
-    .positive("El código debe ser un número positivo.")
     .required("El código es obligatorio."),
   direccion: Yup.string()
     .min(5, "La dirección debe tener al menos 5 caracteres.")
@@ -22,7 +35,11 @@ const centerValidationSchema = Yup.object({
     .required("La ciudad es obligatoria."),
 });
 
-// Valores iniciales para un nuevo centro de operación en blanco
+/**
+ * @const {object} initialCenterValues
+ * @description Objeto con los valores iniciales para un nuevo sub-formulario de Centro de Operación en blanco.
+ * Utilizado por FieldArray para añadir nuevas filas al formulario dinámico.
+ */
 export const initialCenterValues = {
   codigo: "",
   direccion: "",
@@ -32,34 +49,72 @@ export const initialCenterValues = {
 };
 
 /**
- * Hook para gestionar el formulario dinámico de creación de centros de operación.
- * @param {Function} onSuccess - Callback a ejecutar cuando la creación es exitosa.
+ * @function useCreateOperationCenterForm
+ * @description Hook personalizado que encapsula toda la lógica para el formulario de creación de centros.
+ * @param {Function} onSuccess - Callback que se ejecuta cuando la petición a la API es exitosa.
+ * Recibe un mensaje de éxito como argumento.
+ * @returns {object} La instancia completa de Formik (`formik`) para ser usada en el componente del formulario.
  */
 export const useCreateOperationCenterForm = (onSuccess) => {
   const formik = useFormik({
+    /**
+     * @property {object} initialValues
+     * @description El estado inicial del formulario. Es un objeto que contiene un array `centers`,
+     * permitiendo la gestión de múltiples sub-formularios.
+     */
     initialValues: {
       centers: [initialCenterValues],
     },
+    /**
+     * @property {object} validationSchema
+     * @description El esquema de validación principal que se aplica a todo el estado del formulario.
+     * Valida que `centers` sea un array de objetos, donde cada objeto debe cumplir con `centerValidationSchema`.
+     */
     validationSchema: Yup.object({
       centers: Yup.array()
         .of(centerValidationSchema)
         .min(1, "Debes agregar al menos un centro de operación."),
     }),
+    /**
+     * @async
+     * @function onSubmit
+     * @description Función que se ejecuta al enviar el formulario, solo si la validación de Yup es exitosa.
+     * @param {object} values - Los valores actuales del formulario.
+     * @param {object} formikHelpers - Helpers de Formik como `setFieldError` y `setSubmitting`.
+     */
     onSubmit: async (values, { setFieldError, setSubmitting }) => {
       try {
-        // El backend espera un array de centros
+        // Llama a la API enviando el array de centros al endpoint del backend.
         await api.post("/api/centros-operacion", values.centers);
+
+        // Si la petición es exitosa, llama al callback onSuccess.
         if (onSuccess) {
           onSuccess(
             `¡${values.centers.length} centro(s) de operación creado(s) exitosamente!`
           );
         }
       } catch (err) {
-        const errorMessage =
-          err.response?.data?.message ||
-          "Ocurrió un error al crear los centros de operación.";
-        setFieldError("apiError", errorMessage);
+        // --- Manejo de errores de la API ---
+        if (
+          err.response?.data?.errors &&
+          Array.isArray(err.response.data.errors)
+        ) {
+          // Si es un error de validación detallado de Zod desde el backend.
+          err.response.data.errors.forEach((error) => {
+            // Convierte el path del error de Zod (ej: ['centers', 0, 'codigo'])
+            // al formato de Formik (ej: 'centers[0].codigo').
+            const fieldName = `${error.path[0]}[${error.path[1]}].${error.path[2]}`;
+            setFieldError(fieldName, error.message);
+          });
+        } else {
+          // Si es un error general de la API (ej. 500, 403).
+          const errorMessage =
+            err.response?.data?.message ||
+            "Ocurrió un error inesperado al crear los centros.";
+          setFieldError("apiError", errorMessage);
+        }
       } finally {
+        // Asegura que el estado de 'isSubmitting' se restablezca a 'false'.
         setSubmitting(false);
       }
     },

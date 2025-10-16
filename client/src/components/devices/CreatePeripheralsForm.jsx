@@ -1,3 +1,17 @@
+/**
+ * @file CreatePeripheralsForm.jsx
+ * @module Components/Peripherals
+ * @description Componente de React que renderiza un formulario modal para la creación de uno o más periféricos.
+ * Utiliza un patrón de formulario dinámico con Formik y FieldArray, permitiendo al usuario añadir o quitar
+ * formularios para periféricos individuales dentro de una misma transacción. Este componente es responsable
+ * de obtener los datos de catálogo necesarios (tipos de periféricos, centros de operación) para sus campos.
+ * @requires react
+ * @requires formik
+ * @requires @fortawesome/react-fontawesome
+ * @requires ../../hooks/devices/useCreatePeripheralsForm.js
+ * @requires ../../stores/authStore.js
+ * @requires ../../config/axios.js
+ */
 import React, { useEffect, useState } from "react";
 import {
   useCreatePeripheralsForm,
@@ -9,7 +23,17 @@ import { faPlus, faTrash, faTimes } from "@fortawesome/free-solid-svg-icons";
 import api from "../../config/axios.js";
 import { useAuthStore } from "../../stores/authStore.js";
 
-// --- Subcomponente para cada fila del formulario dinámico ---
+/**
+ * @function PeripheralSubForm
+ * @description Subcomponente que renderiza un conjunto de campos para un único Periférico dentro del FieldArray.
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.formik - La instancia de Formik del formulario principal.
+ * @param {number} props.index - El índice del periférico actual en el array `peripherals`.
+ * @param {Function} props.onRemove - Función de FieldArray para eliminar este sub-formulario.
+ * @param {object} props.catalogos - Objeto que contiene los arrays de datos para los selects.
+ * @param {boolean} props.isLoadingCatalogs - Estado de carga de los catálogos.
+ * @returns {JSX.Element}
+ */
 const PeripheralSubForm = ({
   formik,
   index,
@@ -20,7 +44,12 @@ const PeripheralSubForm = ({
   const peripheral = formik.values.peripherals[index];
   const { user } = useAuthStore();
 
-  // Función auxiliar para obtener errores de campos anidados en Formik
+  /**
+   * @function getError
+   * @description Función auxiliar para obtener el mensaje de error de un campo anidado en Formik.
+   * @param {string} fieldName - El nombre del campo.
+   * @returns {string|null} El mensaje de error si el campo ha sido tocado y tiene un error, de lo contrario null.
+   */
   const getError = (fieldName) => {
     const error = getIn(formik.errors, `peripherals[${index}].${fieldName}`);
     const touched = getIn(formik.touched, `peripherals[${index}].${fieldName}`);
@@ -183,7 +212,16 @@ const PeripheralSubForm = ({
   );
 };
 
-// --- Componente Principal (Modal) ---
+/**
+ * @function CreatePeripheralForm
+ * @description Componente principal del modal para crear Periféricos.
+ * Se encarga de obtener los datos de catálogo necesarios (tipos de periféricos, centros de operación)
+ * y de orquestar el formulario dinámico.
+ * @param {object} props - Propiedades del componente.
+ * @param {Function} props.onClose - Callback para cerrar el modal.
+ * @param {Function} props.onSuccess - Callback a ejecutar tras una creación exitosa.
+ * @returns {JSX.Element}
+ */
 export default function CreatePeripheralForm({ onClose, onSuccess }) {
   const formik = useCreatePeripheralsForm(onSuccess);
 

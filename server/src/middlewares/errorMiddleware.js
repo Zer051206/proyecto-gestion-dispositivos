@@ -1,7 +1,17 @@
 /**
  * @file errorMiddleware.js
+ * @module Middlewares
  * @description Middleware de manejo de errores centralizado para Express.
+ * Su función es interceptar cualquier error que ocurra en la aplicación,
+ * registrar el error para auditoría y depuración, y enviar una respuesta JSON
+ * estandarizada y segura al cliente.
+ * @requires ../utils/customErrors.js
+ * @requires zod
+ * @requires jsonwebtoken
+ * @requires sequelize
+ * @requires ../config/logger.js
  */
+import logger from "../config/logger.js";
 import { AppError } from "../utils/customErrors.js";
 import { ZodError } from "zod";
 import pkg from "jsonwebtoken";
@@ -14,22 +24,36 @@ import {
 
 const { JsonWebTokenError, TokenExpiredError } = pkg;
 
+/**
+ * @function errorHandler
+ * @description Middleware de Express que maneja todos los errores de la aplicación.
+ * Identifica el tipo de error (AppError, ZodError, JWT, Sequelize, etc.) y establece
+ * el código de estado y el mensaje de respuesta apropiados.
+ * @param {Error} err - El objeto de error capturado.
+ * @param {import('express').Request} req - El objeto de solicitud de Express.
+ * @param {import('express').Response} res - El objeto de respuesta de Express.
+ * @param {import('express').NextFunction} _next - La función `next` de Express (no utilizada aquí, por convención se nombra `_next`).
+ */
 const errorHandler = (err, req, res, _next) => {
-  console.error("❌ Error capturado:", err.name, err.message);
+  // REGISTRO DEL ERROR
+  // Usamos Pino para registrar el error. Pino maneja objetos de error de forma nativa,
+  // incluyendo el stack trace, lo que es mucho más potente que console.error.
+  logger.error("❌ Error capturado:", err.name, err.message);
   if (process.env.NODE_ENV !== "production" && err.stack) {
-    console.error(err.stack);
+    logger.error(err.stack);
   }
 
+  // DETERMINACIÓN DEL CÓDIGO DE ESTADO Y MENSAJE
   let statusCode = 500;
   let message = "Ha ocurrido un error inesperado en el servidor.";
   let errors = null;
 
-  // 1. Manejar TODOS nuestros errores personalizados con una sola comprobación
+  //Manejar TODOS nuestros errores personalizados con una sola comprobación
   if (err instanceof AppError) {
     statusCode = err.status;
     message = err.message;
   }
-  // 2. Manejar errores de validación de Zod
+  // Manejar errores de validación de Zod
   else if (err instanceof ZodError) {
     statusCode = 400;
     message = "Error de validación en los datos de la solicitud.";
@@ -38,7 +62,7 @@ const errorHandler = (err, req, res, _next) => {
       message: e.message,
     }));
   }
-  // 3. Manejar errores de JWT (Autenticación)
+  // Manejar errores de JWT (Autenticación)
   else if (
     err instanceof JsonWebTokenError ||
     err instanceof TokenExpiredError
@@ -46,7 +70,7 @@ const errorHandler = (err, req, res, _next) => {
     statusCode = 401;
     message = "Token inválido o expirado. Acceso no autorizado.";
   }
-  // 4. Manejar errores específicos de Sequelize (DB)
+  // Manejar errores específicos de Sequelize (DB)
   else if (err instanceof UniqueConstraintError) {
     statusCode = 409;
     message = "El registro ya existe. El valor proporcionado ya está en uso.";
@@ -66,18 +90,21 @@ const errorHandler = (err, req, res, _next) => {
     }));
   } else if (err instanceof DatabaseError) {
     statusCode = 500;
+    // Por seguridad, no exponemos detalles del error de la base de datos al cliente.
     message = "Error interno de la base de datos.";
   }
 
-  // En desarrollo, el mensaje de error puede ser más detallado para debug
+  // Si es un error genérico 500 y estamos en desarrollo, mostramos un mensaje más detallado.
+  // En producción, se mantendrá el mensaje genérico para no exponer detalles de implementación.
   if (process.env.NODE_ENV !== "production" && statusCode === 500 && !errors) {
     message = err.message || message;
   }
 
+  // ENVÍO DE LA RESPUESTA JSON ESTANDARIZADA
   res.status(statusCode).json({
     success: false,
     message: message,
-    ...(errors && { errors }),
+    ...(errors && { errors }), // Añade el array de errores solo si existe
   });
 };
 

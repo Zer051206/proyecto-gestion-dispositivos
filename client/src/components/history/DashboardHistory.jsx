@@ -1,3 +1,17 @@
+/**
+ * @file DashboardHistory.jsx
+ * @module Components/History
+ * @description Página principal para la visualización del historial y la auditoría.
+ * Permite a los usuarios (principalmente Admins) ver un registro de todas las acciones (logs)
+ * y de todos los activos dados de baja. Incluye una interfaz con pestañas para navegar
+ * entre las dos vistas, así como filtros de búsqueda y ordenación.
+ * @requires react
+ * @requires react-router-dom
+ * @requires react-hot-toast
+ * @requires @fortawesome/react-fontawesome
+ * @requires ../../hooks/history/useDashboardHistory.js
+ * @requires ../../utils/dateFormat.js
+ */
 import React, { useState } from "react";
 import { useDashboardHistory } from "../../hooks/history/useDashboardHistory.js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -13,6 +27,16 @@ import {
 import { formatDate } from "../../utils/dateFormat.js";
 
 // --- SUBCOMPONENTES ---
+
+/**
+ * @function DetailModal
+ * @description Modal que muestra información detallada de un registro de log o de una baja.
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.item - El objeto de log o baja a mostrar.
+ * @param {Function} props.onClose - Función para cerrar el modal.
+ * @param {'log'|'baja'} props.type - El tipo de registro que se está mostrando.
+ * @returns {JSX.Element|null}
+ */
 const DetailModal = ({ item, onClose, type }) => {
   if (!item) return null;
   const DetailRow = ({ label, value, icon }) => (
@@ -95,6 +119,14 @@ const DetailModal = ({ item, onClose, type }) => {
   );
 };
 
+/**
+ * @function LogTable
+ * @description Componente que renderiza una tabla de registros de logs.
+ * @param {object} props - Propiedades del componente.
+ * @param {Array<object>} props.logs - Array de logs a mostrar.
+ * @param {Function} props.onAction - Callback para manejar acciones en cada fila.
+ * @returns {JSX.Element}
+ */
 const LogTable = ({ logs, onAction }) => (
   <div className="overflow-auto max-h-[500px] bg-secondary rounded-lg shadow-md">
     <table className="w-full text-left text-text-main">
@@ -137,6 +169,14 @@ const LogTable = ({ logs, onAction }) => (
   </div>
 );
 
+/**
+ * @function BajasTable
+ * @description Componente que renderiza una tabla de registros de bajas.
+ * @param {object} props - Propiedades del componente.
+ * @param {Array<object>} props.bajas - Array de bajas a mostrar.
+ * @param {Function} props.onAction - Callback para manejar acciones en cada fila.
+ * @returns {JSX.Element}
+ */
 const BajasTable = ({ bajas, onAction }) => (
   <div className="overflow-auto bg-secondary rounded-lg max-h-[500px] shadow-md">
     <table className="w-full text-left text-text-main">
@@ -185,7 +225,47 @@ const BajasTable = ({ bajas, onAction }) => (
   </div>
 );
 
-// --- COMPONENTE PRINCIPAL ---
+/**
+ * @function DashboardSkeleton
+ * @description Componente de esqueleto de carga que imita la estructura del Dashboard de Historial.
+ * @returns {JSX.Element}
+ */
+const DashboardSkeleton = () => (
+  <div className="w-full animate-pulse">
+    <header className="h-10 bg-gray-200 rounded w-1/3 mb-6"></header>
+    <div className="border-b border-gray-200 mb-6">
+      <div className="flex gap-6">
+        <div className="h-8 bg-gray-200 rounded w-48"></div>
+        <div className="h-8 bg-gray-200 rounded w-36"></div>
+      </div>
+    </div>
+    <div className="flex flex-col md:flex-row gap-4 mb-6">
+      <div className="h-10 bg-gray-200 rounded w-full md:w-1/2"></div>
+      <div className="h-10 bg-gray-200 rounded w-full md:w-48"></div>
+    </div>
+    <div className="bg-secondary rounded-lg shadow-md p-4">
+      <div className="space-y-3">
+        {[...Array(5)].map((_, i) => (
+          <div
+            key={i}
+            className="flex items-center space-x-4 p-2 border-b border-gray-200 last:border-b-0"
+          >
+            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/3 hidden sm:block"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/4 hidden md:block"></div>
+            <div className="h-6 bg-gray-200 rounded-full w-8 ml-auto"></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+/**
+ * @function DashboardHistory
+ * @description Componente principal de la página de Historial.
+ * @returns {JSX.Element}
+ */
 export default function DashboardHistory() {
   const {
     data,
@@ -214,8 +294,13 @@ export default function DashboardHistory() {
     </button>
   );
 
+  if (isLoading) return <DashboardSkeleton />;
+
+  if (error)
+    return <div className="text-center w-full p-10 text-error">{error}</div>;
+
   return (
-    <div className="w-full">
+    <div className="w-full mb-10">
       <header className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <h1 className="text-4xl font-bold text-text-main">
           Historial y Auditoría

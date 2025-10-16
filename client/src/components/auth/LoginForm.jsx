@@ -1,17 +1,48 @@
-// src/components/auth/LoginForm.jsx
+/**
+ * @file LoginForm.jsx
+ * @module Components/Auth
+ * @description Componente de React que renderiza el formulario de inicio de sesión para la aplicación.
+ * Se encarga de la presentación visual del formulario, mientras delega toda la lógica de estado,
+ * validación y envío al hook `useLoginForm`.
+ * @requires react
+ * @requires react-router-dom
+ * @requires @fortawesome/react-fontawesome
+ * @requires ../../hooks/auth/useLoginForm.js
+ * @requires ../../hooks/utils/usePasswordToggle.js
+ */
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useLoginForm } from "../../hooks/auth/useLoginForm.js";
 import { usePasswordToggle } from "../../hooks/utils/usePasswordToggle.js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 
+/**
+ * @function LoginForm
+ * @description Renderiza la interfaz de usuario para el inicio de sesión. Utiliza `useLoginForm`
+ * para manejar el estado y la lógica del formulario, y `usePasswordToggle` para la funcionalidad
+ * de mostrar/ocultar contraseña. Muestra los errores de validación y los errores de la API.
+ * @returns {JSX.Element} El componente del formulario de login.
+ */
 export default function LoginForm() {
   const navigate = useNavigate();
+
+  /**
+   * @function goBack
+   * @description Navega al usuario a la página de inicio.
+   */
   const goBack = () => navigate("/");
+
+  // Hook para gestionar la visibilidad del campo de contraseña.
   const [inputType, Icon, toggleVisibility] = usePasswordToggle();
+
+  // Hook que encapsula toda la lógica de Formik para el formulario.
   const formik = useLoginForm();
 
+  /**
+   * @const {string} inputClasses
+   * @description Clases de Tailwind CSS reutilizables para los campos de entrada del formulario.
+   */
   const inputClasses =
     "mt-2 block w-full rounded-md font-semibold border-2 border-gray-300 p-2 outline-none bg-gray-50 focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200";
 
@@ -76,6 +107,7 @@ export default function LoginForm() {
           </div>
         </fieldset>
 
+        {/* Contenedor para mostrar errores generales de la API */}
         {formik.errors.apiError && (
           <div
             className="mt-4 bg-accent/10 border-accent text-accent px-4 py-3 rounded-md"

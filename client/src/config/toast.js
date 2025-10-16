@@ -5,9 +5,9 @@
  */
 
 export const toasterConfig = {
-  position: "top-right",
+  position: "bottom-center", // Posición de los toasts en la pantalla
   toastOptions: {
-    duration: 5000, // Los toasts durarán 5 segundos
+    duration: 3000, // Los toasts durarán 3 segundos
     // Estilos para notificaciones de éxito
     success: {
       style: {

@@ -1,13 +1,43 @@
+/**
+ * @file useDashboardUser.js
+ * @module Hooks/Users
+ * @description Hook de React para gestionar toda la lógica de datos de la página de gestión de usuarios.
+ * Se encarga de obtener la lista de usuarios desde la API, manejar los estados de carga y error,
+ * y aplicar la lógica de filtrado por búsqueda y ordenación en el lado del cliente.
+ * @requires react
+ * @requires ../../config/axios.js
+ */
 import { useState, useEffect, useMemo, useCallback } from "react";
 import api from "../../config/axios.js";
 
 /**
- * Hook personalizado para gestionar los datos y el estado del dashboard de usuarios.
- * Se encarga de obtener los usuarios, filtrarlos y ordenarlos.
+ * @function useDashboardUser
+ * @description Hook personalizado que encapsula la lógica para el dashboard de usuarios.
+ * @returns {object} Un objeto que contiene:
+ * - `users` {Array<object>}: La lista de usuarios ya filtrada y ordenada.
+ * - `isLoading` {boolean}: Verdadero si los datos se están cargando.
+ * - `error` {string|null}: Un mensaje de error si la petición a la API falla.
+ * - `refetch` {Function}: Una función para volver a ejecutar la carga de datos.
+ * - `setSearchTerm` {Function}: Función para actualizar el término de búsqueda.
+ * - `setSortBy` {Function}: Función para actualizar el criterio de ordenación.
  */
 export const useDashboardUser = () => {
+  /**
+   * @const {Array<object>} users
+   * @description Estado que almacena la lista original de usuarios obtenida de la API.
+   */
   const [users, setUsers] = useState([]);
+
+  /**
+   * @const {boolean} isLoading
+   * @description Estado para controlar la visualización de indicadores de carga.
+   */
   const [isLoading, setIsLoading] = useState(true);
+
+  /**
+   * @const {string|null} error
+   * @description Estado para almacenar mensajes de error de la API.
+   */
   const [error, setError] = useState(null);
 
   // Estados para los filtros y la ordenación
@@ -15,14 +45,17 @@ export const useDashboardUser = () => {
   const [sortBy, setSortBy] = useState("nombre_asc"); // Valor de ordenación por defecto
 
   /**
-   * Función para obtener la lista de usuarios desde la API.
-   * Se envuelve en useCallback para memorizarla y evitar recreaciones innecesarias.
+   * @function fetchUsers
+   * @description Función asíncrona para obtener la lista de usuarios desde el endpoint `/api/usuarios`.
+   * Se envuelve en `useCallback` para memorizarla y evitar recreaciones en cada renderizado,
+   * optimizando el rendimiento.
    */
   const fetchUsers = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
       const response = await api.get("/api/usuarios");
+      // Se asegura de que 'users' siempre sea un array, incluso si la API no devuelve nada.
       setUsers(response.data.users || []);
     } catch (err) {
       setError(
@@ -34,19 +67,21 @@ export const useDashboardUser = () => {
     }
   }, []);
 
-  // useEffect para ejecutar la carga de datos inicial cuando el componente se monta.
+  // Efecto para ejecutar la carga de datos inicial cuando el componente se monta por primera vez.
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
 
   /**
-   * Memoriza la lista de usuarios procesada (filtrada y ordenada).
-   * Esta lógica solo se re-ejecuta si los usuarios, el término de búsqueda o la ordenación cambian.
+   * @const {Array<object>} processedUsers
+   * @description Deriva y memoriza la lista de usuarios procesada (filtrada y ordenada) usando `useMemo`.
+   * Esta lógica solo se re-ejecuta si la lista original de `users`, el `searchTerm` o el `sortBy` cambian,
+   * evitando cálculos innecesarios en cada renderizado.
    */
   const processedUsers = useMemo(() => {
     return [...users]
       .filter((user) => {
-        // Lógica de filtrado por término de búsqueda
+        // Lógica de filtrado por término de búsqueda en varios campos.
         const term = searchTerm.toLowerCase();
         if (!term) return true; // Si no hay búsqueda, devuelve todos
 
@@ -63,7 +98,7 @@ export const useDashboardUser = () => {
         );
       })
       .sort((a, b) => {
-        // Lógica de ordenación
+        // Lógica de ordenación basada en el valor de 'sortBy'.
         const [field, order] = sortBy.split("_");
 
         let valA, valB;
@@ -86,7 +121,7 @@ export const useDashboardUser = () => {
       });
   }, [users, searchTerm, sortBy]);
 
-  // Devuelve el estado y las funciones que el componente necesitará
+  // Devuelve el estado y las funciones que el componente de la vista necesitará.
   return {
     users: processedUsers,
     isLoading,

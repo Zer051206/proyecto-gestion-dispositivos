@@ -1,3 +1,17 @@
+/**
+ * @file CreateDevicesForm.jsx
+ * @module Components/Devices
+ * @description Componente de React que renderiza un formulario modal para la creación de uno o más equipos.
+ * Utiliza un patrón de formulario dinámico con Formik y FieldArray, permitiendo al usuario añadir o quitar
+ * formularios para equipos individuales dentro de una misma transacción. Este componente es responsable
+ * de obtener los datos de catálogo necesarios (centros de operación) para sus campos.
+ * @requires react
+ * @requires formik
+ * @requires @fortawesome/react-fontawesome
+ * @requires ../../hooks/devices/useCreateDevicesForm.js
+ * @requires ../../stores/authStore.js
+ * @requires ../../config/axios.js
+ */
 import React, { useEffect, useState } from "react";
 import {
   useCreateDevicesForm,
@@ -10,7 +24,17 @@ import { handleKeyNumberDown } from "../../utils/inputUtilities.js";
 import api from "../../config/axios.js";
 import { useAuthStore } from "../../stores/authStore.js";
 
-// --- Subcomponente para cada fila del formulario dinámico ---
+/**
+ * @function DeviceSubForm
+ * @description Subcomponente que renderiza un conjunto de campos para un único Equipo dentro del FieldArray.
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.formik - La instancia de Formik del formulario principal.
+ * @param {number} props.index - El índice del equipo actual en el array `devices`.
+ * @param {Function} props.onRemove - Función de FieldArray para eliminar este sub-formulario.
+ * @param {Array<object>} props.centros - Array de centros de operación para poblar el select.
+ * @param {boolean} props.isLoadingCatalogs - Estado de carga de los catálogos.
+ * @returns {JSX.Element}
+ */
 const DeviceSubForm = ({
   formik,
   index,
@@ -22,7 +46,12 @@ const DeviceSubForm = ({
 
   const { user } = useAuthStore();
 
-  // Función auxiliar para obtener errores de campos anidados en Formik
+  /**
+   * @function getError
+   * @description Función auxiliar para obtener el mensaje de error de un campo anidado en Formik.
+   * @param {string} fieldName - El nombre del campo.
+   * @returns {string|null} El mensaje de error si el campo ha sido tocado y tiene un error, de lo contrario null.
+   */
   const getError = (fieldName) => {
     const error = getIn(formik.errors, `devices[${index}].${fieldName}`);
     const touched = getIn(formik.touched, `devices[${index}].${fieldName}`);
@@ -230,7 +259,16 @@ const DeviceSubForm = ({
   );
 };
 
-// --- Componente Principal (Modal) ---
+/**
+ * @function CreateDeviceForm
+ * @description Componente principal del modal para crear Equipos.
+ * Se encarga de obtener los datos de catálogo necesarios (centros de operación)
+ * y de orquestar el formulario dinámico.
+ * @param {object} props - Propiedades del componente.
+ * @param {Function} props.onClose - Callback para cerrar el modal.
+ * @param {Function} props.onSuccess - Callback a ejecutar tras una creación exitosa.
+ * @returns {JSX.Element}
+ */
 export default function CreateDeviceForm({ onClose, onSuccess }) {
   const formik = useCreateDevicesForm(onSuccess);
 

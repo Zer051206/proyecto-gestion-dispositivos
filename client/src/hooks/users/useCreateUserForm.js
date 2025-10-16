@@ -1,8 +1,23 @@
+/**
+ * @file useCreateUserForm.js
+ * @module Hooks/Users
+ * @description Hook de React para gestionar la lógica del formulario dinámico de creación de usuarios.
+ * Se encarga de la validación de datos con Yup, el manejo del estado del formulario con Formik,
+ * y el envío de los datos a la API para la creación de múltiples usuarios a la vez.
+ * @requires formik
+ * @requires yup
+ * @requires ../../config/axios.js
+ */
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import api from "../../config/axios.js";
 
-// Esquema de validación para UN solo usuario
+/**
+ * @const {object} userValidationSchema
+ * @description Esquema de validación de Yup para un único objeto de usuario.
+ * Define las reglas para cada campo, incluyendo validaciones condicionales
+ * para el 'id_centro_operacion' basado en el 'rol'.
+ */
 const userValidationSchema = Yup.object({
   nombre: Yup.string()
     .required("El nombre es obligatorio.")
@@ -16,8 +31,8 @@ const userValidationSchema = Yup.object({
   id_tipo_identificacion: Yup.number()
     .positive("Debe seleccionar un tipo de identificación.")
     .required("El tipo de identificación es obligatorio."),
-  identificacion: Yup.number()
-    .min(500, "La identificación no es válida.")
+  identificacion: Yup.string()
+    .min(5, "La identificación no es válida.")
     .required("La identificación es obligatoria."),
   telefono: Yup.string()
     .min(7, "El teléfono debe tener al menos 7 caracteres.")
@@ -41,7 +56,10 @@ const userValidationSchema = Yup.object({
     .required("Debes confirmar la contraseña."),
 });
 
-// Valores iniciales para un nuevo usuario en blanco
+/**
+ * @const {object} initialUserValues
+ * @description Objeto que define los valores iniciales para un nuevo sub-formulario de usuario en blanco.
+ */
 export const initialUserValues = {
   nombre: "",
   apellido: "",
@@ -56,8 +74,10 @@ export const initialUserValues = {
 };
 
 /**
- * Hook para gestionar el formulario dinámico de creación de usuarios.
- * @param {Function} onSuccess - Callback a ejecutar cuando la creación es exitosa.
+ * @function useCreateUserForm
+ * @description Hook personalizado que encapsula toda la lógica del formulario de creación de usuarios.
+ * @param {Function} onSuccess - Callback que se ejecuta cuando la petición a la API es exitosa. Recibe el mensaje de éxito.
+ * @returns {object} La instancia completa de Formik (`formik`) para ser utilizada por el componente del formulario.
  */
 export const useCreateUserForm = (onSuccess) => {
   const formik = useFormik({
@@ -71,7 +91,12 @@ export const useCreateUserForm = (onSuccess) => {
         .of(userValidationSchema)
         .min(1, "Debes agregar al menos un usuario."),
     }),
-    // Lógica que se ejecuta al enviar el formulario (solo si es válido)
+    /**
+     * @function onSubmit
+     * @description Función que se ejecuta al enviar el formulario, solo si la validación es exitosa.
+     * @param {object} values - Los valores actuales del formulario.
+     * @param {object} formikHelpers - Ayudantes de Formik como setFieldError y setSubmitting.
+     */
     onSubmit: async (values, { setFieldError, setSubmitting }) => {
       try {
         // Mapeamos los usuarios para quitar 'confirmPassword' de cada uno antes de enviar a la API

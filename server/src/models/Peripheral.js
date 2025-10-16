@@ -30,6 +30,7 @@ export default (sequelize) => {
       id_tipo_periferico: { type: DataTypes.INTEGER, allowNull: false },
       id_usuario_creador: { type: DataTypes.INTEGER, allowNull: false },
       id_centro_operacion: { type: DataTypes.INTEGER, allowNull: false },
+      id_centro_costo: { type: DataTypes.INTEGER, allowNull: true },
     },
     { tableName: "perifericos", timestamps: false }
   );
@@ -44,6 +45,9 @@ export default (sequelize) => {
     });
     Peripheral.belongsTo(models.PeripheralType, {
       foreignKey: "id_tipo_periferico",
+    });
+    Peripheral.belongsTo(models.CenterCost, {
+      foreignKey: "id_centro_costo",
     });
     Peripheral.hasOne(models.Decomission, { foreignKey: "id_periferico" });
   };

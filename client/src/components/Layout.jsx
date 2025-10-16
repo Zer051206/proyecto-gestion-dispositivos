@@ -1,4 +1,15 @@
-// src/components/Layout.jsx (NUEVO ARCHIVO)
+/**
+ * @file Layout.jsx
+ * @module Components
+ * @description Componente de layout persistente para las rutas privadas de la aplicación.
+ * Proporciona una estructura visual consistente que incluye una cabecera (`Header`) y una barra lateral
+ * de navegación (`Sidebar`) para todas las páginas que renderiza a través del componente `<Outlet />` de React Router.
+ * @requires react
+ * @requires react-router-dom
+ * @requires @fortawesome/react-fontawesome
+ * @requires ../stores/authStore.js
+ */
+
 import React, { useState } from "react";
 import { useNavigate, Outlet, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -15,7 +26,16 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useAuthStore } from "../stores/authStore.js";
 
-// Puedes mover los subcomponentes Sidebar y Header aquí para mantener todo encapsulado
+/**
+ * @function Header
+ * @description Subcomponente que renderiza la cabecera superior de la aplicación.
+ * Es "inteligente" y adapta su contenido según el rol del usuario y la ruta actual.
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.user - El objeto del usuario autenticado.
+ * @param {Function} props.logout - Función para cerrar la sesión del usuario.
+ * @param {Function} props.toggleSidebar - Función para abrir/cerrar el `Sidebar` en vistas móviles.
+ * @returns {JSX.Element}
+ */
 const Header = ({ user, logout, toggleSidebar }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -77,6 +97,17 @@ const Header = ({ user, logout, toggleSidebar }) => {
   );
 };
 
+/**
+ * @function Sidebar
+ * @description Subcomponente que renderiza la barra lateral de navegación para Administradores.
+ * Es un panel deslizable que contiene los enlaces a las principales secciones de gestión.
+ * @param {object} props - Propiedades del componente.
+ * @param {boolean} props.isOpen - Estado que determina si el sidebar está visible.
+ * @param {Function} props.toggleSidebar - Función para cerrar el sidebar.
+ * @param {Function} props.navigate - Función de navegación de React Router.
+ * @param {object} props.user - El objeto del usuario autenticado.
+ * @returns {JSX.Element}
+ */
 const Sidebar = ({ isOpen, toggleSidebar, navigate, user }) => {
   const NavLink = ({ icon, text, path }) => (
     <button
@@ -144,15 +175,31 @@ const Sidebar = ({ isOpen, toggleSidebar, navigate, user }) => {
   );
 };
 
+/**
+ * @function Layout
+ * @description Componente principal del layout autenticado. Renderiza la estructura
+ * común (Header, Sidebar) y utiliza `<Outlet />` para renderizar el contenido de la página actual.
+ * @returns {JSX.Element}
+ */
 export default function Layout() {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  /**
+   * @async
+   * @function handleLogout
+   * @description Orquesta el proceso de cierre de sesión: llama a la acción del store y luego redirige.
+   */
   const handleLogout = async () => {
     await logout();
     navigate("/");
   };
 
+  /**
+   * @function toggleSidebar
+   * @description Abre o cierra el sidebar. Solo funciona si el usuario es un 'Admin'.
+   */
   const toggleSidebar = () =>
     user?.rol === "Admin" && setIsSidebarOpen(!isSidebarOpen);
 

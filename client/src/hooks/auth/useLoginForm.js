@@ -1,13 +1,26 @@
-// src/hooks/auth/useLoginForm.js
-
+/**
+ * @file useLoginForm.js
+ * @module Hooks/Auth
+ * @description Hook personalizado que encapsula toda la lógica y el estado para el formulario de inicio de sesión.
+ * Utiliza Formik para la gestión del formulario, Yup para la validación de datos del lado del cliente,
+ * y se integra con el store de autenticación global (Zustand) para manejar la sesión del usuario.
+ * @requires formik
+ * @requires yup
+ * @requires react-router-dom
+ * @requires ../../config/axios.js
+ * @requires ../../stores/authStore.js
+ */
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
-import api from "../../config/axios.js"; // Usamos la instancia inteligente de Axios
+import api from "../../config/axios.js";
 import { useAuthStore } from "../../stores/authStore.js";
 
-// 1. Definimos el esquema de validación con Yup
-// Esto valida los datos en el frontend ANTES de enviarlos
+/**
+ * @const {Yup.ObjectSchema} validationSchema
+ * @description Define el esquema de validación para los campos del formulario de login.
+ * Se asegura de que el correo electrónico tenga un formato válido y que ambos campos sean obligatorios.
+ */
 const validationSchema = Yup.object({
   correo: Yup.string()
     .email("El formato del correo no es válido.")
@@ -17,11 +30,26 @@ const validationSchema = Yup.object({
     .required("La contraseña es obligatoria."),
 });
 
+/**
+ * @function useLoginForm
+ * @description Hook de React que proporciona toda la lógica y el estado necesarios para el componente `LoginForm`.
+ * @returns {object} La instancia completa de Formik, que contiene el estado (`values`, `errors`, `isSubmitting`),
+ * los manejadores de eventos (`handleSubmit`, `getFieldProps`) y otras utilidades para ser usadas en el componente de la vista.
+ */
 export const useLoginForm = () => {
   const navigate = useNavigate();
-  const login = useAuthStore((state) => state.login); // Obtenemos la acción de login del store
 
-  // 2. Usamos el hook useFormik para gestionar todo el formulario
+  /**
+   * @description Obtiene la acción `login` del store de autenticación global.
+   * Esta acción se encargará de actualizar el estado de la aplicación y guardar los datos de sesión.
+   */
+  const login = useAuthStore((state) => state.login);
+
+  /**
+   * @const {object} formik
+   * @description Instancia de Formik creada con `useFormik`.
+   * Es el cerebro del formulario, manejando sus valores, validación y envío.
+   */
   const formik = useFormik({
     // Valores iniciales de los campos
     initialValues: {
@@ -31,11 +59,21 @@ export const useLoginForm = () => {
     // El esquema de validación que creamos con Yup
     validationSchema: validationSchema,
 
-    // La función que se ejecuta SOLO si la validación es exitosa
+    /**
+     * @function onSubmit
+     * @description Función que se ejecuta al enviar el formulario, solo si la validación es exitosa.
+     * Realiza la llamada a la API de login, maneja la respuesta de éxito o error, actualiza el estado global
+     * y redirige al usuario.
+     * @param {object} values - Los valores actuales de los campos del formulario.
+     * @param {object} formikHelpers - Objeto con helpers de Formik (ej. setFieldError).
+     * @async
+     */
     onSubmit: async (values, { setFieldError }) => {
       try {
         const response = await api.post("/auth/login", values);
 
+        // Si la petición es exitosa, se llama a la acción 'login' del store
+        // para guardar los datos del usuario y los tokens.
         login(
           response.data.user,
           response.data.accessToken,
@@ -46,16 +84,14 @@ export const useLoginForm = () => {
         // Redirigimos al usuario al dashboard.
         navigate("/dashboard");
       } catch (err) {
-        // Primero, comprobamos si la respuesta del error tiene el array 'errors' de Zod/Sequelize
+        // Manejo de errores de la API.
         if (err.response?.data?.errors) {
-          // Si es así, recorremos el array
+          // Si el backend devuelve errores de validación específicos (de Zod).
           err.response.data.errors.forEach((error) => {
-            // Y usamos setFieldError para asignar cada mensaje de error a su campo correspondiente
             setFieldError(error.path, error.message);
           });
         } else {
-          // Si no hay un array, es un error general (como "credenciales incorrectas")
-          // Lo asignamos al campo 'apiError' que ya tienes
+          // Si es un error general (ej. "credenciales incorrectas").
           const errorMessage =
             err.response?.data?.message || "Ha ocurrido un error inesperado.";
           setFieldError("apiError", errorMessage);
@@ -65,6 +101,6 @@ export const useLoginForm = () => {
     },
   });
 
-  // 3. Devolvemos el objeto formik que contiene todo lo que necesitamos
+  // Devuelve la instancia de Formik para que el componente LoginForm pueda usarla.
   return formik;
 };
