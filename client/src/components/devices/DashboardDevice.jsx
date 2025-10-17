@@ -22,11 +22,13 @@ import {
   faExclamationTriangle,
   faHdd,
   faMicrochip,
+  faFileExcel,
 } from "@fortawesome/free-solid-svg-icons";
 import api from "../../config/axios.js";
 import CreateDeviceForm from "./CreateDevicesForm.jsx";
 import CreatePeripheralForm from "./CreatePeripheralsForm.jsx";
 import { toast } from "react-hot-toast";
+import { exportToExcel } from "../../utils/exportUtils.js";
 
 // --- SUBCOMPONENTES ---
 
@@ -109,7 +111,6 @@ const ConfirmStatusChangeModal = ({
  * @returns {JSX.Element|null}
  */
 const AssetDetailModal = ({ asset, onClose }) => {
-  console.log("🚀 ~ AssetDetailModal ~ asset:", asset);
   if (!asset) return null;
   return (
     <div
@@ -423,10 +424,46 @@ export default function DashboardDevice() {
   const { user } = useAuthStore();
   const isAdmin = user?.rol === "Admin";
   const [viewMode, setViewMode] = useState(isAdmin ? "table" : "card");
-  const { assets, isLoading, error, refetch, setSearchTerm, setFilterStatus } =
-    useDashboardDevice();
+  const {
+    originalAssets,
+    filteredAssets,
+    isLoading,
+    error,
+    refetch,
+    setSearchTerm,
+    setFilterStatus,
+  } = useDashboardDevice();
   const [modal, setModal] = useState({ type: null, data: null });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  /**
+   * @async
+   * @function handleExport
+   * @description Maneja la lógica para exportar los datos actualmente visibles a un archivo de Excel.
+   * Muestra un estado de carga y notificaciones de éxito/error.
+   */
+  const handleExport = async () => {
+    console.log("🚀 ~ handleExport ~ assets:", originalAssets);
+    if (originalAssets.length === 0) {
+      toast.error("No hay datos para exportar.");
+      return;
+    }
+
+    setIsExporting(true);
+    await toast.promise(
+      exportToExcel(
+        originalAssets,
+        `Inventario_Activos_${new Date().toLocaleDateString("es-CO")}`
+      ),
+      {
+        loading: "Generando archivo de Excel...",
+        success: "¡Archivo de Excel generado exitosamente!",
+        error: "Error al generar el archivo.",
+      }
+    );
+    setIsExporting(false);
+  };
 
   /**
    * @function handleAction
@@ -499,7 +536,7 @@ export default function DashboardDevice() {
           Gestión de Activos
         </h1>
         <div className="flex items-center gap-2 md:gap-4">
-          {/* 2. Los botones ahora llaman a handleAction para abrir el modal correcto */}
+          {/* Los botones ahora llaman a handleAction para abrir el modal correcto */}
           <button
             onClick={() => handleAction("createDevice")}
             className="bg-primary text-text-light font-semibold py-2 px-3 rounded-lg flex items-center gap-2 hover:bg-primary-dark transition-colors text-sm"
@@ -513,6 +550,16 @@ export default function DashboardDevice() {
           >
             <FontAwesomeIcon icon={faKeyboard} />{" "}
             <span className="hidden sm:inline">Nuevo Periférico</span>
+          </button>
+          <button
+            onClick={handleExport}
+            disabled={isExporting}
+            className="bg-green-700 text-text-light font-semibold py-2 px-3 rounded-lg flex items-center gap-2 hover:bg-green-800 transition-colors text-sm disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            <FontAwesomeIcon icon={faFileExcel} />
+            <span className="hidden sm:inline">
+              {isExporting ? "Exportando..." : "Exportar a Excel"}
+            </span>
           </button>
           {isAdmin && (
             <div className="bg-gray-200 p-1 rounded-lg flex gap-1 ml-4">
@@ -560,14 +607,14 @@ export default function DashboardDevice() {
         </select>
       </div>
 
-      {assets.length === 0 ? (
+      {filteredAssets.length === 0 ? (
         <div className="text-center w-full p-10 text-neutral-taupe">
           No hay activos que mostrar.
         </div>
       ) : viewMode === "table" && isAdmin ? (
-        <AssetTable assets={assets} onAction={handleAction} />
+        <AssetTable assets={filteredAssets} onAction={handleAction} />
       ) : (
-        <AssetCards assets={assets} onAction={handleAction} />
+        <AssetCards assets={filteredAssets} onAction={handleAction} />
       )}
 
       {/* --- 3. RENDERIZADO CONDICIONAL DE TODOS LOS MODALES --- */}

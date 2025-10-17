@@ -45,6 +45,8 @@ export const initialPeripheralValues = {
   id_tipo_periferico: "",
   id_centro_operacion: "",
   estado_periferico: true,
+  has_cost_center: false,
+  id_centro_costo: "",
 };
 
 /**
@@ -69,6 +71,16 @@ export const useCreatePeripheralsForm = (onSuccess) => {
           .positive("Debe seleccionar un centro.")
           .required("El centro es obligatorio.")
       : Yup.string().notRequired(), // Para Encargados, este campo no se valida en el frontend.
+
+    has_cost_center: Yup.boolean(),
+    id_centro_costo: Yup.number().when("has_cost_center", {
+      is: true,
+      then: (schema) =>
+        schema
+          .positive("Debe seleccionar un centro.")
+          .required("El centro de costo es obligatorio."),
+      otherwise: (schema) => schema.trim().nullable(),
+    }),
   });
 
   /**

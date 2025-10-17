@@ -18,6 +18,7 @@ const prettyPrintOptions = {
   colorize: true, // Añade colores a la salida
   translateTime: "SYS:dd-mm-yyyy HH:MM:ss", // Formatea la fecha y hora
   ignore: "pid,hostname", // Oculta propiedades innecesarias en desarrollo
+  singleLine: true,
 };
 
 /**

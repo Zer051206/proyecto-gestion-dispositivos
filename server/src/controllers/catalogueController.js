@@ -1,5 +1,22 @@
+/**
+ * @file catalogueController.js
+ * @module Controllers
+ * @description Controlador para los endpoints que sirven los datos de las tablas catálogo.
+ * Estas funciones son responsables de obtener listas de datos que se utilizan
+ * para poblar opciones en los formularios del frontend, como listas de ciudades,
+ * tipos de identificación, etc.
+ * @requires ../services/catalogueService.js
+ */
 import * as catalogueService from "../services/catalogueService.js";
 
+/**
+ * @async
+ * @function getCities
+ * @description Maneja la solicitud para obtener una lista de todas las ciudades.
+ * @param {import('express').Request} req - El objeto de solicitud de Express.
+ * @param {import('express').Response} res - El objeto de respuesta de Express.
+ * @param {import('express').NextFunction} next - La función para pasar el control al siguiente middleware.
+ */
 export const getCities = async (req, res, next) => {
   try {
     const cities = await catalogueService.getCities();
@@ -13,6 +30,14 @@ export const getCities = async (req, res, next) => {
   }
 };
 
+/**
+ * @async
+ * @function getIdTypes
+ * @description Maneja la solicitud para obtener una lista de todos los tipos de identificación.
+ * @param {import('express').Request} req - El objeto de solicitud de Express.
+ * @param {import('express').Response} res - El objeto de respuesta de Express.
+ * @param {import('express').NextFunction} next - La función para pasar el control al siguiente middleware.
+ */
 export const getIdTypes = async (req, res, next) => {
   try {
     const idTypes = await catalogueService.getIdTypes();
@@ -26,6 +51,14 @@ export const getIdTypes = async (req, res, next) => {
   }
 };
 
+/**
+ * @async
+ * @function getPeripheralTypes
+ * @description Maneja la solicitud para obtener una lista de todos los tipos de periféricos.
+ * @param {import('express').Request} req - El objeto de solicitud de Express.
+ * @param {import('express').Response} res - El objeto de respuesta de Express.
+ * @param {import('express').NextFunction} next - La función para pasar el control al siguiente middleware.
+ */
 export const getPeripheralTypes = async (req, res, next) => {
   try {
     const peripheralTypes = await catalogueService.getPeripheralTypes();

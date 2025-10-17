@@ -43,8 +43,30 @@ const DeviceSubForm = ({
   isLoadingCatalogs,
 }) => {
   const device = formik.values.devices[index];
-
   const { user } = useAuthStore();
+
+  const [costCenters, setCostCenters] = useState([]);
+  const [isLoadingCostCenters, setIsLoadingCostCenters] = useState(false);
+  const selectedCenterId =
+    device.id_centro_operacion ||
+    (user.rol === "Encargado" ? user.id_centro_operacion : null);
+
+  useEffect(() => {
+    if (selectedCenterId) {
+      setIsLoadingCostCenters(true);
+      api
+        .get(`/api/centros-operacion/${selectedCenterId}/costos`)
+        .then((res) => {
+          return setCostCenters(res.data.centerCost || []);
+        })
+        .catch((err) =>
+          console.error("Error al cargar los centros de costo", err)
+        )
+        .finally(() => setIsLoadingCostCenters(false));
+    } else {
+      setCostCenters([]);
+    }
+  }, [selectedCenterId]);
 
   /**
    * @function getError
@@ -191,6 +213,19 @@ const DeviceSubForm = ({
               ¿Es Activo Fijo?
             </span>
           </label>
+          {selectedCenterId && (
+            <label className="flex items-center space-x-2 py-2">
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded"
+                {...formik.getFieldProps(`devices[${index}].has_cost_center`)}
+                checked={device.has_cost_center}
+              />
+              <span className="text-text-main font-semibold">
+                ¿Asignado a un Área?
+              </span>
+            </label>
+          )}
         </div>
 
         {/* Fila 3: Inputs Condicionales */}
@@ -233,6 +268,24 @@ const DeviceSubForm = ({
               )}
             </label>
           )}
+          {device.equipo_alquilado && (
+            <label className="block animate-fade-in">
+              <span className="text-text-main font-semibold">
+                Empresa que Alquila:
+              </span>
+              <input
+                type="text"
+                autoComplete="off"
+                className={inputClasses}
+                {...formik.getFieldProps(`devices[${index}].empresa_alquila`)}
+              />
+              {getError("empresa_alquila") && (
+                <div className="text-error text-sm mt-1">
+                  {getError("empresa_alquila")}
+                </div>
+              )}
+            </label>
+          )}
           {device.activo_fijo && (
             <label className="block animate-fade-in">
               <span className="text-text-main font-semibold">
@@ -249,6 +302,36 @@ const DeviceSubForm = ({
               {getError("codigo_activo_fijo") && (
                 <div className="text-error text-sm mt-1">
                   {getError("codigo_activo_fijo")}
+                </div>
+              )}
+            </label>
+          )}
+          {device.has_cost_center && (
+            <label className="block animate-fade-in">
+              <span className="text-text-main font-semibold">
+                Centro de Costo (Área):
+              </span>
+              <select
+                className={inputClasses}
+                {...formik.getFieldProps(`devices[${index}].id_centro_costo`)}
+                disabled={isLoadingCostCenters || costCenters.length === 0}
+              >
+                <option value="" hidden>
+                  {isLoadingCostCenters
+                    ? "Cargando áreas..."
+                    : costCenters.length === 0
+                    ? "No hay áreas para este centro"
+                    : "Selecciona..."}
+                </option>
+                {costCenters.map((cc) => (
+                  <option key={cc.id_centro_costo} value={cc.id_centro_costo}>
+                    {cc.codigo_centro_costo} - {cc.centro_costo}
+                  </option>
+                ))}{" "}
+              </select>
+              {getError("id_centro_costo") && (
+                <div className="text-error text-sm mt-1">
+                  {getError("id_centro_costo")}
                 </div>
               )}
             </label>

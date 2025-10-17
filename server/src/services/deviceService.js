@@ -1,19 +1,55 @@
+/**
+ * @file deviceService.js
+ * @module Services
+ * @description Capa de servicio que contiene toda la lógica de negocio para la gestión de Equipos (CRUD).
+ * @requires ../models/index.js
+ * @requires ../repositories/deviceRepository.js
+ * @requires ../repositories/logRepository.js
+ * @requires ../repositories/decommissionRepository.js
+ * @requires ../utils/customErrors.js
+ * @requires ../config/logger.js
+ */
 import db from "../models/index.js";
 import * as deviceRepository from "../repositories/deviceRepository.js";
 import * as logRepository from "../repositories/logRepository.js";
 import * as decomissionRepository from "../repositories/decommissionRepository.js";
 import { AlreadyDesactivated, NotFoundError } from "../utils/customErrors.js";
+import logger from "../config/logger.js";
 
+/**
+ * @async
+ * @function fetchAllDevices
+ * @description Obtiene una lista de todos los equipos.
+ * @returns {Promise<Array<object>>}
+ */
 export const fetchAllDevices = async () => {
   const allDevices = await deviceRepository.findAll();
   return allDevices;
 };
 
+/**
+ * @async
+ * @function getDeviceById
+ * @description Obtiene un equipo específico por su ID.
+ * @param {number} id - El ID del equipo a buscar.
+ * @returns {Promise<object>}
+ * @throws {NotFoundError} Si el equipo no se encuentra.
+ */
 export const getDeviceById = async (id) => {
   const device = await deviceRepository.findById(id);
   if (!device) throw new NotFoundError(`Equipo con ID ${id} no encontrado.`);
   return device;
 };
+
+/**
+ * @async
+ * @function createDevice
+ * @description Crea uno o más equipos nuevos en una transacción, aplicando la lógica de rol.
+ * @param {Array<object>} devicesData - Datos de los equipos a crear.
+ * @param {object} user - El objeto del usuario autenticado que realiza la creación.
+ * @param {string} ip_usuario - La dirección IP del usuario.
+ * @returns {Promise<Array<object>>}
+ */
 export const createDevice = async (devicesData, user, ip_usuario) => {
   return db.sequelize.transaction(async (t) => {
     const creationPromises = devicesData.map(async (deviceData) => {
@@ -45,10 +81,24 @@ export const createDevice = async (devicesData, user, ip_usuario) => {
 
     const createdDevices = await Promise.all(creationPromises);
 
+    logger.info(
+      { userId: user.id_usuario, count: createdDevices.length },
+      "Equipo(s) creado(s) exitosamente."
+    );
+
     return createdDevices;
   });
 };
 
+/**
+ * @async
+ * @function updateDevice
+ * @description Actualiza los datos de un equipo existente.
+ * @param {number} id_equipo - El ID del equipo a actualizar.
+ * @param {object} updateData - Los datos a modificar.
+ * @returns {Promise<object>}
+ * @throws {NotFoundError} Si el equipo no se encuentra.
+ */
 export const updateDevice = async (updateValidateData, id_equipo) => {
   const deviceExists = await deviceRepository.findById(id_equipo);
   if (!deviceExists) {
@@ -61,6 +111,18 @@ export const updateDevice = async (updateValidateData, id_equipo) => {
   return updatedDevice;
 };
 
+/**
+ * @async
+ * @function stateDevice
+ * @description Cambia el estado (activo/inactivo) de un equipo.
+ * @param {number} id_equipo - El ID del equipo a modificar.
+ * @param {object} updateData - Objeto con el nuevo estado (ej. { estado_equipo: false }).
+ * @param {number} id_usuario - El ID del usuario que realiza la acción.
+ * @param {string} ip_usuario - La IP del usuario.
+ * @returns {Promise<object>}
+ * @throws {NotFoundError} Si el equipo no se encuentra.
+ * @throws {AppError} Si se intenta aplicar un estado que el equipo ya tiene.
+ */
 export const stateDevice = async (
   id_equipo,
   updateData,
@@ -107,22 +169,25 @@ export const stateDevice = async (
         },
         { transaction: t }
       );
-
-      return {
-        message: "Equipo dado de baja exitosamente",
-        device: updatedDevice,
-      };
+      logger.info(
+        { userId: id_usuario, deviceId: id_equipo },
+        "Equipo dado de baja exitosamente."
+      );
+    } else {
+      await logRepository.create(
+        {
+          accion: "REACTIVAR_EQUIPO",
+          id_usuario: id_usuario,
+          descripcion: `Se reactivo el equipo con serial '${deviceDb.serial}' (ID: ${id_equipo}).`,
+          ip_usuario: ip_usuario,
+        },
+        { transaction: t }
+      );
+      logger.info(
+        { userId: id_usuario, deviceId: id_equipo },
+        "Equipo reactivado exitosamente."
+      );
     }
-
-    await logRepository.create(
-      {
-        accion: "REACTIVAR_EQUIPO",
-        id_usuario: id_usuario,
-        descripcion: `Se reactivo el equipo con serial '${deviceDb.serial}' (ID: ${id_equipo}).`,
-        ip_usuario: ip_usuario,
-      },
-      { transaction: t }
-    );
 
     return updatedDevice;
   });

@@ -44,6 +44,29 @@ const PeripheralSubForm = ({
   const peripheral = formik.values.peripherals[index];
   const { user } = useAuthStore();
 
+  const [costCenters, setCostCenters] = useState([]);
+  const [isLoadingCostCenters, setIsLoadingCostCenters] = useState(false);
+  const selectedCenterId =
+    peripheral.id_centro_operacion ||
+    (user.rol === "Encargado" ? user.id_centro_operacion : null);
+
+  useEffect(() => {
+    if (selectedCenterId) {
+      setIsLoadingCostCenters(true);
+      api
+        .get(`/api/centros-operacion/${selectedCenterId}/costos`)
+        .then((res) => {
+          return setCostCenters(res.data.centerCost || []);
+        })
+        .catch((err) =>
+          console.error("Error al cargar los centros de costo", err)
+        )
+        .finally(() => setIsLoadingCostCenters(false));
+    } else {
+      setCostCenters([]);
+    }
+  }, [selectedCenterId]);
+
   /**
    * @function getError
    * @description Función auxiliar para obtener el mensaje de error de un campo anidado en Formik.
@@ -136,7 +159,7 @@ const PeripheralSubForm = ({
         </label>
 
         {user?.rol === "Admin" ? (
-          <label className="block">
+          <label className="block mt-6">
             <span className="text-text-main font-semibold">
               Centro de Operación:
             </span>
@@ -176,7 +199,7 @@ const PeripheralSubForm = ({
           </div>
         )}
 
-        {/* --- INPUT CONDICIONAL --- */}
+        {/* --- INPUTS CONDICIONALES --- */}
         {peripheral.activo_fijo && (
           <label className="block animate-fade-in">
             <span className="text-text-main font-semibold">
@@ -197,7 +220,51 @@ const PeripheralSubForm = ({
             )}
           </label>
         )}
-        <label className="flex items-center justify-center space-x-2 py-2">
+        {peripheral.has_cost_center && (
+          <label className="block animate-fade-in mt-6">
+            <span className="text-text-main font-semibold">
+              Centro de Costo (Área):
+            </span>
+            <select
+              className={inputClasses}
+              {...formik.getFieldProps(`peripherals[${index}].id_centro_costo`)}
+              disabled={isLoadingCostCenters || costCenters.length === 0}
+            >
+              <option value="" hidden>
+                {isLoadingCostCenters
+                  ? "Cargando áreas..."
+                  : costCenters.length === 0
+                  ? "No hay áreas para este centro"
+                  : "Selecciona..."}
+              </option>
+              {costCenters.map((cc) => (
+                <option key={cc.id_centro_costo} value={cc.id_centro_costo}>
+                  {cc.codigo_centro_costo} - {cc.centro_costo}
+                </option>
+              ))}{" "}
+            </select>
+            {getError("id_centro_costo") && (
+              <div className="text-error text-sm mt-1">
+                {getError("id_centro_costo")}
+              </div>
+            )}
+          </label>
+        )}
+        {/*------ CHECKBOXES ------*/}
+        {selectedCenterId && (
+          <label className="flex items-center justify-center space-x-2 py-2 mt-8">
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded"
+              {...formik.getFieldProps(`peripherals[${index}].has_cost_center`)}
+              checked={peripheral.has_cost_center}
+            />
+            <span className="text-text-main font-semibold">
+              ¿Asignado a un Área?
+            </span>
+          </label>
+        )}
+        <label className="flex items-center justify-center space-x-2 py-2 mt-8">
           <input
             type="checkbox"
             autoComplete="off"

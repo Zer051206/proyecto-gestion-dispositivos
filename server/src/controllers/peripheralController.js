@@ -1,9 +1,28 @@
+/**
+ * @file peripheralController.js
+ * @module Controllers
+ * @description Controlador para los endpoints de gestión de periféricos (CRUD).
+ * Maneja las solicitudes HTTP para obtener, crear y actualizar periféricos, delegando la
+ * lógica de negocio a `peripheralService`.
+ * @requires ../schemas/peripheralSchema.js
+ * @requires ../services/peripheralService.js
+ * @requires ../config/logger.js
+ */
 import * as peripheralService from "../services/peripheralService.js";
 import {
   createPeripheralSchema,
   updatePeripheralSchema,
 } from "../schemas/peripheralSchema.js";
+import logger from "../config/logger.js";
 
+/**
+ * @async
+ * @function getAllPeripherals
+ * @description Obtiene una lista de todos los periféricos.
+ * @param {import('express').Request} req - Objeto de solicitud de Express.
+ * @param {import('express').Response} res - Objeto de respuesta de Express.
+ * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ */
 export const getAllPeripherals = async (req, res, next) => {
   try {
     const allPeripherals = await peripheralService.fetchAllPeripherals();
@@ -13,6 +32,14 @@ export const getAllPeripherals = async (req, res, next) => {
   }
 };
 
+/**
+ * @async
+ * @function getPeripheralById
+ * @description Obtiene un periférico específico por su ID.
+ * @param {import('express').Request} req - Objeto de solicitud de Express.
+ * @param {import('express').Response} res - Objeto de respuesta de Express.
+ * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ */
 export const getPeripheralById = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -23,11 +50,25 @@ export const getPeripheralById = async (req, res, next) => {
   }
 };
 
+/**
+ * @async
+ * @function createPeripheral
+ * @description Crea uno o más periféricos nuevos.
+ * @param {import('express').Request} req - Objeto de solicitud de Express.
+ * @param {import('express').Response} res - Objeto de respuesta de Express.
+ * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ */
 export const createPeripheral = async (req, res, next) => {
   try {
     const ip_usuario = req.ip;
     const user = req.user;
     const createValidateData = createPeripheralSchema.parse(req.body);
+
+    logger.info(
+      { userId: user.id_usuario, count: createValidateData.length },
+      "Solicitud para crear nuevo(s) periférico(s)"
+    );
+
     const newPeripheral = await peripheralService.createPeripheral(
       createValidateData,
       ip_usuario,
@@ -43,10 +84,24 @@ export const createPeripheral = async (req, res, next) => {
   }
 };
 
+/**
+ * @async
+ * @function updatePeripheral
+ * @description Actualiza la información de un periférico existente.
+ * @param {import('express').Request} req - Objeto de solicitud de Express.
+ * @param {import('express').Response} res - Objeto de respuesta de Express.
+ * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ */
 export const updatePeripheral = async (req, res, next) => {
   try {
     const { id } = req.params;
     const updateValidateData = updatePeripheralSchema.parse(req.body);
+
+    logger.info(
+      { userId: req.user.id_usuario, targetPeripheralId: id },
+      "Solicitud para actualizar periférico"
+    );
+
     const updatedPeripheral = await peripheralService.updatePeripheral(
       updateValidateData,
       id
@@ -61,12 +116,30 @@ export const updatePeripheral = async (req, res, next) => {
   }
 };
 
+/**
+ * @async
+ * @function statePeripheral
+ * @description Cambia el estado (activo/inactivo) de un periférico.
+ * @param {import('express').Request} req - Objeto de solicitud de Express.
+ * @param {import('express').Response} res - Objeto de respuesta de Express.
+ * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ */
 export const statePeripheral = async (req, res, next) => {
   try {
     const { id } = req.params;
     const id_usuario = req.user.id_usuario;
     const ip_usuario = req.ip;
     const updateData = req.body;
+
+    logger.info(
+      {
+        userId: id_usuario,
+        targetPeripheralId: id,
+        newState: updateData.estado_periferico,
+      },
+      "Solicitud para cambiar estado de periférico"
+    );
+
     const peripheral = await peripheralService.statePeripheral(
       id,
       updateData,

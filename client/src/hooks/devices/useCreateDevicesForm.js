@@ -30,7 +30,10 @@ export const initialDeviceValues = {
   activo_fijo: false,
   codigo_activo_fijo: "",
   id_centro_operacion: "",
+  has_cost_center: false,
+  id_centro_costo: "",
   estado_equipo: true,
+  empresa_alquila: "",
 };
 
 /**
@@ -75,14 +78,30 @@ export const useCreateDevicesForm = (onSuccess) => {
           ),
     }),
     equipo_alquilado: Yup.boolean().required(),
+    empresa_alquila: Yup.string().when("equipo_alquilado", {
+      is: true,
+      then: (schema) =>
+        schema.required("El nombre de la empresa que alquila es obligatorio."),
+      otherwise: (schema) => schema.nullable().transform(() => null),
+    }),
     activo_fijo: Yup.boolean().required(),
     codigo_activo_fijo: Yup.string().trim().nullable(),
-    // Validación condicional para el centro de operación basado en el rol del usuario.
+
     id_centro_operacion: isAdmin
       ? Yup.number()
           .positive("Debe seleccionar un centro de operación.")
           .required("El centro de operación es obligatorio.")
       : Yup.string().notRequired(), // Para Encargados, no se valida.
+
+    has_cost_center: Yup.boolean(),
+    id_centro_costo: Yup.number().when("has_cost_center", {
+      is: true,
+      then: (schema) =>
+        schema
+          .positive("Debe seleccionar un área.")
+          .required("El centro de costo es obligatorio."),
+      otherwise: (schema) => schema.trim().nullable(),
+    }),
   });
 
   /**

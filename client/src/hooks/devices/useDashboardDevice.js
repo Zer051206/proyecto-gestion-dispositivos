@@ -33,7 +33,7 @@ export const useDashboardDevice = () => {
    * @description Almacena la lista original de dispositivos (equipos y periféricos) obtenida de la API.
    * @type {[Array<object>, Function]}
    */
-  const [assets, setAssets] = useState([]);
+  const [originalAssets, setOriginalAssets] = useState([]);
 
   /**
    * @state
@@ -63,7 +63,7 @@ export const useDashboardDevice = () => {
     try {
       setIsLoading(true);
       const response = await api.get("/api/activos");
-      setAssets(response.data.assets || []);
+      setOriginalAssets(response.data.assets || []);
     } catch (err) {
       setError("Error al cargar los activos. Intenta recargar la página.");
       console.error(err);
@@ -84,7 +84,7 @@ export const useDashboardDevice = () => {
    * optimizando el rendimiento.
    */
   const filteredAssets = useMemo(() => {
-    return assets
+    return originalAssets
       .filter((asset) => {
         if (filterStatus === "activos")
           return asset.estado_equipo || asset.estado_periferico;
@@ -98,11 +98,12 @@ export const useDashboardDevice = () => {
         const serial = asset.serial || asset.serial_periferico || "";
         return serial.toLowerCase().includes(term);
       });
-  }, [assets, searchTerm, filterStatus]);
+  }, [originalAssets, searchTerm, filterStatus]);
 
   // Devuelve el estado y las funciones que el componente de la UI necesitará
   return {
-    assets: filteredAssets,
+    originalAssets,
+    filteredAssets,
     isLoading,
     error,
     refetch: fetchAssets,

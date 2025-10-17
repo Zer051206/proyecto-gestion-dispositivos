@@ -1,0 +1,146 @@
+/**
+ * @file exportUtils.js
+ * @module Utils
+ * @description Módulo de utilidad para exportar datos a un archivo de Excel.
+ * Utiliza las librerías `exceljs` para construir el archivo y `file-saver` para descargarlo.
+ * @requires exceljs
+ * @requires file-saver
+ */
+
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
+
+/**
+ * @async
+ * @function exportToExcel
+ * @description Exporta un array de datos de activos (equipos y periféricos) a un archivo .xlsx.
+ * Crea hojas de cálculo separadas para cada tipo de activo, aplica estilos a las cabeceras
+ * y habilita la funcionalidad de AutoFiltro de Excel.
+ * @param {Array<object>} assets - El array completo de activos a exportar.
+ * @param {string} fileName - El nombre deseado para el archivo (sin la extensión).
+ * @returns {Promise<void>}
+ */
+export const exportToExcel = async (assets, fileName) => {
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = "Sistema de Gestión de Activos";
+  workbook.created = new Date();
+
+  // --- 1. HOJA DE EQUIPOS ---
+  const equiposSheet = workbook.addWorksheet("Inventario de Equipos");
+  const equipos = assets.filter((asset) => asset.type === "device");
+
+  // Definir las columnas para la hoja de equipos
+  equiposSheet.columns = [
+    { header: "Serial", key: "serial", width: 25 },
+    { header: "Tipo", key: "tipo", width: 20 },
+    { header: "Centro de Operación", key: "centroOperacion", width: 30 },
+    { header: "Centro de Costo", key: "centroCosto", width: 30 },
+    { header: "Estado", key: "estado", width: 15 },
+    { header: "Disco Duro (GB)", key: "discoDuro", width: 18 },
+    { header: "Tiene Gráfica", key: "tieneGrafica", width: 18 },
+    { header: "Ref. Gráfica", key: "refGrafica", width: 30 },
+    { header: "Serial Pantalla", key: "serialPantalla", width: 25 },
+    { header: "Activo Fijo", key: "esActivoFijo", width: 15 },
+    { header: "Cód. Activo Fijo", key: "codigoActivoFijo", width: 25 },
+    { header: "Alquilado", key: "esAlquilado", width: 15 },
+    { header: "Empresa Alquila", key: "empresaAlquila", width: 30 },
+    { header: "Creado por", key: "creador", width: 30 },
+  ];
+
+  // Mapear y añadir las filas de datos para los equipos
+  const equipoRows = equipos.map((asset) => ({
+    serial: asset.serial,
+    tipo: asset.equipo_laptop ? "Laptop" : "PC de Escritorio",
+    centroOperacion:
+      asset.OperationCenter?.codigo +
+        " - " +
+        asset.OperationCenter?.direccion || "N/A",
+    centroCosto:
+      asset.CenterCost?.codigo_centro_costo +
+        " - " +
+        asset.CenterCost?.centro_costo || "N/A",
+    estado: asset.estado_equipo ? "Activo" : "De Baja",
+    discoDuro: asset.tamano_disco_duro,
+    tieneGrafica: asset.equipo_tarjeta_grafica ? "Sí" : "No",
+    refGrafica: asset.referencia_tarjeta_grafica || "N/A",
+    serialPantalla: asset.serial_pantalla || "N/A",
+    esActivoFijo: asset.activo_fijo ? "Sí" : "No",
+    codigoActivoFijo: asset.codigo_activo_fijo || "N/A",
+    esAlquilado: asset.equipo_alquilado ? "Sí" : "No",
+    empresaAlquila: asset.empresa_alquila || "N/A",
+    creador: `${asset.Creador?.nombre || ""} ${
+      asset.Creador?.apellido || ""
+    }`.trim(),
+  }));
+  equiposSheet.addRows(equipoRows);
+
+  // --- 2. HOJA DE PERIFÉRICOS ---
+  const perifericosSheet = workbook.addWorksheet("Inventario de Periféricos");
+  const perifericos = assets.filter((asset) => asset.type === "peripheral");
+
+  // Definir las columnas para la hoja de periféricos
+  perifericosSheet.columns = [
+    { header: "Serial", key: "serial", width: 30 },
+    { header: "Tipo", key: "tipo", width: 25 },
+    { header: "Marca", key: "marca", width: 20 },
+    { header: "Centro de Operación", key: "centroCodigo", width: 30 },
+    { header: "Centro de Costo", key: "centroCosto", width: 30 },
+    { header: "Estado", key: "estado", width: 12 },
+    { header: "Activo Fijo", key: "esActivoFijo", width: 15 },
+    { header: "Cód. Activo Fijo", key: "codigoActivoFijo", width: 20 },
+    { header: "Creado por", key: "creador", width: 30 },
+  ];
+
+  // Mapear y añadir las filas de datos para los periféricos
+  const perifericoRows = perifericos.map((asset) => ({
+    serial: asset.serial_periferico,
+    tipo: asset.PeripheralType?.tipo_periferico || "N/A",
+    marca: asset.marca_periferico,
+    centroCodigo:
+      asset.OperationCenter?.codigo +
+        " - " +
+        asset.OperationCenter?.direccion || "N/A",
+    centroCosto:
+      asset.CenterCost?.codigo_centro_costo +
+        " - " +
+        asset.CenterCost?.centro_costo || "N/A",
+    estado: asset.estado_periferico ? "Activo" : "De Baja",
+    esActivoFijo: asset.activo_fijo ? "Sí" : "No",
+    codigoActivoFijo: asset.codigo_activo_fijo || "N/A",
+    creador: `${asset.Creador?.nombre || ""} ${
+      asset.Creador?.apellido || ""
+    }`.trim(),
+  }));
+  perifericosSheet.addRows(perifericoRows);
+
+  // --- 3. ESTILIZACIÓN Y AUTOFILTRO ---
+  [equiposSheet, perifericosSheet].forEach((sheet) => {
+    if (sheet.rowCount === 0) return; // No hacer nada si la hoja está vacía
+
+    // Estilizar la cabecera (primera fila)
+    sheet.getRow(1).eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FF6A994E" },
+      }; // Verde Primario
+      cell.alignment = { vertical: "middle", horizontal: "center" };
+      cell.border = { bottom: { style: "thin", color: { argb: "FF4F7942" } } };
+    });
+
+    // Habilitar el AutoFiltro en la cabecera
+    sheet.autoFilter = {
+      from: "A1",
+      to: { row: 1, column: sheet.columns.length },
+    };
+  });
+
+  // --- 4. GENERACIÓN Y DESCARGA DEL ARCHIVO ---
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+
+  saveAs(blob, `${fileName}.xlsx`);
+};

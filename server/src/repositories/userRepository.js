@@ -1,11 +1,22 @@
+/**
+ * @file userRepository.js
+ * @module Repositories
+ * @description Capa de acceso a datos para la entidad 'User'.
+ * Este módulo encapsula todas las consultas a la base de datos relacionadas con los usuarios,
+ * utilizando Sequelize para interactuar con la tabla 'usuarios'.
+ * @requires ../models/index.js
+ */
 import db from "../models/index.js";
 const User = db.User;
 const OperationCenter = db.OperationCenter;
 const IdentificationType = db.IdentificationType;
 
 /**
- * Busca todos los usuarios. Excluye el hash de la contraseña por seguridad.
- * @returns {Promise<Array<User>>} Un array de usuarios con su centro de operación.
+ * @async
+ * @function findAll
+ * @description Busca y devuelve todos los usuarios con sus relaciones principales.
+ * Excluye el hash de la contraseña por seguridad en todas las consultas.
+ * @returns {Promise<Array<User>>} Un array de todos los objetos de usuario con sus datos asociados.
  */
 export const findAll = async () => {
   return User.findAll({
@@ -23,9 +34,11 @@ export const findAll = async () => {
 };
 
 /**
- * Busca un usuario por su ID. Excluye el hash de la contraseña.
- * @param {number} id - El ID del usuario.
- * @returns {Promise<User|null>} El objeto del usuario o null si no se encuentra.
+ * @async
+ * @function findById
+ * @description Busca un usuario específico por su clave primaria (ID) con sus relaciones.
+ * @param {number} id - El ID del usuario a buscar.
+ * @returns {Promise<User|null>} El objeto del usuario si se encuentra, o null si no.
  */
 export const findById = async (id) => {
   return User.findByPk(id, {
@@ -43,18 +56,24 @@ export const findById = async (id) => {
 };
 
 /**
- * Busca un usuario por su correo. Devuelve el hash de la contraseña
- * porque esta función se usará para el login.
- * @param {string} correo - El correo del usuario a buscar.
- * @returns {Promise<User|null>} El objeto del usuario completo o null.
+ * @async
+ * @function findByEmail
+ * @description Busca un usuario por su correo electrónico. Crucial para el proceso de login.
+ * A diferencia de otras funciones, **no excluye** el hash de la contraseña para poder verificarla.
+ * @param {string} correo - El correo electrónico del usuario.
+ * @param {object} [options={}] - Opciones adicionales de Sequelize (ej. transacciones).
+ * @returns {Promise<User|null>} El objeto del usuario completo (incluyendo hash) o null.
  */
 export const findByEmail = async (correo, options = {}) => {
   return User.findOne({ where: { correo: correo } }, options);
 };
 
 /**
- * Crea un nuevo usuario en la base de datos.
+ * @async
+ * @function create
+ * @description Crea un nuevo registro de usuario en la base de datos.
  * @param {object} userData - Los datos del usuario a crear.
+ * @param {object} [options={}] - Opciones adicionales de Sequelize (ej. transacciones).
  * @returns {Promise<User>} El objeto del usuario recién creado.
  */
 export const create = async (userData, options = {}) => {
@@ -62,10 +81,13 @@ export const create = async (userData, options = {}) => {
 };
 
 /**
- * Actualiza un usuario existente.
+ * @async
+ * @function update
+ * @description Actualiza los datos de un usuario existente por su ID.
  * @param {number} id - El ID del usuario a actualizar.
- * @param {object} updateData - Los nuevos datos para el usuario.
- * @returns {Promise<User|null>} El objeto del usuario actualizado o null si no se encontró.
+ * @param {object} updateData - Un objeto con los campos y nuevos valores a actualizar.
+ * @param {object} [options={}] - Opciones adicionales de Sequelize (ej. transacciones).
+ * @returns {Promise<User|null>} El objeto del usuario actualizado si la operación fue exitosa, o null.
  */
 export const update = async (id, updateData, options = {}) => {
   const [rowsAffected] = await User.update(updateData, {
@@ -79,6 +101,13 @@ export const update = async (id, updateData, options = {}) => {
   return null;
 };
 
+/**
+ * @async
+ * @function updateLastLogin
+ * @description Actualiza el campo `ultimo_login` de un usuario a la fecha y hora actual.
+ * @param {number} id - El ID del usuario cuyo último login se va a registrar.
+ * @returns {Promise<Array<number>>} Un array con el número de filas afectadas.
+ */
 export const updateLastLogin = async (id) => {
   return User.update(
     { ultimo_login: new Date() },

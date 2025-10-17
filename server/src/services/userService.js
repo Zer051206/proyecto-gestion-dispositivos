@@ -1,4 +1,18 @@
-// src/services/userService.js
+/**
+ * @file userService.js
+ * @module Services
+ * @description Capa de servicio que contiene toda la lógica de negocio para la autenticación y gestión de usuarios (CRUD).
+ * Este módulo actúa como intermediario entre los controladores y los repositorios, aplicando las reglas de negocio,
+ * manejando la lógica de contraseñas, tokens, y registrando eventos de auditoría.
+ * @requires bcrypt
+ * @requires ../models/index.js
+ * @requires ../repositories/userRepository.js
+ * @requires ../repositories/refreshTokenRepository.js
+ * @requires ../repositories/logRepository.js
+ * @requires ../utils/tokenUtils.js
+ * @requires ../utils/customErrors.js
+ * @requires ../config/logger.js
+ */
 import bcrypt from "bcrypt";
 import db from "../models/index.js";
 import * as userRepository from "../repositories/userRepository.js";
@@ -13,17 +27,36 @@ import {
   AccountDisabledError,
   AlreadyDesactivated,
 } from "../utils/customErrors.js";
+import logger from "../config/logger.js";
 
 // --- Funciones de Autenticación ---
+
+/**
+ * @async
+ * @function loginUser
+ * @description Valida las credenciales de un usuario, genera tokens y registra el último login.
+ * @param {object} validatedData - Datos de login validados (correo y password).
+ * @returns {Promise<object>} Un objeto con los tokens de acceso/refresco y los datos del usuario.
+ * @throws {UserNotFoundOrInvalidPasswordError} Si el usuario no existe o la contraseña es incorrecta.
+ * @throws {AccountDisabledError} Si la cuenta del usuario está inactiva.
+ */
 export const loginUser = async (usersData) => {
   const { correo, password } = usersData;
   const userDb = await userRepository.findByEmail(correo);
 
   if (!userDb) {
+    logger.warn(
+      { email: correo },
+      "Intento de login fallido: usuario no encontrado."
+    );
     throw new UserNotFoundOrInvalidPasswordError();
   }
 
   if (!userDb.activo) {
+    logger.warn(
+      { email: correo, userId: userDb.id_usuario },
+      "Intento de login fallido: cuenta inactiva."
+    );
     throw new AccountDisabledError();
   }
 
@@ -31,7 +64,26 @@ export const loginUser = async (usersData) => {
     password,
     userDb.contrasena_hash
   );
-  if (!isPasswordCorrect) throw new UserNotFoundOrInvalidPasswordError();
+  if (!isPasswordCorrect) {
+    logger.warn(
+      { email: correo, userId: userDb.id_usuario },
+      "Intento de login fallido: contraseña incorrecta."
+    );
+    throw new UserNotFoundOrInvalidPasswordError();
+  }
+
+  if (!isPasswordCorrect) {
+    logger.warn(
+      { email: correo, userId: userDb.id_usuario },
+      "Intento de login fallido: contraseña incorrecta."
+    );
+    throw new UserNotFoundOrInvalidPasswordError();
+  }
+
+  logger.info(
+    { userId: userDb.id_usuario, email: correo },
+    "Inicio de sesión exitoso."
+  );
 
   const userPayload = {
     id_usuario: userDb.id_usuario,
@@ -51,6 +103,14 @@ export const loginUser = async (usersData) => {
   return { accessToken, refreshToken, user: userPayload };
 };
 
+/**
+ * @async
+ * @function refreshAccessToken
+ * @description Renueva un accessToken utilizando un refreshToken válido.
+ * @param {string} refreshToken - El token de refresco a validar.
+ * @returns {Promise<object>} Un objeto con el nuevo accessToken y los datos del usuario.
+ * @throws {InvalidTokenError} Si el refreshToken no es proporcionado, es inválido o ha expirado.
+ */
 export const refreshAccessToken = async (refreshToken) => {
   if (!refreshToken)
     throw new InvalidTokenError("El refresh token es requerido.");
@@ -61,6 +121,11 @@ export const refreshAccessToken = async (refreshToken) => {
   if (!userData)
     throw new InvalidTokenError("Refresh token inválido o expirado.");
 
+  logger.info(
+    { userId: userData.id_usuario },
+    "Token de acceso renovado exitosamente."
+  );
+
   const payload = {
     ...userData,
     rol: userData.rol,
@@ -70,14 +135,56 @@ export const refreshAccessToken = async (refreshToken) => {
   return { accessToken: newAccessToken, user: payload };
 };
 
+/**
+ * @async
+ * @function logoutUser
+ * @description Cierra la sesión de un usuario revocando su refreshToken.
+ * @param {string} refreshToken - El token de refresco a invalidar.
+ * @returns {Promise<object>} Un objeto con un mensaje de éxito.
+ */
 export const logoutUser = async (refreshToken) => {
   if (refreshToken) {
     await refreshTokenRepository.revokeRefreshToken(refreshToken);
+    logger.info("Refresh token revocado exitosamente durante el logout.");
   }
   return { message: "Logout exitoso" };
 };
 
 // --- Funciones de Gestión de Usuarios (CRUD) ---
+
+/**
+ * @async
+ * @function getAllUsers
+ * @description Obtiene una lista de todos los usuarios del sistema.
+ * @returns {Promise<Array<object>>} Un array con los objetos de usuario.
+ */
+export const getAllUsers = async () => userRepository.findAll();
+
+/**
+ * @async
+ * @function getUserById
+ * @description Obtiene un usuario específico por su ID.
+ * @param {number} id_usuario - El ID del usuario a buscar.
+ * @returns {Promise<object>} El objeto del usuario encontrado.
+ * @throws {NotFoundError} Si el usuario no se encuentra.
+ */
+export const getUserById = async (id_usuario) => {
+  const user = await userRepository.findById(id_usuario);
+  if (!user)
+    throw new NotFoundError(`Usuario con ID ${id_usuario} no encontrado.`);
+  return user;
+};
+
+/**
+ * @async
+ * @function createUser
+ * @description Crea uno o más usuarios nuevos en una transacción.
+ * @param {Array<object>} usersData - Array de objetos con los datos de los usuarios a crear.
+ * @param {number} id_admin - El ID del administrador que está realizando la creación.
+ * @param {string} ip_admin - La dirección IP del administrador.
+ * @returns {Promise<Array<object>>} Un array con los nuevos usuarios creados (sin la contraseña).
+ * @throws {UserAlreadyExistsError} Si uno de los correos ya está en uso.
+ */
 export const createUser = async (id_admin, usersData, ip_admin) => {
   return db.sequelize.transaction(async (t) => {
     const creationPromises = usersData.map(async (userData) => {
@@ -86,6 +193,10 @@ export const createUser = async (id_admin, usersData, ip_admin) => {
         transaction: t,
       });
       if (userDb) {
+        logger.warn(
+          { adminId: id_admin, attemptedEmail: correo },
+          "Intento de crear usuario con correo duplicado."
+        );
         throw new UserAlreadyExistsError("El correo ya está en uso.");
       }
 
@@ -117,19 +228,25 @@ export const createUser = async (id_admin, usersData, ip_admin) => {
     });
     const createdUsers = await Promise.all(creationPromises);
 
+    logger.info(
+      { adminId: id_admin, count: createdUsers.length },
+      `${createdUsers.length} usuario(s) creado(s) exitosamente.`
+    );
+
     return createdUsers;
   });
 };
 
-export const getAllUsers = async () => userRepository.findAll();
-
-export const getUserById = async (id_usuario) => {
-  const user = await userRepository.findById(id_usuario);
-  if (!user)
-    throw new NotFoundError(`Usuario con ID ${id_usuario} no encontrado.`);
-  return user;
-};
-
+/**
+ * @async
+ * @function updateUser
+ * @description Actualiza los datos de un usuario existente.
+ * @param {number} id_usuario - El ID del usuario a actualizar.
+ * @param {object} updateData - Los datos a modificar.
+ * @returns {Promise<object>} El objeto del usuario actualizado.
+ * @throws {NotFoundError} Si el usuario no se encuentra.
+ * @throws {UserAlreadyExistsError} Si se intenta cambiar a un correo que ya está en uso.
+ */
 export const updateUser = async (id_usuario, updateData) => {
   const userDb = await userRepository.findById(id_usuario);
   if (!userDb) {
@@ -146,6 +263,18 @@ export const updateUser = async (id_usuario, updateData) => {
   return userRepository.update(id_usuario, updateData);
 };
 
+/**
+ * @async
+ * @function stateUser
+ * @description Cambia el estado (activo/inactivo) de un usuario.
+ * @param {number} id_usuario - El ID del usuario a modificar.
+ * @param {object} updateData - El objeto con el nuevo estado (ej. { activo: false }).
+ * @param {number} id_admin - El ID del admin que realiza la acción.
+ * @param {string} ip_admin - La IP del admin.
+ * @returns {Promise<object>} El objeto del usuario actualizado.
+ * @throws {NotFoundError} Si el usuario no se encuentra.
+ * @throws {AppError} Si se intenta aplicar un estado que el usuario ya tiene.
+ */
 export const stateUser = async (id_usuario, updateData, id_admin, ip_admin) => {
   return db.sequelize.transaction(async (t) => {
     const userDb = await userRepository.findById(id_usuario, {
@@ -191,6 +320,15 @@ export const stateUser = async (id_usuario, updateData, id_admin, ip_admin) => {
       },
       { transaction: t }
     );
+    logger.info(
+      {
+        adminId: id_admin,
+        targetUserId: id_usuario,
+        newState: updateData.activo,
+      },
+      "Estado de usuario cambiado exitosamente."
+    );
+
     return updatedUser;
   });
 };
