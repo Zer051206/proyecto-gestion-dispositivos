@@ -11,9 +11,9 @@ import { ForbiddenError } from "../utils/customErrors.js";
  * @description Middleware de Express para verificar si el usuario autenticado tiene el rol de 'Admin'.
  * Este middleware debe ser utilizado **después** del `authMiddleware`, ya que depende de que el objeto `req.user`
  * haya sido previamente poblado con la información del usuario verificado.
- * @param {import('express').Request} req - El objeto de la solicitud de Express, se espera que contenga `req.user`.
- * @param {import('express').Response} res - El objeto de la respuesta de Express.
- * @param {import('express').NextFunction} next - La función callback para pasar el control al siguiente middleware.
+ * @param {object} req - El objeto de la solicitud de Express, se espera que contenga `req.user`.
+ * @param {object} res - El objeto de la respuesta de Express.
+ * @param {Function} next - La función callback para pasar el control al siguiente middleware.
  * @returns {void} Llama a `next()` para continuar si el usuario es un Admin, o a `next(error)` si no lo es.
  */
 const isAdmin = (req, res, next) => {

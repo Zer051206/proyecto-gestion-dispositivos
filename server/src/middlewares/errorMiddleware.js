@@ -30,9 +30,9 @@ const { JsonWebTokenError, TokenExpiredError } = pkg;
  * Identifica el tipo de error (AppError, ZodError, JWT, Sequelize, etc.) y establece
  * el código de estado y el mensaje de respuesta apropiados.
  * @param {Error} err - El objeto de error capturado.
- * @param {import('express').Request} req - El objeto de solicitud de Express.
- * @param {import('express').Response} res - El objeto de respuesta de Express.
- * @param {import('express').NextFunction} _next - La función `next` de Express (no utilizada aquí, por convención se nombra `_next`).
+ * @param {object} req - El objeto de solicitud de Express.
+ * @param {object} res - El objeto de respuesta de Express.
+ * @param {Function} _next - La función `next` de Express (no utilizada aquí, por convención se nombra `_next`).
  */
 const errorHandler = (err, req, res, _next) => {
   // REGISTRO DEL ERROR

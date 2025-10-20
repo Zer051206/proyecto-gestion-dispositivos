@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: hooks/auth/useLoginForm.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: hooks/auth/useLoginForm.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file useLoginForm.js
+ * @module Hooks/Auth
+ * @description Hook personalizado que encapsula toda la lógica y el estado para el formulario de inicio de sesión.
+ * Utiliza Formik para la gestión del formulario, Yup para la validación de datos del lado del cliente,
+ * y se integra con el store de autenticación global (Zustand) para manejar la sesión del usuario.
+ * @requires formik
+ * @requires yup
+ * @requires react-router-dom
+ * @requires ../../config/axios.js
+ * @requires ../../stores/authStore.js
+ */
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { useNavigate } from "react-router-dom";
+import api from "../../config/axios.js";
+import { useAuthStore } from "../../stores/authStore.js";
+
+/**
+ * @const {Yup.ObjectSchema} validationSchema
+ * @description Define el esquema de validación para los campos del formulario de login.
+ * Se asegura de que el correo electrónico tenga un formato válido y que ambos campos sean obligatorios.
+ */
+const validationSchema = Yup.object({
+  correo: Yup.string()
+    .email("El formato del correo no es válido.")
+    .required("El correo es obligatorio."),
+  password: Yup.string()
+    .min(6, "La contraseña debe tener al menos 6 caracteres.")
+    .required("La contraseña es obligatoria."),
+});
+
+/**
+ * @function useLoginForm
+ * @description Hook de React que proporciona toda la lógica y el estado necesarios para el componente `LoginForm`.
+ * @returns {object} La instancia completa de Formik, que contiene el estado (`values`, `errors`, `isSubmitting`),
+ * los manejadores de eventos (`handleSubmit`, `getFieldProps`) y otras utilidades para ser usadas en el componente de la vista.
+ */
+export const useLoginForm = () => {
+  const navigate = useNavigate();
+
+  /**
+   * @description Obtiene la acción `login` del store de autenticación global.
+   * Esta acción se encargará de actualizar el estado de la aplicación y guardar los datos de sesión.
+   */
+  const login = useAuthStore((state) => state.login);
+
+  /**
+   * @const {object} formik
+   * @description Instancia de Formik creada con `useFormik`.
+   * Es el cerebro del formulario, manejando sus valores, validación y envío.
+   */
+  const formik = useFormik({
+    // Valores iniciales de los campos
+    initialValues: {
+      correo: "",
+      password: "",
+    },
+    // El esquema de validación que creamos con Yup
+    validationSchema: validationSchema,
+
+    /**
+     * @function onSubmit
+     * @description Función que se ejecuta al enviar el formulario, solo si la validación es exitosa.
+     * Realiza la llamada a la API de login, maneja la respuesta de éxito o error, actualiza el estado global
+     * y redirige al usuario.
+     * @param {object} values - Los valores actuales de los campos del formulario.
+     * @param {object} formikHelpers - Objeto con helpers de Formik (ej. setFieldError).
+     * @async
+     */
+    onSubmit: async (values, { setFieldError }) => {
+      try {
+        const response = await api.post("/auth/login", values);
+
+        // Si la petición es exitosa, se llama a la acción 'login' del store
+        // para guardar los datos del usuario y los tokens.
+        login(
+          response.data.user,
+          response.data.accessToken,
+          response.data.refreshToken
+        );
+
+        // Si el login es exitoso, las cookies se establecen automáticamente.
+        // Redirigimos al usuario al dashboard.
+        navigate("/dashboard");
+      } catch (err) {
+        // Manejo de errores de la API.
+        if (err.response?.data?.errors) {
+          // Si el backend devuelve errores de validación específicos (de Zod).
+          err.response.data.errors.forEach((error) => {
+            setFieldError(error.path, error.message);
+          });
+        } else {
+          // Si es un error general (ej. "credenciales incorrectas").
+          const errorMessage =
+            err.response?.data?.message || "Ha ocurrido un error inesperado.";
+          setFieldError("apiError", errorMessage);
+        }
+      }
+      // Formik maneja automáticamente el estado de 'isSubmitting'
+    },
+  });
+
+  // Devuelve la instancia de Formik para que el componente LoginForm pueda usarla.
+  return formik;
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Components.html">Components</a></li><li><a href="module-Components_Auth.html">Components/Auth</a></li><li><a href="module-Components_Devices.html">Components/Devices</a></li><li><a href="module-Components_History.html">Components/History</a></li><li><a href="module-Components_OperationCenters.html">Components/OperationCenters</a></li><li><a href="module-Components_Peripherals.html">Components/Peripherals</a></li><li><a href="module-Components_Users.html">Components/Users</a></li><li><a href="module-Config.html">Config</a></li><li><a href="module-DateUtils.html">DateUtils</a></li><li><a href="module-Hooks.html">Hooks</a></li><li><a href="module-Hooks_Auth.html">Hooks/Auth</a></li><li><a href="module-Hooks_Catalogue.html">Hooks/Catalogue</a></li><li><a href="module-Hooks_Devices.html">Hooks/Devices</a></li><li><a href="module-Hooks_History.html">Hooks/History</a></li><li><a href="module-Hooks_OperationCenters.html">Hooks/OperationCenters</a></li><li><a href="module-Hooks_Users.html">Hooks/Users</a></li><li><a href="module-InputHandlers.html">InputHandlers</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Routes_Admin.html">Routes/Admin</a></li><li><a href="module-Stores_Auth.html">Stores/Auth</a></li><li><a href="module-Utils.html">Utils</a></li></ul><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#LoginFormSkeleton">LoginFormSkeleton</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Oct 20 2025 10:51:20 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

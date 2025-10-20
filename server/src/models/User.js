@@ -12,8 +12,8 @@ import { DataTypes } from "sequelize";
 /**
  * @function defineUserModel
  * @description Define y devuelve el modelo 'User' de Sequelize.
- * @param {import('sequelize').Sequelize} sequelize - La instancia de Sequelize.
- * @returns {import('sequelize').ModelCtor<Model>} El modelo 'User' definido.
+ * @param {object} sequelize - La instancia de Sequelize.
+ * @returns {object} El modelo 'User' definido.
  */
 export default (sequelize) => {
   /**

@@ -7,8 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "docs": "npm run docs:backend && npm run docs:frontend",
-    "docs:backend": "jsdoc -c jsdoc.json -r server/src -d docs/backend",
-    "docs:frontend": "jsdoc -c jsdoc.json -r client/src -d docs/frontend"
+    "docs:backend": "node --max-old-space-size=4096 ./node_modules/jsdoc/jsdoc.js -c jsdoc.backend.json",
+    "docs:frontend": "node --max-old-space-size=4096 ./node_modules/jsdoc/jsdoc.js -c jsdoc.frontend.json"
   },
   "dependencies": {
     "react": "^19.1.1",

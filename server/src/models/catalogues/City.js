@@ -11,8 +11,8 @@ import { DataTypes } from "sequelize";
 /**
  * @function defineCityModel
  * @description Define y devuelve el modelo 'City' de Sequelize.
- * @param {import('sequelize').Sequelize} sequelize - La instancia de Sequelize.
- * @returns {import('sequelize').ModelCtor<Model>} El modelo 'City' definido.
+ * @param {object} sequelize - La instancia de Sequelize.
+ * @returns {object} El modelo 'City' definido.
  */
 export default (sequelize) => {
   /**

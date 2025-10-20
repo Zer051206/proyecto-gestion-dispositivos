@@ -13,9 +13,9 @@ import * as catalogueService from "../services/catalogueService.js";
  * @async
  * @function getCities
  * @description Maneja la solicitud para obtener una lista de todas las ciudades.
- * @param {import('express').Request} req - El objeto de solicitud de Express.
- * @param {import('express').Response} res - El objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - La función para pasar el control al siguiente middleware.
+ * @param {object} req - El objeto de solicitud de Express.
+ * @param {object} res - El objeto de respuesta de Express.
+ * @param {Function} next - La función para pasar el control al siguiente middleware.
  */
 export const getCities = async (req, res, next) => {
   try {
@@ -34,9 +34,9 @@ export const getCities = async (req, res, next) => {
  * @async
  * @function getIdTypes
  * @description Maneja la solicitud para obtener una lista de todos los tipos de identificación.
- * @param {import('express').Request} req - El objeto de solicitud de Express.
- * @param {import('express').Response} res - El objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - La función para pasar el control al siguiente middleware.
+ * @param {object} req - El objeto de solicitud de Express.
+ * @param {object} res - El objeto de respuesta de Express.
+ * @param {Function} next - La función para pasar el control al siguiente middleware.
  */
 export const getIdTypes = async (req, res, next) => {
   try {
@@ -55,9 +55,9 @@ export const getIdTypes = async (req, res, next) => {
  * @async
  * @function getPeripheralTypes
  * @description Maneja la solicitud para obtener una lista de todos los tipos de periféricos.
- * @param {import('express').Request} req - El objeto de solicitud de Express.
- * @param {import('express').Response} res - El objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - La función para pasar el control al siguiente middleware.
+ * @param {object} req - El objeto de solicitud de Express.
+ * @param {object} res - El objeto de respuesta de Express.
+ * @param {Function} next - La función para pasar el control al siguiente middleware.
  */
 export const getPeripheralTypes = async (req, res, next) => {
   try {

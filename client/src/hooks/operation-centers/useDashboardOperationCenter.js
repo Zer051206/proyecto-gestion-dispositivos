@@ -19,29 +19,28 @@ import api from "../../config/axios.js";
  * isLoading: boolean,
  * error: string|null,
  * refetch: Function,
- * setSearchTerm: React.Dispatch<React.SetStateAction<string>>,
- * setSortBy: React.Dispatch<React.SetStateAction<string>>
+ * setSearchTerm: {Function},
+ * setSortBy: {Function}
  * }} Un objeto que contiene los centros de operación procesados, el estado de carga, errores, y las funciones para actualizar los filtros y recargar los datos.
  */
 export const useDashboardOperationCenter = () => {
   /**
    * @state
    * @description Almacena la lista original de centros de operación obtenida de la API.
-   * @type {[Array<object>, Function]}
+   * @type {Array}
    */
   const [centers, setCenters] = useState([]);
 
   /**
-   * @state
+   * @state {boolean} isLoading
    * @description Indica si se está realizando una petición a la API.
-   * @type {[boolean, Function]}
    */
   const [isLoading, setIsLoading] = useState(true);
 
   /**
    * @state
    * @description Almacena un mensaje de error si la petición a la API falla.
-   * @type {[string|null, Function]}
+   * @type {Array}
    */
   const [error, setError] = useState(null);
 

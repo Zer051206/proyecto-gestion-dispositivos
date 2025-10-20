@@ -14,9 +14,9 @@ import logger from "../config/logger.js";
  * @async
  * @function getAssets
  * @description Obtiene una lista combinada de activos (equipos y periféricos), filtrada según el rol del usuario.
- * @param {import('express').Request} req - El objeto de solicitud de Express, se espera que contenga `req.user`.
- * @param {import('express').Response} res - El objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - La función para pasar el control al siguiente middleware.
+ * @param {object} req - El objeto de solicitud de Express, se espera que contenga `req.user`.
+ * @param {object} res - El objeto de respuesta de Express.
+ * @param {Function} next - La función para pasar el control al siguiente middleware.
  */
 export const getAssets = async (req, res, next) => {
   try {
@@ -37,9 +37,9 @@ export const getAssets = async (req, res, next) => {
  * @async
  * @function getOperationCenters
  * @description Obtiene una lista de centros de operación, filtrada según el rol del usuario.
- * @param {import('express').Request} req - El objeto de solicitud de Express.
- * @param {import('express').Response} res - El objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - La función para pasar el control al siguiente middleware.
+ * @param {object} req - El objeto de solicitud de Express.
+ * @param {object} res - El objeto de respuesta de Express.
+ * @param {Function} next - La función para pasar el control al siguiente middleware.
  */
 export const getOperationCenters = async (req, res, next) => {
   try {
@@ -63,9 +63,9 @@ export const getOperationCenters = async (req, res, next) => {
  * @async
  * @function getUsers
  * @description Obtiene una lista completa de todos los usuarios del sistema.
- * @param {import('express').Request} req - El objeto de solicitud de Express.
- * @param {import('express').Response} res - El objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - La función para pasar el control al siguiente middleware.
+ * @param {object} req - El objeto de solicitud de Express.
+ * @param {object} res - El objeto de respuesta de Express.
+ * @param {Function} next - La función para pasar el control al siguiente middleware.
  */
 export const getUsers = async (req, res, next) => {
   try {
@@ -88,9 +88,9 @@ export const getUsers = async (req, res, next) => {
  * @async
  * @function getLogs
  * @description Obtiene una lista de registros de log, filtrada según el rol del usuario.
- * @param {import('express').Request} req - El objeto de solicitud de Express.
- * @param {import('express').Response} res - El objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - La función para pasar el control al siguiente middleware.
+ * @param {object} req - El objeto de solicitud de Express.
+ * @param {object} res - El objeto de respuesta de Express.
+ * @param {Function} next - La función para pasar el control al siguiente middleware.
  */
 export const getLogs = async (req, res, next) => {
   try {
@@ -111,9 +111,9 @@ export const getLogs = async (req, res, next) => {
  * @async
  * @function getDecomissions
  * @description Obtiene una lista de registros de bajas, filtrada según el rol del usuario.
- * @param {import('express').Request} req - El objeto de solicitud de Express.
- * @param {import('express').Response} res - El objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - La función para pasar el control al siguiente middleware.
+ * @param {object} req - El objeto de solicitud de Express.
+ * @param {object} res - El objeto de respuesta de Express.
+ * @param {Function} next - La función para pasar el control al siguiente middleware.
  */
 export const getDecomissions = async (req, res, next) => {
   try {
@@ -134,9 +134,9 @@ export const getDecomissions = async (req, res, next) => {
  * @async
  * @function getCenterCostByCenterOperation
  * @description Obtiene los centros de costo asociados a un centro de operación específico.
- * @param {import('express').Request} req - El objeto de solicitud de Express, con `req.params.id`.
- * @param {import('express').Response} res - El objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - La función para pasar el control al siguiente middleware.
+ * @param {object} req - El objeto de solicitud de Express, con `req.params.id`.
+ * @param {object} res - El objeto de respuesta de Express.
+ * @param {Function} next - La función para pasar el control al siguiente middleware.
  */
 export const getCenterCostByCenterOperation = async (req, res, next) => {
   try {

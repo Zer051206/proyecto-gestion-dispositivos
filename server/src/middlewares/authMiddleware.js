@@ -25,9 +25,9 @@ import {
  * 5. Si todo es correcto, adjunta la información del usuario al objeto `req` para que las
  * siguientes funciones en la cadena (otros middlewares o controladores) tengan acceso a ella.
  * 6. Si alguna verificación falla, pasa un error al manejador de errores centralizado.
- * @param {import('express').Request} req - El objeto de la solicitud de Express.
- * @param {import('express').Response} res - El objeto de la respuesta de Express.
- * @param {import('express').NextFunction} next - La función callback para pasar el control al siguiente middleware.
+ * @param {object} req - El objeto de la solicitud de Express.
+ * @param {object} res - El objeto de la respuesta de Express.
+ * @param {Function} next - La función callback para pasar el control al siguiente middleware.
  * @async
  */
 const authMiddleware = async (req, res, next) => {

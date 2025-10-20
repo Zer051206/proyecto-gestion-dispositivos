@@ -7,7 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "vite",
-    "tailwind": "npx tailwindcss -i ./src/index.css -o ./src/output.css --watch"
+    "tailwind": "npx tailwindcss -i ./src/index.css -o ./src/output.css --watch",
+    "docs:frontend": "node --max-old-space-size=4096 ./node_modules/jsdoc/jsdoc.js -c jsdoc.frontend.json"
   },
   "author": "",
   "license": "ISC",

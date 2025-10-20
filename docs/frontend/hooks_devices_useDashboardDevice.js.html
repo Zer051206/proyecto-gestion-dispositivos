@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: hooks/devices/useDashboardDevice.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: hooks/devices/useDashboardDevice.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file useDashboardDevice.js
+ * @module Hooks/Devices
+ * @description Hook personalizado para gestionar los datos y el estado de la UI del dashboard de Dispositivos (Equipos y Periféricos).
+ * Se encarga de obtener la lista combinada de dispositivos desde la API, y de manejar la lógica de
+ * búsqueda (filtrado) y filtrado por estado del lado del cliente.
+ * @requires react
+ * @requires ../config/axios.js
+ * @requires ../stores/authStore.js
+ */
+import { useState, useEffect, useMemo, useCallback } from "react";
+import api from "../../config/axios.js";
+import { useAuthStore } from "../../stores/authStore.js";
+
+/**
+ * @function useDashboardDevice
+ * @description Hook de React que encapsula toda la lógica para la página de gestión de dispositivos.
+ * Obtiene los datos, gestiona los estados de carga y error, y proporciona funciones para filtrar la lista.
+ * @returns {{
+ * assets: Array&lt;object>,
+ * isLoading: boolean,
+ * error: string|null,
+ * refetch: Function,
+ * setSearchTerm: {Function},
+ * setFilterStatus: {Function}
+ * }} Un objeto que contiene los dispositivos procesados, el estado de carga, errores, y las funciones para actualizar los filtros y recargar los datos.
+ */
+export const useDashboardDevice = () => {
+  const { user } = useAuthStore();
+
+  /**
+   * @state
+   * @description Almacena la lista original de dispositivos (equipos y periféricos) obtenida de la API.
+   * @type {Array}
+   */
+  const [originalAssets, setOriginalAssets] = useState([]);
+
+  /**
+   * @state {boolean} isLoading
+   * @description Indica si se está realizando una petición a la API.
+   */
+  const [isLoading, setIsLoading] = useState(true);
+
+  /**
+   * @state
+   * @description Almacena un mensaje de error si la petición a la API falla.
+   * @type {Array}
+   */
+  const [error, setError] = useState(null);
+
+  // Estados para los filtros
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("todos");
+
+  /**
+   * @function fetchAssets
+   * @description Obtiene la lista combinada de dispositivos desde el endpoint `/api/activos`.
+   * El backend se encarga de filtrar por rol. Se envuelve en `useCallback` para memorización.
+   * @async
+   */
+  const fetchAssets = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await api.get("/api/activos");
+      setOriginalAssets(response.data.assets || []);
+    } catch (err) {
+      setError("Error al cargar los activos. Intenta recargar la página.");
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // useEffect para ejecutar la carga de datos inicial cuando el componente se monta.
+  useEffect(() => {
+    fetchAssets();
+  }, [fetchAssets]);
+
+  /**
+   * @const {Array&lt;object>} filteredAssets
+   * @description Memoriza la lista de dispositivos procesada (filtrada) usando `useMemo`.
+   * Se recalcula solo si los activos originales, el término de búsqueda o el filtro de estado cambian,
+   * optimizando el rendimiento.
+   */
+  const filteredAssets = useMemo(() => {
+    return originalAssets
+      .filter((asset) => {
+        if (filterStatus === "activos")
+          return asset.estado_equipo || asset.estado_periferico;
+        if (filterStatus === "baja")
+          return !(asset.estado_equipo || asset.estado_periferico);
+        return true;
+      })
+      .filter((asset) => {
+        // Lógica de filtrado por término de búsqueda en serial o etiqueta
+        const term = searchTerm.toLowerCase();
+        const serial = asset.serial || asset.serial_periferico || "";
+        return serial.toLowerCase().includes(term);
+      });
+  }, [originalAssets, searchTerm, filterStatus]);
+
+  // Devuelve el estado y las funciones que el componente de la UI necesitará
+  return {
+    originalAssets,
+    filteredAssets,
+    isLoading,
+    error,
+    refetch: fetchAssets,
+    setSearchTerm,
+    setFilterStatus,
+  };
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Components.html">Components</a></li><li><a href="module-Components_Auth.html">Components/Auth</a></li><li><a href="module-Components_Devices.html">Components/Devices</a></li><li><a href="module-Components_History.html">Components/History</a></li><li><a href="module-Components_OperationCenters.html">Components/OperationCenters</a></li><li><a href="module-Components_Peripherals.html">Components/Peripherals</a></li><li><a href="module-Components_Users.html">Components/Users</a></li><li><a href="module-Config.html">Config</a></li><li><a href="module-DateUtils.html">DateUtils</a></li><li><a href="module-Hooks.html">Hooks</a></li><li><a href="module-Hooks_Auth.html">Hooks/Auth</a></li><li><a href="module-Hooks_Catalogue.html">Hooks/Catalogue</a></li><li><a href="module-Hooks_Devices.html">Hooks/Devices</a></li><li><a href="module-Hooks_History.html">Hooks/History</a></li><li><a href="module-Hooks_OperationCenters.html">Hooks/OperationCenters</a></li><li><a href="module-Hooks_Users.html">Hooks/Users</a></li><li><a href="module-InputHandlers.html">InputHandlers</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Routes_Admin.html">Routes/Admin</a></li><li><a href="module-Stores_Auth.html">Stores/Auth</a></li><li><a href="module-Utils.html">Utils</a></li></ul><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#LoginFormSkeleton">LoginFormSkeleton</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Oct 20 2025 10:51:20 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

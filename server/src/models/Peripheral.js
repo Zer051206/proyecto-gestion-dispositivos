@@ -11,8 +11,8 @@ import { DataTypes } from "sequelize";
 /**
  * @function definePeripheralModel
  * @description Define y devuelve el modelo 'Peripheral' de Sequelize.
- * @param {import('sequelize').Sequelize} sequelize - La instancia de Sequelize.
- * @returns {import('sequelize').ModelCtor<Model>} El modelo 'Peripheral' definido.
+ * @param {object} sequelize - La instancia de Sequelize.
+ * @returns {object} El modelo 'Peripheral' definido.
  */
 export default (sequelize) => {
   /**

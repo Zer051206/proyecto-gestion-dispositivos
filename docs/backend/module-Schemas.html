@@ -1,0 +1,5672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Module: Schemas</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Module: Schemas</h1>
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description"><p>Define los esquemas de validación de datos para la entidad 'Equipo' utilizando Zod.
+Estos esquemas se utilizan en los controladores para validar los datos de las peticiones HTTP
+antes de que lleguen a la capa de servicio, asegurando la integridad de los datos.</p></div>
+        
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_deviceSchema.js.html">schemas/deviceSchema.js</a>, <a href="schemas_deviceSchema.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_operationCenterSchema.js.html">schemas/operationCenterSchema.js</a>, <a href="schemas_operationCenterSchema.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_peripheralSchema.js.html">schemas/peripheralSchema.js</a>, <a href="schemas_peripheralSchema.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+    </div>
+
+    
+
+    
+        <h3 class="subsection-title">Requires</h3>
+
+        <ul>
+            <li>module:zod</li>
+        </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="~RoleEnum"><span class="type-signature">(inner, constant) </span>RoleEnum<span class="type-signature"> :z.ZodEnum</span></h4>
+
+
+
+
+<div class="description">
+    <p>Define un tipo enumerado para los roles de usuario permitidos ('Admin', 'Encargado').
+Incluye un mapa de errores personalizado para mensajes de validación claros.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodEnum</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line10">line 10</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~createDeviceSchema"><span class="type-signature">(inner, constant) </span>createDeviceSchema<span class="type-signature"> :z.ZodArray</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la creación de equipos. Espera un array que contenga
+al menos un objeto de equipo válido según <code>deviceObjectSchema</code>.
+Utilizado en la ruta <code>POST /api/dispositivos</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodArray</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_deviceSchema.js.html">schemas/deviceSchema.js</a>, <a href="schemas_deviceSchema.js.html#line48">line 48</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~createOperationCenterSchema"><span class="type-signature">(inner, constant) </span>createOperationCenterSchema<span class="type-signature"> :z.ZodArray</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la creación de centros de operación. Espera un array que contenga
+al menos un objeto de centro válido según <code>operationCenterObjectSchema</code>.
+Utilizado en la ruta <code>POST /api/centros-operacion</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodArray</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_operationCenterSchema.js.html">schemas/operationCenterSchema.js</a>, <a href="schemas_operationCenterSchema.js.html#line41">line 41</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~createPeripheralSchema"><span class="type-signature">(inner, constant) </span>createPeripheralSchema<span class="type-signature"> :z.ZodArray</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la creación de periféricos. Espera un array que contenga
+al menos un objeto de periférico válido según <code>peripheralObjectSchema</code>.
+Utilizado en la ruta <code>POST /api/perifericos</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodArray</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_peripheralSchema.js.html">schemas/peripheralSchema.js</a>, <a href="schemas_peripheralSchema.js.html#line40">line 40</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~createUserSchema"><span class="type-signature">(inner, constant) </span>createUserSchema<span class="type-signature"> :z.ZodArray</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la creación de usuarios. Espera un array que contenga
+al menos un objeto de usuario válido según <code>userObjectSchema</code>.
+Utilizado en la ruta <code>POST /api/usuarios</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodArray</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line67">line 67</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~deviceObjectSchema"><span class="type-signature">(inner, constant) </span>deviceObjectSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema de Zod para validar un único objeto de equipo.
+Define el tipo de dato, las restricciones (ej. <code>min</code>, <code>max</code>) y si los campos son
+opcionales o nulos para cada propiedad de un equipo.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_deviceSchema.js.html">schemas/deviceSchema.js</a>, <a href="schemas_deviceSchema.js.html#line11">line 11</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~loginSchema"><span class="type-signature">(inner, constant) </span>loginSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema de validación específico para el formulario de inicio de sesión.
+Solo valida los campos 'correo' y 'password'.
+Utilizado en la ruta <code>POST /auth/login</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line56">line 56</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~operationCenterObjectSchema"><span class="type-signature">(inner, constant) </span>operationCenterObjectSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema de Zod para validar un único objeto de Centro de Operación.
+Define el tipo de dato y las restricciones para cada propiedad.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_operationCenterSchema.js.html">schemas/operationCenterSchema.js</a>, <a href="schemas_operationCenterSchema.js.html#line10">line 10</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~peripheralObjectSchema"><span class="type-signature">(inner, constant) </span>peripheralObjectSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema de Zod para validar un único objeto de periférico.
+Define el tipo de dato y las restricciones para cada propiedad.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_peripheralSchema.js.html">schemas/peripheralSchema.js</a>, <a href="schemas_peripheralSchema.js.html#line10">line 10</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~updateDeviceSchema"><span class="type-signature">(inner, constant) </span>updateDeviceSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la actualización de un equipo. Utiliza <code>.partial()</code>
+para hacer que todos los campos del <code>deviceObjectSchema</code> sean opcionales.
+Esto permite actualizaciones parciales (peticiones PATCH) donde solo se envían los campos a modificar.
+Utilizado en la ruta <code>PATCH /api/dispositivos/:id</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_deviceSchema.js.html">schemas/deviceSchema.js</a>, <a href="schemas_deviceSchema.js.html#line58">line 58</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~updateOperationCenterSchema"><span class="type-signature">(inner, constant) </span>updateOperationCenterSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la actualización de un centro de operación. Utiliza <code>.partial()</code>
+para hacer que todos los campos del <code>operationCenterObjectSchema</code> sean opcionales.
+Esto permite actualizaciones parciales (peticiones PATCH).
+Utilizado en la ruta <code>PATCH /api/centros-operacion/:id</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_operationCenterSchema.js.html">schemas/operationCenterSchema.js</a>, <a href="schemas_operationCenterSchema.js.html#line49">line 49</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~updatePeripheralSchema"><span class="type-signature">(inner, constant) </span>updatePeripheralSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la actualización de un periférico. Utiliza <code>.partial()</code>
+para hacer que todos los campos del <code>peripheralObjectSchema</code> sean opcionales.
+Esto permite actualizaciones parciales (peticiones PATCH).
+Utilizado en la ruta <code>PATCH /api/perifericos/:id</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_peripheralSchema.js.html">schemas/peripheralSchema.js</a>, <a href="schemas_peripheralSchema.js.html#line50">line 50</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~updateUserSchema"><span class="type-signature">(inner, constant) </span>updateUserSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la actualización de un usuario. Utiliza <code>.partial()</code>
+para hacer que todos los campos del <code>userObjectSchema</code> sean opcionales.
+Esto permite actualizaciones parciales (peticiones PATCH).
+Utilizado en la ruta <code>PATCH /api/usuarios/:id</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line77">line 77</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~userObjectSchema"><span class="type-signature">(inner, constant) </span>userObjectSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema de Zod para validar un único objeto de usuario.
+Define el tipo de dato y las restricciones para cada propiedad de un usuario.
+Este es el esquema base para la creación y actualización.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line21">line 21</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+
+
+
+<section>
+
+<header>
+    
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description"><p>Define los esquemas de validación de datos para la entidad 'Centro de Operación' utilizando Zod.
+Estos esquemas aseguran la integridad de los datos para las operaciones de creación y actualización.</p></div>
+        
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_deviceSchema.js.html">schemas/deviceSchema.js</a>, <a href="schemas_deviceSchema.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_operationCenterSchema.js.html">schemas/operationCenterSchema.js</a>, <a href="schemas_operationCenterSchema.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_peripheralSchema.js.html">schemas/peripheralSchema.js</a>, <a href="schemas_peripheralSchema.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+    </div>
+
+    
+
+    
+        <h3 class="subsection-title">Requires</h3>
+
+        <ul>
+            <li>module:zod</li>
+        </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="~RoleEnum"><span class="type-signature">(inner, constant) </span>RoleEnum<span class="type-signature"> :z.ZodEnum</span></h4>
+
+
+
+
+<div class="description">
+    <p>Define un tipo enumerado para los roles de usuario permitidos ('Admin', 'Encargado').
+Incluye un mapa de errores personalizado para mensajes de validación claros.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodEnum</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line10">line 10</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~createDeviceSchema"><span class="type-signature">(inner, constant) </span>createDeviceSchema<span class="type-signature"> :z.ZodArray</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la creación de equipos. Espera un array que contenga
+al menos un objeto de equipo válido según <code>deviceObjectSchema</code>.
+Utilizado en la ruta <code>POST /api/dispositivos</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodArray</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_deviceSchema.js.html">schemas/deviceSchema.js</a>, <a href="schemas_deviceSchema.js.html#line48">line 48</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~createOperationCenterSchema"><span class="type-signature">(inner, constant) </span>createOperationCenterSchema<span class="type-signature"> :z.ZodArray</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la creación de centros de operación. Espera un array que contenga
+al menos un objeto de centro válido según <code>operationCenterObjectSchema</code>.
+Utilizado en la ruta <code>POST /api/centros-operacion</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodArray</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_operationCenterSchema.js.html">schemas/operationCenterSchema.js</a>, <a href="schemas_operationCenterSchema.js.html#line41">line 41</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~createPeripheralSchema"><span class="type-signature">(inner, constant) </span>createPeripheralSchema<span class="type-signature"> :z.ZodArray</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la creación de periféricos. Espera un array que contenga
+al menos un objeto de periférico válido según <code>peripheralObjectSchema</code>.
+Utilizado en la ruta <code>POST /api/perifericos</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodArray</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_peripheralSchema.js.html">schemas/peripheralSchema.js</a>, <a href="schemas_peripheralSchema.js.html#line40">line 40</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~createUserSchema"><span class="type-signature">(inner, constant) </span>createUserSchema<span class="type-signature"> :z.ZodArray</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la creación de usuarios. Espera un array que contenga
+al menos un objeto de usuario válido según <code>userObjectSchema</code>.
+Utilizado en la ruta <code>POST /api/usuarios</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodArray</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line67">line 67</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~deviceObjectSchema"><span class="type-signature">(inner, constant) </span>deviceObjectSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema de Zod para validar un único objeto de equipo.
+Define el tipo de dato, las restricciones (ej. <code>min</code>, <code>max</code>) y si los campos son
+opcionales o nulos para cada propiedad de un equipo.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_deviceSchema.js.html">schemas/deviceSchema.js</a>, <a href="schemas_deviceSchema.js.html#line11">line 11</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~loginSchema"><span class="type-signature">(inner, constant) </span>loginSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema de validación específico para el formulario de inicio de sesión.
+Solo valida los campos 'correo' y 'password'.
+Utilizado en la ruta <code>POST /auth/login</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line56">line 56</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~operationCenterObjectSchema"><span class="type-signature">(inner, constant) </span>operationCenterObjectSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema de Zod para validar un único objeto de Centro de Operación.
+Define el tipo de dato y las restricciones para cada propiedad.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_operationCenterSchema.js.html">schemas/operationCenterSchema.js</a>, <a href="schemas_operationCenterSchema.js.html#line10">line 10</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~peripheralObjectSchema"><span class="type-signature">(inner, constant) </span>peripheralObjectSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema de Zod para validar un único objeto de periférico.
+Define el tipo de dato y las restricciones para cada propiedad.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_peripheralSchema.js.html">schemas/peripheralSchema.js</a>, <a href="schemas_peripheralSchema.js.html#line10">line 10</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~updateDeviceSchema"><span class="type-signature">(inner, constant) </span>updateDeviceSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la actualización de un equipo. Utiliza <code>.partial()</code>
+para hacer que todos los campos del <code>deviceObjectSchema</code> sean opcionales.
+Esto permite actualizaciones parciales (peticiones PATCH) donde solo se envían los campos a modificar.
+Utilizado en la ruta <code>PATCH /api/dispositivos/:id</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_deviceSchema.js.html">schemas/deviceSchema.js</a>, <a href="schemas_deviceSchema.js.html#line58">line 58</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~updateOperationCenterSchema"><span class="type-signature">(inner, constant) </span>updateOperationCenterSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la actualización de un centro de operación. Utiliza <code>.partial()</code>
+para hacer que todos los campos del <code>operationCenterObjectSchema</code> sean opcionales.
+Esto permite actualizaciones parciales (peticiones PATCH).
+Utilizado en la ruta <code>PATCH /api/centros-operacion/:id</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_operationCenterSchema.js.html">schemas/operationCenterSchema.js</a>, <a href="schemas_operationCenterSchema.js.html#line49">line 49</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~updatePeripheralSchema"><span class="type-signature">(inner, constant) </span>updatePeripheralSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la actualización de un periférico. Utiliza <code>.partial()</code>
+para hacer que todos los campos del <code>peripheralObjectSchema</code> sean opcionales.
+Esto permite actualizaciones parciales (peticiones PATCH).
+Utilizado en la ruta <code>PATCH /api/perifericos/:id</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_peripheralSchema.js.html">schemas/peripheralSchema.js</a>, <a href="schemas_peripheralSchema.js.html#line50">line 50</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~updateUserSchema"><span class="type-signature">(inner, constant) </span>updateUserSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la actualización de un usuario. Utiliza <code>.partial()</code>
+para hacer que todos los campos del <code>userObjectSchema</code> sean opcionales.
+Esto permite actualizaciones parciales (peticiones PATCH).
+Utilizado en la ruta <code>PATCH /api/usuarios/:id</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line77">line 77</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~userObjectSchema"><span class="type-signature">(inner, constant) </span>userObjectSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema de Zod para validar un único objeto de usuario.
+Define el tipo de dato y las restricciones para cada propiedad de un usuario.
+Este es el esquema base para la creación y actualización.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line21">line 21</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+
+
+
+<section>
+
+<header>
+    
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description"><p>Define los esquemas de validación de datos para la entidad 'Periférico' utilizando Zod.
+Estos esquemas aseguran la integridad de los datos para las operaciones de creación y actualización.</p></div>
+        
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_deviceSchema.js.html">schemas/deviceSchema.js</a>, <a href="schemas_deviceSchema.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_operationCenterSchema.js.html">schemas/operationCenterSchema.js</a>, <a href="schemas_operationCenterSchema.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_peripheralSchema.js.html">schemas/peripheralSchema.js</a>, <a href="schemas_peripheralSchema.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+    </div>
+
+    
+
+    
+        <h3 class="subsection-title">Requires</h3>
+
+        <ul>
+            <li>module:zod</li>
+        </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="~RoleEnum"><span class="type-signature">(inner, constant) </span>RoleEnum<span class="type-signature"> :z.ZodEnum</span></h4>
+
+
+
+
+<div class="description">
+    <p>Define un tipo enumerado para los roles de usuario permitidos ('Admin', 'Encargado').
+Incluye un mapa de errores personalizado para mensajes de validación claros.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodEnum</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line10">line 10</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~createDeviceSchema"><span class="type-signature">(inner, constant) </span>createDeviceSchema<span class="type-signature"> :z.ZodArray</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la creación de equipos. Espera un array que contenga
+al menos un objeto de equipo válido según <code>deviceObjectSchema</code>.
+Utilizado en la ruta <code>POST /api/dispositivos</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodArray</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_deviceSchema.js.html">schemas/deviceSchema.js</a>, <a href="schemas_deviceSchema.js.html#line48">line 48</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~createOperationCenterSchema"><span class="type-signature">(inner, constant) </span>createOperationCenterSchema<span class="type-signature"> :z.ZodArray</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la creación de centros de operación. Espera un array que contenga
+al menos un objeto de centro válido según <code>operationCenterObjectSchema</code>.
+Utilizado en la ruta <code>POST /api/centros-operacion</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodArray</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_operationCenterSchema.js.html">schemas/operationCenterSchema.js</a>, <a href="schemas_operationCenterSchema.js.html#line41">line 41</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~createPeripheralSchema"><span class="type-signature">(inner, constant) </span>createPeripheralSchema<span class="type-signature"> :z.ZodArray</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la creación de periféricos. Espera un array que contenga
+al menos un objeto de periférico válido según <code>peripheralObjectSchema</code>.
+Utilizado en la ruta <code>POST /api/perifericos</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodArray</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_peripheralSchema.js.html">schemas/peripheralSchema.js</a>, <a href="schemas_peripheralSchema.js.html#line40">line 40</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~createUserSchema"><span class="type-signature">(inner, constant) </span>createUserSchema<span class="type-signature"> :z.ZodArray</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la creación de usuarios. Espera un array que contenga
+al menos un objeto de usuario válido según <code>userObjectSchema</code>.
+Utilizado en la ruta <code>POST /api/usuarios</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodArray</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line67">line 67</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~deviceObjectSchema"><span class="type-signature">(inner, constant) </span>deviceObjectSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema de Zod para validar un único objeto de equipo.
+Define el tipo de dato, las restricciones (ej. <code>min</code>, <code>max</code>) y si los campos son
+opcionales o nulos para cada propiedad de un equipo.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_deviceSchema.js.html">schemas/deviceSchema.js</a>, <a href="schemas_deviceSchema.js.html#line11">line 11</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~loginSchema"><span class="type-signature">(inner, constant) </span>loginSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema de validación específico para el formulario de inicio de sesión.
+Solo valida los campos 'correo' y 'password'.
+Utilizado en la ruta <code>POST /auth/login</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line56">line 56</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~operationCenterObjectSchema"><span class="type-signature">(inner, constant) </span>operationCenterObjectSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema de Zod para validar un único objeto de Centro de Operación.
+Define el tipo de dato y las restricciones para cada propiedad.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_operationCenterSchema.js.html">schemas/operationCenterSchema.js</a>, <a href="schemas_operationCenterSchema.js.html#line10">line 10</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~peripheralObjectSchema"><span class="type-signature">(inner, constant) </span>peripheralObjectSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema de Zod para validar un único objeto de periférico.
+Define el tipo de dato y las restricciones para cada propiedad.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_peripheralSchema.js.html">schemas/peripheralSchema.js</a>, <a href="schemas_peripheralSchema.js.html#line10">line 10</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~updateDeviceSchema"><span class="type-signature">(inner, constant) </span>updateDeviceSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la actualización de un equipo. Utiliza <code>.partial()</code>
+para hacer que todos los campos del <code>deviceObjectSchema</code> sean opcionales.
+Esto permite actualizaciones parciales (peticiones PATCH) donde solo se envían los campos a modificar.
+Utilizado en la ruta <code>PATCH /api/dispositivos/:id</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_deviceSchema.js.html">schemas/deviceSchema.js</a>, <a href="schemas_deviceSchema.js.html#line58">line 58</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~updateOperationCenterSchema"><span class="type-signature">(inner, constant) </span>updateOperationCenterSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la actualización de un centro de operación. Utiliza <code>.partial()</code>
+para hacer que todos los campos del <code>operationCenterObjectSchema</code> sean opcionales.
+Esto permite actualizaciones parciales (peticiones PATCH).
+Utilizado en la ruta <code>PATCH /api/centros-operacion/:id</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_operationCenterSchema.js.html">schemas/operationCenterSchema.js</a>, <a href="schemas_operationCenterSchema.js.html#line49">line 49</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~updatePeripheralSchema"><span class="type-signature">(inner, constant) </span>updatePeripheralSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la actualización de un periférico. Utiliza <code>.partial()</code>
+para hacer que todos los campos del <code>peripheralObjectSchema</code> sean opcionales.
+Esto permite actualizaciones parciales (peticiones PATCH).
+Utilizado en la ruta <code>PATCH /api/perifericos/:id</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_peripheralSchema.js.html">schemas/peripheralSchema.js</a>, <a href="schemas_peripheralSchema.js.html#line50">line 50</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~updateUserSchema"><span class="type-signature">(inner, constant) </span>updateUserSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la actualización de un usuario. Utiliza <code>.partial()</code>
+para hacer que todos los campos del <code>userObjectSchema</code> sean opcionales.
+Esto permite actualizaciones parciales (peticiones PATCH).
+Utilizado en la ruta <code>PATCH /api/usuarios/:id</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line77">line 77</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~userObjectSchema"><span class="type-signature">(inner, constant) </span>userObjectSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema de Zod para validar un único objeto de usuario.
+Define el tipo de dato y las restricciones para cada propiedad de un usuario.
+Este es el esquema base para la creación y actualización.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line21">line 21</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+
+
+
+<section>
+
+<header>
+    
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description"><p>Define los esquemas de validación de datos para la entidad 'Usuario' utilizando Zod.
+Estos esquemas aseguran la integridad de los datos para las operaciones de login, creación y actualización de usuarios.</p></div>
+        
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_deviceSchema.js.html">schemas/deviceSchema.js</a>, <a href="schemas_deviceSchema.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_operationCenterSchema.js.html">schemas/operationCenterSchema.js</a>, <a href="schemas_operationCenterSchema.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_peripheralSchema.js.html">schemas/peripheralSchema.js</a>, <a href="schemas_peripheralSchema.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+    </div>
+
+    
+
+    
+        <h3 class="subsection-title">Requires</h3>
+
+        <ul>
+            <li>module:zod</li>
+        </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="~RoleEnum"><span class="type-signature">(inner, constant) </span>RoleEnum<span class="type-signature"> :z.ZodEnum</span></h4>
+
+
+
+
+<div class="description">
+    <p>Define un tipo enumerado para los roles de usuario permitidos ('Admin', 'Encargado').
+Incluye un mapa de errores personalizado para mensajes de validación claros.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodEnum</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line10">line 10</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~createDeviceSchema"><span class="type-signature">(inner, constant) </span>createDeviceSchema<span class="type-signature"> :z.ZodArray</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la creación de equipos. Espera un array que contenga
+al menos un objeto de equipo válido según <code>deviceObjectSchema</code>.
+Utilizado en la ruta <code>POST /api/dispositivos</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodArray</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_deviceSchema.js.html">schemas/deviceSchema.js</a>, <a href="schemas_deviceSchema.js.html#line48">line 48</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~createOperationCenterSchema"><span class="type-signature">(inner, constant) </span>createOperationCenterSchema<span class="type-signature"> :z.ZodArray</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la creación de centros de operación. Espera un array que contenga
+al menos un objeto de centro válido según <code>operationCenterObjectSchema</code>.
+Utilizado en la ruta <code>POST /api/centros-operacion</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodArray</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_operationCenterSchema.js.html">schemas/operationCenterSchema.js</a>, <a href="schemas_operationCenterSchema.js.html#line41">line 41</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~createPeripheralSchema"><span class="type-signature">(inner, constant) </span>createPeripheralSchema<span class="type-signature"> :z.ZodArray</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la creación de periféricos. Espera un array que contenga
+al menos un objeto de periférico válido según <code>peripheralObjectSchema</code>.
+Utilizado en la ruta <code>POST /api/perifericos</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodArray</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_peripheralSchema.js.html">schemas/peripheralSchema.js</a>, <a href="schemas_peripheralSchema.js.html#line40">line 40</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~createUserSchema"><span class="type-signature">(inner, constant) </span>createUserSchema<span class="type-signature"> :z.ZodArray</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la creación de usuarios. Espera un array que contenga
+al menos un objeto de usuario válido según <code>userObjectSchema</code>.
+Utilizado en la ruta <code>POST /api/usuarios</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodArray</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line67">line 67</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~deviceObjectSchema"><span class="type-signature">(inner, constant) </span>deviceObjectSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema de Zod para validar un único objeto de equipo.
+Define el tipo de dato, las restricciones (ej. <code>min</code>, <code>max</code>) y si los campos son
+opcionales o nulos para cada propiedad de un equipo.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_deviceSchema.js.html">schemas/deviceSchema.js</a>, <a href="schemas_deviceSchema.js.html#line11">line 11</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~loginSchema"><span class="type-signature">(inner, constant) </span>loginSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema de validación específico para el formulario de inicio de sesión.
+Solo valida los campos 'correo' y 'password'.
+Utilizado en la ruta <code>POST /auth/login</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line56">line 56</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~operationCenterObjectSchema"><span class="type-signature">(inner, constant) </span>operationCenterObjectSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema de Zod para validar un único objeto de Centro de Operación.
+Define el tipo de dato y las restricciones para cada propiedad.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_operationCenterSchema.js.html">schemas/operationCenterSchema.js</a>, <a href="schemas_operationCenterSchema.js.html#line10">line 10</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~peripheralObjectSchema"><span class="type-signature">(inner, constant) </span>peripheralObjectSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema de Zod para validar un único objeto de periférico.
+Define el tipo de dato y las restricciones para cada propiedad.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_peripheralSchema.js.html">schemas/peripheralSchema.js</a>, <a href="schemas_peripheralSchema.js.html#line10">line 10</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~updateDeviceSchema"><span class="type-signature">(inner, constant) </span>updateDeviceSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la actualización de un equipo. Utiliza <code>.partial()</code>
+para hacer que todos los campos del <code>deviceObjectSchema</code> sean opcionales.
+Esto permite actualizaciones parciales (peticiones PATCH) donde solo se envían los campos a modificar.
+Utilizado en la ruta <code>PATCH /api/dispositivos/:id</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_deviceSchema.js.html">schemas/deviceSchema.js</a>, <a href="schemas_deviceSchema.js.html#line58">line 58</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~updateOperationCenterSchema"><span class="type-signature">(inner, constant) </span>updateOperationCenterSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la actualización de un centro de operación. Utiliza <code>.partial()</code>
+para hacer que todos los campos del <code>operationCenterObjectSchema</code> sean opcionales.
+Esto permite actualizaciones parciales (peticiones PATCH).
+Utilizado en la ruta <code>PATCH /api/centros-operacion/:id</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_operationCenterSchema.js.html">schemas/operationCenterSchema.js</a>, <a href="schemas_operationCenterSchema.js.html#line49">line 49</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~updatePeripheralSchema"><span class="type-signature">(inner, constant) </span>updatePeripheralSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la actualización de un periférico. Utiliza <code>.partial()</code>
+para hacer que todos los campos del <code>peripheralObjectSchema</code> sean opcionales.
+Esto permite actualizaciones parciales (peticiones PATCH).
+Utilizado en la ruta <code>PATCH /api/perifericos/:id</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_peripheralSchema.js.html">schemas/peripheralSchema.js</a>, <a href="schemas_peripheralSchema.js.html#line50">line 50</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~updateUserSchema"><span class="type-signature">(inner, constant) </span>updateUserSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema para la actualización de un usuario. Utiliza <code>.partial()</code>
+para hacer que todos los campos del <code>userObjectSchema</code> sean opcionales.
+Esto permite actualizaciones parciales (peticiones PATCH).
+Utilizado en la ruta <code>PATCH /api/usuarios/:id</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line77">line 77</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~userObjectSchema"><span class="type-signature">(inner, constant) </span>userObjectSchema<span class="type-signature"> :z.ZodObject</span></h4>
+
+
+
+
+<div class="description">
+    <p>Esquema de Zod para validar un único objeto de usuario.
+Define el tipo de dato y las restricciones para cada propiedad de un usuario.
+Este es el esquema base para la creación y actualización.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">z.ZodObject</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="schemas_userSchema.js.html">schemas/userSchema.js</a>, <a href="schemas_userSchema.js.html#line21">line 21</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Config.html">Config</a></li><li><a href="module-Controllers.html">Controllers</a></li><li><a href="module-Middlewares.html">Middlewares</a></li><li><a href="module-Models.html">Models</a></li><li><a href="module-Models_Catalogues.html">Models/Catalogues</a></li><li><a href="module-Repositories.html">Repositories</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Schemas.html">Schemas</a></li><li><a href="module-Services.html">Services</a></li><li><a href="module-Utils_Errors.html">Utils/Errors</a></li><li><a href="module-Utils_Tokens.html">Utils/Tokens</a></li></ul><h3>Classes</h3><ul><li><a href="module-Models_Catalogues-City.html">City</a></li><li><a href="module-Models_Catalogues-IdentificationType.html">IdentificationType</a></li><li><a href="module-Models_Catalogues-PeripheralType.html">PeripheralType</a></li><li><a href="module-Models-CostCenter.html">CostCenter</a></li><li><a href="module-Models-Decommission.html">Decommission</a></li><li><a href="module-Models-Device.html">Device</a></li><li><a href="module-Models-Log.html">Log</a></li><li><a href="module-Models-OperationCenter.html">OperationCenter</a></li><li><a href="module-Models-Peripheral.html">Peripheral</a></li><li><a href="module-Models-RefreshToken.html">RefreshToken</a></li><li><a href="module-Models-User.html">User</a></li><li><a href="module-Utils_Errors.AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AccountDisabledError.html">AccountDisabledError</a></li><li><a href="module-Utils_Errors-AlreadyDesactivated.html">AlreadyDesactivated</a></li><li><a href="module-Utils_Errors-AlreadyExistsError.html">AlreadyExistsError</a></li><li><a href="module-Utils_Errors-AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AuthError.html">AuthError</a></li><li><a href="module-Utils_Errors-DatabaseConnectionError.html">DatabaseConnectionError</a></li><li><a href="module-Utils_Errors-ForbiddenError.html">ForbiddenError</a></li><li><a href="module-Utils_Errors-InvalidTokenError.html">InvalidTokenError</a></li><li><a href="module-Utils_Errors-NotFoundError.html">NotFoundError</a></li><li><a href="module-Utils_Errors-UserAlreadyExistsError.html">UserAlreadyExistsError</a></li><li><a href="module-Utils_Errors-UserNotFoundOrInvalidPasswordError.html">UserNotFoundOrInvalidPasswordError</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Oct 20 2025 10:51:18 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

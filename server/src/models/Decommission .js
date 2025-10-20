@@ -11,8 +11,8 @@ import { DataTypes } from "sequelize";
 /**
  * @function defineDecommissionModel
  * @description Define y devuelve el modelo 'Decommission' de Sequelize.
- * @param {import('sequelize').Sequelize} sequelize - La instancia de Sequelize.
- * @returns {import('sequelize').ModelCtor<Model>} El modelo 'Decommission' definido.
+ * @param {object} sequelize - La instancia de Sequelize.
+ * @returns {object} El modelo 'Decommission' definido.
  */
 export default (sequelize) => {
   /**

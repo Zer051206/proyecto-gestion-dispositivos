@@ -29,21 +29,21 @@ export const useDashboardHistory = () => {
   /**
    * @state
    * @description Almacena la pestaña actualmente seleccionada por el usuario ('logs' o 'bajas').
-   * @type {[string, Function]}
+   * @type {Function}
    */
   const [activeTab, setActiveTab] = useState("logs");
 
   /**
    * @state
    * @description Almacena la lista original de registros de logs obtenida de la API.
-   * @type {[Array<object>, Function]}
+   * @type {Array}
    */
   const [logs, setLogs] = useState([]);
 
   /**
    * @state
    * @description Almacena la lista original de registros de bajas obtenida de la API.
-   * @type {[Array<object>, Function]}
+   * @type {Array}
    */
   const [bajas, setBajas] = useState([]);
 

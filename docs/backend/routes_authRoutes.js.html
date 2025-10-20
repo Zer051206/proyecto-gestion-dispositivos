@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: routes/authRoutes.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: routes/authRoutes.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file authRoutes.js
+ * @module Routes
+ * @description Define las rutas específicas para la autenticación de usuarios.
+ * Este enrutador maneja las operaciones de inicio de sesión, renovación de token, cierre de sesión
+ * y verificación de la sesión actual.
+ * @requires express
+ * @requires express-rate-limit
+ * @requires ../controllers/authController.js
+ * @requires ../middlewares/authMiddleware.js
+ */
+import { Router } from "express";
+import rateLimit from "express-rate-limit";
+import * as authController from "../controllers/authController.js";
+import authMiddleware from "../middlewares/authMiddleware.js";
+
+const router = Router();
+
+/**
+ * @const {object} loginLimiter
+ * @description Middleware de `rate-limit` configurado específicamente para los endpoints de login y refresh.
+ * Limita el número de intentos desde una misma IP para mitigar ataques de fuerza bruta.
+ * La configuración es más estricta en producción.
+ */
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // Ventana de tiempo de 15 minutos
+  max: process.env.NODE_ENV === "production" ? 10 : 1000, // Límite de peticiones por IP
+  message: {
+    success: false,
+    message: "Demasiados intentos. Por favor, intenta de nuevo más tarde.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// --- RUTAS PÚBLICAS DE AUTENTICACIÓN ---
+
+/**
+ * @route   POST /auth/login
+ * @description Autentica a un usuario con su correo y contraseña.
+ * @access Public
+ * @middleware loginLimiter - Aplica un límite de peticiones para seguridad.
+ * @param {string} req.body.correo - El correo electrónico del usuario.
+ * @param {string} req.body.password - La contraseña del usuario.
+ * @returns {object} 200 - Objeto con los datos del usuario y los tokens de acceso y refresco.
+ * @returns {Error} 401 - Si las credenciales son incorrectas o la cuenta no existe.
+ */
+router.post("/login", loginLimiter, authController.loginUser);
+
+/**
+ * @route   POST /auth/refresh
+ * @description Renueva un `accessToken` expirado utilizando un `refreshToken` válido.
+ * @access Public
+ * @middleware loginLimiter - Aplica un límite de peticiones para seguridad.
+ * @param {string} req.body.refreshToken - El token de refresco del usuario.
+ * @returns {object} 200 - Objeto con el nuevo `accessToken` y los datos del usuario.
+ * @returns {Error} 401 - Si el `refreshToken` es inválido o ha expirado.
+ */
+router.post("/refresh", loginLimiter, authController.refreshToken);
+
+/**
+ * @route   POST /auth/logout
+ * @description Cierra la sesión del usuario invalidando el `refreshToken` en la base de datos.
+ * @access Public
+ * @param {string} req.body.refreshToken - El token de refresco a invalidar.
+ * @returns {object} 200 - Un mensaje de éxito.
+ */
+router.post("/logout", authController.logoutUser);
+
+// --- RUTA PROTEGIDA DE AUTENTICACIÓN ---
+
+/**
+ * @route   GET /auth/me
+ * @description Endpoint protegido para verificar la validez de un `accessToken` existente.
+ * Si el token es válido, devuelve los datos del usuario asociado. Es ideal para la
+ * revalidación de sesión al cargar la aplicación en el frontend.
+ * @access Private
+ * @middleware authMiddleware - Asegura que solo usuarios autenticados puedan acceder.
+ * @returns {object} 200 - Objeto confirmando la autenticación y los datos del usuario.
+ * @returns {Error} 401 - Si el token no es válido o ha expirado.
+ */
+router.get("/me", authMiddleware, authController.getMe);
+
+export default router;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Config.html">Config</a></li><li><a href="module-Controllers.html">Controllers</a></li><li><a href="module-Middlewares.html">Middlewares</a></li><li><a href="module-Models.html">Models</a></li><li><a href="module-Models_Catalogues.html">Models/Catalogues</a></li><li><a href="module-Repositories.html">Repositories</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Schemas.html">Schemas</a></li><li><a href="module-Services.html">Services</a></li><li><a href="module-Utils_Errors.html">Utils/Errors</a></li><li><a href="module-Utils_Tokens.html">Utils/Tokens</a></li></ul><h3>Classes</h3><ul><li><a href="module-Models_Catalogues-City.html">City</a></li><li><a href="module-Models_Catalogues-IdentificationType.html">IdentificationType</a></li><li><a href="module-Models_Catalogues-PeripheralType.html">PeripheralType</a></li><li><a href="module-Models-CostCenter.html">CostCenter</a></li><li><a href="module-Models-Decommission.html">Decommission</a></li><li><a href="module-Models-Device.html">Device</a></li><li><a href="module-Models-Log.html">Log</a></li><li><a href="module-Models-OperationCenter.html">OperationCenter</a></li><li><a href="module-Models-Peripheral.html">Peripheral</a></li><li><a href="module-Models-RefreshToken.html">RefreshToken</a></li><li><a href="module-Models-User.html">User</a></li><li><a href="module-Utils_Errors.AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AccountDisabledError.html">AccountDisabledError</a></li><li><a href="module-Utils_Errors-AlreadyDesactivated.html">AlreadyDesactivated</a></li><li><a href="module-Utils_Errors-AlreadyExistsError.html">AlreadyExistsError</a></li><li><a href="module-Utils_Errors-AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AuthError.html">AuthError</a></li><li><a href="module-Utils_Errors-DatabaseConnectionError.html">DatabaseConnectionError</a></li><li><a href="module-Utils_Errors-ForbiddenError.html">ForbiddenError</a></li><li><a href="module-Utils_Errors-InvalidTokenError.html">InvalidTokenError</a></li><li><a href="module-Utils_Errors-NotFoundError.html">NotFoundError</a></li><li><a href="module-Utils_Errors-UserAlreadyExistsError.html">UserAlreadyExistsError</a></li><li><a href="module-Utils_Errors-UserNotFoundOrInvalidPasswordError.html">UserNotFoundOrInvalidPasswordError</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Oct 20 2025 10:51:18 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

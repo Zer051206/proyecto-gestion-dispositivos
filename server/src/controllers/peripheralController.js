@@ -19,9 +19,9 @@ import logger from "../config/logger.js";
  * @async
  * @function getAllPeripherals
  * @description Obtiene una lista de todos los periféricos.
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
  */
 export const getAllPeripherals = async (req, res, next) => {
   try {
@@ -36,9 +36,9 @@ export const getAllPeripherals = async (req, res, next) => {
  * @async
  * @function getPeripheralById
  * @description Obtiene un periférico específico por su ID.
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
  */
 export const getPeripheralById = async (req, res, next) => {
   try {
@@ -54,9 +54,9 @@ export const getPeripheralById = async (req, res, next) => {
  * @async
  * @function createPeripheral
  * @description Crea uno o más periféricos nuevos.
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
  */
 export const createPeripheral = async (req, res, next) => {
   try {
@@ -88,9 +88,9 @@ export const createPeripheral = async (req, res, next) => {
  * @async
  * @function updatePeripheral
  * @description Actualiza la información de un periférico existente.
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
  */
 export const updatePeripheral = async (req, res, next) => {
   try {
@@ -120,9 +120,9 @@ export const updatePeripheral = async (req, res, next) => {
  * @async
  * @function statePeripheral
  * @description Cambia el estado (activo/inactivo) de un periférico.
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
  */
 export const statePeripheral = async (req, res, next) => {
   try {

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: schemas/peripheralSchema.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: schemas/peripheralSchema.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file peripheralSchema.js
+ * @module Schemas
+ * @description Define los esquemas de validación de datos para la entidad 'Periférico' utilizando Zod.
+ * Estos esquemas aseguran la integridad de los datos para las operaciones de creación y actualización.
+ * @requires zod
+ */
+import { z } from "zod";
+
+/**
+ * @const {z.ZodObject} peripheralObjectSchema
+ * @description Esquema de Zod para validar un único objeto de periférico.
+ * Define el tipo de dato y las restricciones para cada propiedad.
+ */
+export const peripheralObjectSchema = z.object({
+  id_tipo_periferico: z.coerce
+    .number({ required_error: "El tipo de periférico es obligatorio." })
+    .int()
+    .positive(),
+
+  id_centro_operacion: z.coerce.number().int().nullable(),
+
+  marca_periferico: z
+    .string({ required_error: "La marca es obligatoria." })
+    .trim()
+    .min(1)
+    .max(150),
+  serial_periferico: z
+    .string({ required_error: "El serial es obligatorio." })
+    .trim()
+    .min(1)
+    .max(200),
+  activo_fijo: z.boolean({
+    required_error: "Debe indicar si es un activo fijo.",
+  }),
+  codigo_activo_fijo: z.string().max(80).optional().nullable(),
+  id_centro_costo: z.coerce.string().optional().nullable(),
+});
+
+/**
+ * @const {z.ZodArray} createPeripheralSchema
+ * @description Esquema para la creación de periféricos. Espera un array que contenga
+ * al menos un objeto de periférico válido según `peripheralObjectSchema`.
+ * Utilizado en la ruta `POST /api/perifericos`.
+ */
+export const createPeripheralSchema = z
+  .array(peripheralObjectSchema)
+  .min(1, "Debes agregar al menos un periferico");
+
+/**
+ * @const {z.ZodObject} updatePeripheralSchema
+ * @description Esquema para la actualización de un periférico. Utiliza `.partial()`
+ * para hacer que todos los campos del `peripheralObjectSchema` sean opcionales.
+ * Esto permite actualizaciones parciales (peticiones PATCH).
+ * Utilizado en la ruta `PATCH /api/perifericos/:id`.
+ */
+export const updatePeripheralSchema = peripheralObjectSchema.partial();
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Config.html">Config</a></li><li><a href="module-Controllers.html">Controllers</a></li><li><a href="module-Middlewares.html">Middlewares</a></li><li><a href="module-Models.html">Models</a></li><li><a href="module-Models_Catalogues.html">Models/Catalogues</a></li><li><a href="module-Repositories.html">Repositories</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Schemas.html">Schemas</a></li><li><a href="module-Services.html">Services</a></li><li><a href="module-Utils_Errors.html">Utils/Errors</a></li><li><a href="module-Utils_Tokens.html">Utils/Tokens</a></li></ul><h3>Classes</h3><ul><li><a href="module-Models_Catalogues-City.html">City</a></li><li><a href="module-Models_Catalogues-IdentificationType.html">IdentificationType</a></li><li><a href="module-Models_Catalogues-PeripheralType.html">PeripheralType</a></li><li><a href="module-Models-CostCenter.html">CostCenter</a></li><li><a href="module-Models-Decommission.html">Decommission</a></li><li><a href="module-Models-Device.html">Device</a></li><li><a href="module-Models-Log.html">Log</a></li><li><a href="module-Models-OperationCenter.html">OperationCenter</a></li><li><a href="module-Models-Peripheral.html">Peripheral</a></li><li><a href="module-Models-RefreshToken.html">RefreshToken</a></li><li><a href="module-Models-User.html">User</a></li><li><a href="module-Utils_Errors.AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AccountDisabledError.html">AccountDisabledError</a></li><li><a href="module-Utils_Errors-AlreadyDesactivated.html">AlreadyDesactivated</a></li><li><a href="module-Utils_Errors-AlreadyExistsError.html">AlreadyExistsError</a></li><li><a href="module-Utils_Errors-AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AuthError.html">AuthError</a></li><li><a href="module-Utils_Errors-DatabaseConnectionError.html">DatabaseConnectionError</a></li><li><a href="module-Utils_Errors-ForbiddenError.html">ForbiddenError</a></li><li><a href="module-Utils_Errors-InvalidTokenError.html">InvalidTokenError</a></li><li><a href="module-Utils_Errors-NotFoundError.html">NotFoundError</a></li><li><a href="module-Utils_Errors-UserAlreadyExistsError.html">UserAlreadyExistsError</a></li><li><a href="module-Utils_Errors-UserNotFoundOrInvalidPasswordError.html">UserNotFoundOrInvalidPasswordError</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Oct 20 2025 10:51:18 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

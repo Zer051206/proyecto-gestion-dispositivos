@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: models/Decommission .js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: models/Decommission .js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file Decommission.js
+ * @module Models
+ * @description Define el modelo de Sequelize para la tabla 'bajas'.
+ * Este modelo representa el registro de un evento de "baja" de un activo,
+ * ya sea un equipo o un periférico, y quién realizó la acción.
+ * @requires sequelize
+ */
+import { DataTypes } from "sequelize";
+
+/**
+ * @function defineDecommissionModel
+ * @description Define y devuelve el modelo 'Decommission' de Sequelize.
+ * @param {object} sequelize - La instancia de Sequelize.
+ * @returns {object} El modelo 'Decommission' definido.
+ */
+export default (sequelize) => {
+  /**
+   * @class Decommission
+   * @classdesc Modelo de Sequelize para la tabla `bajas`.
+   * @property {number} id_baja - La clave primaria del registro de baja.
+   * @property {number|null} id_periferico - La clave foránea al periférico dado de baja (si aplica).
+   * @property {number|null} id_equipo - La clave foránea al equipo dado de baja (si aplica).
+   * @property {number} id_usuario - La clave foránea al usuario que realizó la baja.
+   * @property {Date} fecha_baja - La fecha y hora en que se registró la baja.
+   */
+  const Decomission = sequelize.define(
+    "Decomission",
+    {
+      id_baja: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      id_periferico: { type: DataTypes.INTEGER, allowNull: true },
+      id_equipo: { type: DataTypes.INTEGER, allowNull: true },
+      id_usuario: { type: DataTypes.INTEGER, allowNull: false },
+      fecha_baja: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW,
+      },
+    },
+    { tableName: "bajas", timestamps: false }
+  );
+
+  /**
+   * @function associate
+   * @description Define las asociaciones del modelo Decommission con otros modelos.
+   * @param {object} models - Un objeto que contiene todos los modelos de la aplicación.
+   */
+  Decomission.associate = (models) => {
+    /**
+     * @description Asociación muchos-a-uno: Un registro de baja pertenece a un único Usuario.
+     * @param {Model} models.User - El modelo de Usuario.
+     * @property {string} foreignKey - La clave foránea en la tabla `bajas`.
+     */
+    Decomission.belongsTo(models.User, { foreignKey: "id_usuario" });
+
+    /**
+     * @description Asociación muchos-a-uno: Un registro de baja puede pertenecer a un único Equipo.
+     * @param {Model} models.Device - El modelo de Equipo.
+     * @property {string} foreignKey - La clave foránea en la tabla `bajas`.
+     */
+    Decomission.belongsTo(models.Device, { foreignKey: "id_equipo" });
+
+    /**
+     * @description Asociación muchos-a-uno: Un registro de baja puede pertenecer a un único Periférico.
+     * @param {Model} models.Peripheral - El modelo de Periférico.
+     * @property {string} foreignKey - La clave foránea en la tabla `bajas`.
+     */
+    Decomission.belongsTo(models.Peripheral, { foreignKey: "id_periferico" });
+  };
+  return Decomission;
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Config.html">Config</a></li><li><a href="module-Controllers.html">Controllers</a></li><li><a href="module-Middlewares.html">Middlewares</a></li><li><a href="module-Models.html">Models</a></li><li><a href="module-Models_Catalogues.html">Models/Catalogues</a></li><li><a href="module-Repositories.html">Repositories</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Schemas.html">Schemas</a></li><li><a href="module-Services.html">Services</a></li><li><a href="module-Utils_Errors.html">Utils/Errors</a></li><li><a href="module-Utils_Tokens.html">Utils/Tokens</a></li></ul><h3>Classes</h3><ul><li><a href="module-Models_Catalogues-City.html">City</a></li><li><a href="module-Models_Catalogues-IdentificationType.html">IdentificationType</a></li><li><a href="module-Models_Catalogues-PeripheralType.html">PeripheralType</a></li><li><a href="module-Models-CostCenter.html">CostCenter</a></li><li><a href="module-Models-Decommission.html">Decommission</a></li><li><a href="module-Models-Device.html">Device</a></li><li><a href="module-Models-Log.html">Log</a></li><li><a href="module-Models-OperationCenter.html">OperationCenter</a></li><li><a href="module-Models-Peripheral.html">Peripheral</a></li><li><a href="module-Models-RefreshToken.html">RefreshToken</a></li><li><a href="module-Models-User.html">User</a></li><li><a href="module-Utils_Errors.AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AccountDisabledError.html">AccountDisabledError</a></li><li><a href="module-Utils_Errors-AlreadyDesactivated.html">AlreadyDesactivated</a></li><li><a href="module-Utils_Errors-AlreadyExistsError.html">AlreadyExistsError</a></li><li><a href="module-Utils_Errors-AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AuthError.html">AuthError</a></li><li><a href="module-Utils_Errors-DatabaseConnectionError.html">DatabaseConnectionError</a></li><li><a href="module-Utils_Errors-ForbiddenError.html">ForbiddenError</a></li><li><a href="module-Utils_Errors-InvalidTokenError.html">InvalidTokenError</a></li><li><a href="module-Utils_Errors-NotFoundError.html">NotFoundError</a></li><li><a href="module-Utils_Errors-UserAlreadyExistsError.html">UserAlreadyExistsError</a></li><li><a href="module-Utils_Errors-UserNotFoundOrInvalidPasswordError.html">UserNotFoundOrInvalidPasswordError</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Oct 20 2025 10:51:18 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

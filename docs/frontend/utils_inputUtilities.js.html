@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: utils/inputUtilities.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: utils/inputUtilities.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file inputHandlers.js
+ * @module InputHandlers
+ * @description Este archivo contiene funciones de utilidad para manejar la lógica de los inputs,
+ * controlando la entrada de caracteres no deseados mediante eventos de teclado.
+ */
+
+/**
+ * @function handleKeyNumberDown
+ * @description Función para prevenir la entrada de caracteres no numéricos o no deseados (como 'e', '+', '-', '.', ',')
+ * en inputs de tipo 'number' para asegurar que solo se ingresen dígitos enteros.
+ * @param {KeyboardEvent} event - El evento del teclado disparado en 'onKeyDown'.
+ * @returns {void}
+ */
+export const handleKeyNumberDown = (event) => {
+  // Array de teclas que no queremos permitir en un campo numérico básico
+  const invalidKeys = ["e", "E", "+", "-", ".", ","];
+
+  // Si la tecla presionada está en la lista de no válidas, prevenimos la acción por defecto
+  if (invalidKeys.includes(event.key)) {
+    event.preventDefault();
+  }
+};
+
+/**
+ * @function handleKeyTextDown
+ * @description Función que previene la entrada de números y símbolos no alfanuméricos en campos de texto, como nombres.
+ * Permite letras (mayúsculas y minúsculas), tildes, la 'ñ', espacios y guiones.
+ * @param {KeyboardEvent} e - El evento de teclado disparado en 'onKeyDown'.
+ * @returns {void}
+ */
+export function handleKeyTextDown(e) {
+  // Expresión regular que permite letras, la letra 'ñ', tildes, espacios y el guion.
+  const allowedCharacters = /[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s-]/;
+
+  // Permite teclas de control esenciales (Tab, Backspace, Delete, flechas, etc.)
+  // Estas teclas no tienen una longitud de 1
+  const isControlKey = e.key.length !== 1 || e.ctrlKey || e.altKey;
+
+  // Verifica si la tecla NO es un caracter permitido (y NO es una tecla de control)
+  if (!allowedCharacters.test(e.key) &amp;&amp; !isControlKey) {
+    e.preventDefault();
+  }
+}
+
+/**
+ * @function handleAddressKeyDown
+ * @description Función que previene la entrada de caracteres no válidos en campos de dirección.
+ * Permite letras, números, espacios, guiones, puntos, comas y el símbolo de número (#).
+ * @param {KeyboardEvent} e - El evento de teclado disparado en 'onKeyDown'.
+ * @returns {void}
+ */
+export function handleAddressKeyDown(e) {
+  // Expresión regular que permite letras, números, espacios y símbolos comunes en direcciones.
+  const allowedCharacters = /[a-zA-Z0-9\s.,#-]/;
+
+  // Permite teclas de control como backspace, delete, tab, y flechas.
+  // Se usa e.key.length !== 1 para simplificar la detección de teclas de control
+  const isControlKey = e.key.length !== 1 || e.ctrlKey || e.altKey;
+
+  // Si la tecla NO es un caracter permitido y NO es una tecla de control, previene la acción.
+  if (!allowedCharacters.test(e.key) &amp;&amp; !isControlKey) {
+    e.preventDefault();
+  }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Components.html">Components</a></li><li><a href="module-Components_Auth.html">Components/Auth</a></li><li><a href="module-Components_Devices.html">Components/Devices</a></li><li><a href="module-Components_History.html">Components/History</a></li><li><a href="module-Components_OperationCenters.html">Components/OperationCenters</a></li><li><a href="module-Components_Peripherals.html">Components/Peripherals</a></li><li><a href="module-Components_Users.html">Components/Users</a></li><li><a href="module-Config.html">Config</a></li><li><a href="module-DateUtils.html">DateUtils</a></li><li><a href="module-Hooks.html">Hooks</a></li><li><a href="module-Hooks_Auth.html">Hooks/Auth</a></li><li><a href="module-Hooks_Catalogue.html">Hooks/Catalogue</a></li><li><a href="module-Hooks_Devices.html">Hooks/Devices</a></li><li><a href="module-Hooks_History.html">Hooks/History</a></li><li><a href="module-Hooks_OperationCenters.html">Hooks/OperationCenters</a></li><li><a href="module-Hooks_Users.html">Hooks/Users</a></li><li><a href="module-InputHandlers.html">InputHandlers</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Routes_Admin.html">Routes/Admin</a></li><li><a href="module-Stores_Auth.html">Stores/Auth</a></li><li><a href="module-Utils.html">Utils</a></li></ul><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#LoginFormSkeleton">LoginFormSkeleton</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Oct 20 2025 10:51:20 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

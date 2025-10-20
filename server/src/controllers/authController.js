@@ -17,9 +17,9 @@ import logger from "../config/logger.js";
  * @function loginUser
  * @description Maneja la solicitud de inicio de sesión de un usuario.
  * Valida los datos de entrada, llama al servicio de login y devuelve los tokens y datos del usuario.
- * @param {import('express').Request} req - El objeto de solicitud de Express. Se espera que contenga `correo` y `password` en el body.
- * @param {import('express').Response} res - El objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - La función para pasar el control al siguiente middleware en caso de error.
+ * @param {object} req - El objeto de solicitud de Express. Se espera que contenga `correo` y `password` en el body.
+ * @param {object} res - El objeto de respuesta de Express.
+ * @param {Function} next - La función para pasar el control al siguiente middleware en caso de error.
  */
 export const loginUser = async (req, res, next) => {
   try {
@@ -42,9 +42,9 @@ export const loginUser = async (req, res, next) => {
  * @async
  * @function refreshToken
  * @description Maneja la solicitud para renovar un `accessToken` utilizando un `refreshToken`.
- * @param {import('express').Request} req - El objeto de solicitud de Express. Se espera que contenga `refreshToken` en el body.
- * @param {import('express').Response} res - El objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - La función para pasar el control al siguiente middleware.
+ * @param {object} req - El objeto de solicitud de Express. Se espera que contenga `refreshToken` en el body.
+ * @param {object} res - El objeto de respuesta de Express.
+ * @param {Function} next - La función para pasar el control al siguiente middleware.
  */
 export const refreshToken = async (req, res, next) => {
   try {
@@ -66,9 +66,9 @@ export const refreshToken = async (req, res, next) => {
  * @async
  * @function logoutUser
  * @description Maneja la solicitud de cierre de sesión. Invalida el `refreshToken` proporcionado.
- * @param {import('express').Request} req - El objeto de solicitud de Express. Se espera que contenga `refreshToken` en el body.
- * @param {import('express').Response} res - El objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - La función para pasar el control al siguiente middleware.
+ * @param {object} req - El objeto de solicitud de Express. Se espera que contenga `refreshToken` en el body.
+ * @param {object} res - El objeto de respuesta de Express.
+ * @param {Function} next - La función para pasar el control al siguiente middleware.
  */
 export const logoutUser = async (req, res, next) => {
   try {
@@ -88,8 +88,8 @@ export const logoutUser = async (req, res, next) => {
  * @function getMe
  * @description Endpoint protegido que devuelve la información del usuario actualmente autenticado.
  * Se utiliza para validar una sesión activa en el frontend.
- * @param {import('express').Request} req - El objeto de solicitud de Express, se espera que `req.user` haya sido poblado por `authMiddleware`.
- * @param {import('express').Response} res - El objeto de respuesta de Express.
+ * @param {object} req - El objeto de solicitud de Express, se espera que `req.user` haya sido poblado por `authMiddleware`.
+ * @param {object} res - El objeto de respuesta de Express.
  */
 export const getMe = (req, res) => {
   res.status(200).json({ authenticated: true, user: req.user });

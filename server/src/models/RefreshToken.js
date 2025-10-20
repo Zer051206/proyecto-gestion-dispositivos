@@ -11,8 +11,8 @@ import { DataTypes } from "sequelize";
 /**
  * @function defineRefreshTokenModel
  * @description Define y devuelve el modelo 'RefreshToken' de Sequelize.
- * @param {import('sequelize').Sequelize} sequelize - La instancia de Sequelize.
- * @returns {import('sequelize').ModelCtor<Model>} El modelo 'RefreshToken' definido.
+ * @param {object} sequelize - La instancia de Sequelize.
+ * @returns {object} El modelo 'RefreshToken' definido.
  */
 export default (sequelize) => {
   /**

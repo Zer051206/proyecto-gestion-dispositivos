@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: controllers/authController.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: controllers/authController.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file authController.js
+ * @module Controllers
+ * @description Controlador para los endpoints relacionados con la autenticación de usuarios.
+ * Maneja las solicitudes HTTP para iniciar sesión, renovar tokens, cerrar sesión y verificar
+ * el estado de la sesión, delegando la lógica de negocio a `userService`.
+ * @requires ../services/userService.js
+ * @requires ../schemas/userSchema.js
+ * @requires ../config/logger.js
+ */
+import * as userService from "../services/userService.js";
+import { loginSchema } from "../schemas/userSchema.js";
+import logger from "../config/logger.js";
+
+/**
+ * @async
+ * @function loginUser
+ * @description Maneja la solicitud de inicio de sesión de un usuario.
+ * Valida los datos de entrada, llama al servicio de login y devuelve los tokens y datos del usuario.
+ * @param {object} req - El objeto de solicitud de Express. Se espera que contenga `correo` y `password` en el body.
+ * @param {object} res - El objeto de respuesta de Express.
+ * @param {Function} next - La función para pasar el control al siguiente middleware en caso de error.
+ */
+export const loginUser = async (req, res, next) => {
+  try {
+    const validatedData = loginSchema.parse(req.body);
+    logger.info({ email: validatedData.correo }, "Intento de inicio de sesión");
+    const result = await userService.loginUser(validatedData);
+
+    res.status(200).json({
+      message: "Inicio de sesión exitoso",
+      user: result.user,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @async
+ * @function refreshToken
+ * @description Maneja la solicitud para renovar un `accessToken` utilizando un `refreshToken`.
+ * @param {object} req - El objeto de solicitud de Express. Se espera que contenga `refreshToken` en el body.
+ * @param {object} res - El objeto de respuesta de Express.
+ * @param {Function} next - La función para pasar el control al siguiente middleware.
+ */
+export const refreshToken = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+    logger.info("Intento de renovación de token");
+    const result = await userService.refreshAccessToken(refreshToken);
+
+    res.status(200).json({
+      message: "Token renovado exitosamente.",
+      user: result.user,
+      accessToken: result.accessToken,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @async
+ * @function logoutUser
+ * @description Maneja la solicitud de cierre de sesión. Invalida el `refreshToken` proporcionado.
+ * @param {object} req - El objeto de solicitud de Express. Se espera que contenga `refreshToken` en el body.
+ * @param {object} res - El objeto de respuesta de Express.
+ * @param {Function} next - La función para pasar el control al siguiente middleware.
+ */
+export const logoutUser = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+    logger.info("Solicitud de cierre de sesión");
+    await userService.logoutUser(refreshToken);
+
+    res.status(200).json({
+      message: "Logout exitoso",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @function getMe
+ * @description Endpoint protegido que devuelve la información del usuario actualmente autenticado.
+ * Se utiliza para validar una sesión activa en el frontend.
+ * @param {object} req - El objeto de solicitud de Express, se espera que `req.user` haya sido poblado por `authMiddleware`.
+ * @param {object} res - El objeto de respuesta de Express.
+ */
+export const getMe = (req, res) => {
+  res.status(200).json({ authenticated: true, user: req.user });
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Config.html">Config</a></li><li><a href="module-Controllers.html">Controllers</a></li><li><a href="module-Middlewares.html">Middlewares</a></li><li><a href="module-Models.html">Models</a></li><li><a href="module-Models_Catalogues.html">Models/Catalogues</a></li><li><a href="module-Repositories.html">Repositories</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Schemas.html">Schemas</a></li><li><a href="module-Services.html">Services</a></li><li><a href="module-Utils_Errors.html">Utils/Errors</a></li><li><a href="module-Utils_Tokens.html">Utils/Tokens</a></li></ul><h3>Classes</h3><ul><li><a href="module-Models_Catalogues-City.html">City</a></li><li><a href="module-Models_Catalogues-IdentificationType.html">IdentificationType</a></li><li><a href="module-Models_Catalogues-PeripheralType.html">PeripheralType</a></li><li><a href="module-Models-CostCenter.html">CostCenter</a></li><li><a href="module-Models-Decommission.html">Decommission</a></li><li><a href="module-Models-Device.html">Device</a></li><li><a href="module-Models-Log.html">Log</a></li><li><a href="module-Models-OperationCenter.html">OperationCenter</a></li><li><a href="module-Models-Peripheral.html">Peripheral</a></li><li><a href="module-Models-RefreshToken.html">RefreshToken</a></li><li><a href="module-Models-User.html">User</a></li><li><a href="module-Utils_Errors.AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AccountDisabledError.html">AccountDisabledError</a></li><li><a href="module-Utils_Errors-AlreadyDesactivated.html">AlreadyDesactivated</a></li><li><a href="module-Utils_Errors-AlreadyExistsError.html">AlreadyExistsError</a></li><li><a href="module-Utils_Errors-AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AuthError.html">AuthError</a></li><li><a href="module-Utils_Errors-DatabaseConnectionError.html">DatabaseConnectionError</a></li><li><a href="module-Utils_Errors-ForbiddenError.html">ForbiddenError</a></li><li><a href="module-Utils_Errors-InvalidTokenError.html">InvalidTokenError</a></li><li><a href="module-Utils_Errors-NotFoundError.html">NotFoundError</a></li><li><a href="module-Utils_Errors-UserAlreadyExistsError.html">UserAlreadyExistsError</a></li><li><a href="module-Utils_Errors-UserNotFoundOrInvalidPasswordError.html">UserNotFoundOrInvalidPasswordError</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Oct 20 2025 10:51:18 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

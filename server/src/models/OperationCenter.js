@@ -11,8 +11,8 @@ import { DataTypes } from "sequelize";
 /**
  * @function defineOperationCenterModel
  * @description Define y devuelve el modelo 'OperationCenter' de Sequelize.
- * @param {import('sequelize').Sequelize} sequelize - La instancia de Sequelize.
- * @returns {import('sequelize').ModelCtor<Model>} El modelo 'OperationCenter' definido.
+ * @param {object} sequelize - La instancia de Sequelize.
+ * @returns {object} El modelo 'OperationCenter' definido.
  */
 export default (sequelize) => {
   /**

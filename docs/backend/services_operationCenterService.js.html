@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: services/operationCenterService.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: services/operationCenterService.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file operationCenterService.js
+ * @module Services
+ * @description Capa de servicio que contiene toda la lógica de negocio para la gestión de Centros de Operación (CRUD).
+ * @requires ../models/index.js
+ * @requires ../repositories/operationCenterRepository.js
+ * @requires ../repositories/logRepository.js
+ * @requires ../utils/customErrors.js
+ * @requires ../config/logger.js
+ */
+import db from "../models/index.js";
+import * as operationCenterRepository from "../repositories/operationCenterRepository.js";
+import * as logRepository from "../repositories/logRepository.js";
+import {
+  AlreadyDesactivated,
+  AlreadyExistsError,
+  NotFoundError,
+} from "../utils/customErrors.js";
+import logger from "../config/logger.js";
+
+/**
+ * @async
+ * @function fetchAllOperationCenters
+ * @description Obtiene una lista de todos los centros de operación.
+ * @returns {Promise&lt;Array&lt;object>>}
+ */
+export const fetchAllOperationCenters = async () => {
+  const allOperationCenters = await operationCenterRepository.findAll();
+  return allOperationCenters;
+};
+
+/**
+ * @async
+ * @function fetchOperationCenterById
+ * @description Obtiene un centro de operación específico por su ID.
+ * @param {number} id - El ID del centro de operación a buscar.
+ * @returns {Promise&lt;object>}
+ * @throws {NotFoundError} Si el centro no se encuentra.
+ */
+export const fetchOperationCenterById = async (id) => {
+  const operationCenter = await operationCenterRepository.findById(id);
+  if (!operationCenter) {
+    throw new NotFoundError(
+      `El centro de operacion con el ID ${id} no fue encontrado`
+    );
+  }
+  return operationCenter;
+};
+
+/**
+ * @async
+ * @function createOperationCenter
+ * @description Crea uno o más centros de operación nuevos en una transacción.
+ * @param {Array&lt;object>} operationCentersData - Datos de los centros a crear.
+ * @param {number} id_usuario - El ID del admin que realiza la creación.
+ * @param {string} ip_usuario - La dirección IP del admin.
+ * @returns {Promise&lt;Array&lt;object>>}
+ * @throws {AlreadyExistsError} Si uno de los códigos de centro ya existe.
+ */
+export const createOperationCenter = async (
+  operationCentersData,
+  ip_usuario,
+  id_usuario
+) => {
+  return db.sequelize.transaction(async (t) => {
+    const creationPromises = operationCentersData.map(
+      async (operationCenterData) => {
+        const { codigo } = operationCenterData;
+
+        const operationCenterDb = await operationCenterRepository.findByCode(
+          codigo,
+          { transaction: t }
+        );
+
+        if (operationCenterDb) {
+          logger.warn(
+            { adminId: id_usuario, attemptedCode: codigo },
+            "Intento de crear centro con código duplicado."
+          );
+
+          throw new AlreadyExistsError(
+            "Ya existe un centro de operaciones con el mismo código"
+          );
+        }
+        const opCenterData = {
+          ...operationCenterData,
+          id_admin_creador: id_usuario,
+        };
+
+        const newOperationCenter = await operationCenterRepository.create(
+          opCenterData,
+          { transaction: t }
+        );
+
+        await logRepository.create(
+          {
+            accion: "CREAR_CENTRO_OPERACION",
+            ip_usuario: ip_usuario,
+            descripcion: `Se creó el centro de operacion con codigo '${newOperationCenter.codigo}' (ID: ${newOperationCenter.id_centro_operacion}).`,
+            id_usuario: id_usuario,
+          },
+          { transaction: t }
+        );
+
+        return newOperationCenter;
+      }
+    );
+    const createdOperationCenters = await Promise.all(creationPromises);
+
+    logger.info(
+      { adminId: id_usuario, count: createdOperationCenters.length },
+      `${createdOperationCenters.length} centro(s) de operación creado(s) exitosamente.`
+    );
+
+    return createdOperationCenters;
+  });
+};
+
+/**
+ * @async
+ * @function updateOperationCenter
+ * @description Actualiza los datos de un centro de operación existente.
+ * @param {number} id - El ID del centro a actualizar.
+ * @param {object} updateData - Los datos a modificar.
+ * @returns {Promise&lt;object>}
+ * @throws {NotFoundError} Si el centro no se encuentra.
+ * @throws {AlreadyExistsError} Si se intenta cambiar a un código que ya está en uso.
+ */
+export const updateOperationCenter = async (id, updateData) => {
+  const operationCenterDb = await operationCenterRepository.findById(id);
+  if (!operationCenterDb) {
+    throw new NotFoundError(
+      `El centro de operacion con ID ${id} no fue encontrado`
+    );
+  }
+  const updatedOperationCenter = await operationCenterRepository.update(
+    id,
+    updateData
+  );
+  return updatedOperationCenter;
+};
+
+/**
+ * @async
+ * @function stateOperationCenter
+ * @description Cambia el estado (activo/inactivo) de un centro de operación.
+ * @param {number} id - El ID del centro a modificar.
+ * @param {object} updateData - Objeto con el nuevo estado (ej. { activo: false }).
+ * @param {number} id_usuario - El ID del admin que realiza la acción.
+ * @param {string} ip_usuario - La IP del admin.
+ * @returns {Promise&lt;object>}
+ * @throws {NotFoundError} Si el centro no se encuentra.
+ * @throws {AppError} Si se intenta aplicar un estado que el centro ya tiene.
+ */
+export const stateOperationCenter = async (
+  id,
+  updateData,
+  id_usuario,
+  ip_usuario
+) => {
+  return db.sequelize.transaction(async (t) => {
+    const operationCenterDb = await operationCenterRepository.findById(id, {
+      transaction: t,
+    });
+
+    if (updateData.activo !== undefined) {
+      if (updateData.activo === operationCenterDb.activo) {
+        const message = operationCenterDb.activo
+          ? "El centro de operacion ya está activo."
+          : "El centro de operacion ya está desactivo";
+        throw new AlreadyDesactivated(message);
+      }
+    }
+
+    const updatedOperationCenter = await operationCenterRepository.update(
+      id,
+      updateData,
+      { transaction: t }
+    );
+
+    if (updateData.activo === false) {
+      await logRepository.create({
+        accion: "CERRAR_CENTRO_OPERACION",
+        id_usuario: id_usuario,
+        descripcion: `Se cerró el centro de operacion con codigo '${operationCenterDb.codigo}' (ID: ${id}).`,
+        ip_usuario: ip_usuario,
+      });
+
+      return updatedOperationCenter;
+    }
+
+    await logRepository.create(
+      {
+        accion: "REABRIR_CENTRO_OPERACION",
+        id_usuario: id_usuario,
+        descripcion: `Se abrió el centro de operacion con codigo '${operationCenterDb.codigo}' (ID: ${id}).`,
+        ip_usuario: ip_usuario,
+      },
+      { transaction: t }
+    );
+
+    logger.info(
+      { adminId: id_usuario, targetCenterId: id, newState: updateData.activo },
+      `Estado de centro de operación cambiado a '${updateData.activo}'.`
+    );
+
+    return updatedOperationCenter;
+  });
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Config.html">Config</a></li><li><a href="module-Controllers.html">Controllers</a></li><li><a href="module-Middlewares.html">Middlewares</a></li><li><a href="module-Models.html">Models</a></li><li><a href="module-Models_Catalogues.html">Models/Catalogues</a></li><li><a href="module-Repositories.html">Repositories</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Schemas.html">Schemas</a></li><li><a href="module-Services.html">Services</a></li><li><a href="module-Utils_Errors.html">Utils/Errors</a></li><li><a href="module-Utils_Tokens.html">Utils/Tokens</a></li></ul><h3>Classes</h3><ul><li><a href="module-Models_Catalogues-City.html">City</a></li><li><a href="module-Models_Catalogues-IdentificationType.html">IdentificationType</a></li><li><a href="module-Models_Catalogues-PeripheralType.html">PeripheralType</a></li><li><a href="module-Models-CostCenter.html">CostCenter</a></li><li><a href="module-Models-Decommission.html">Decommission</a></li><li><a href="module-Models-Device.html">Device</a></li><li><a href="module-Models-Log.html">Log</a></li><li><a href="module-Models-OperationCenter.html">OperationCenter</a></li><li><a href="module-Models-Peripheral.html">Peripheral</a></li><li><a href="module-Models-RefreshToken.html">RefreshToken</a></li><li><a href="module-Models-User.html">User</a></li><li><a href="module-Utils_Errors.AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AccountDisabledError.html">AccountDisabledError</a></li><li><a href="module-Utils_Errors-AlreadyDesactivated.html">AlreadyDesactivated</a></li><li><a href="module-Utils_Errors-AlreadyExistsError.html">AlreadyExistsError</a></li><li><a href="module-Utils_Errors-AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AuthError.html">AuthError</a></li><li><a href="module-Utils_Errors-DatabaseConnectionError.html">DatabaseConnectionError</a></li><li><a href="module-Utils_Errors-ForbiddenError.html">ForbiddenError</a></li><li><a href="module-Utils_Errors-InvalidTokenError.html">InvalidTokenError</a></li><li><a href="module-Utils_Errors-NotFoundError.html">NotFoundError</a></li><li><a href="module-Utils_Errors-UserAlreadyExistsError.html">UserAlreadyExistsError</a></li><li><a href="module-Utils_Errors-UserNotFoundOrInvalidPasswordError.html">UserNotFoundOrInvalidPasswordError</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Oct 20 2025 10:51:18 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

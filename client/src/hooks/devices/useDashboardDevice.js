@@ -21,8 +21,8 @@ import { useAuthStore } from "../../stores/authStore.js";
  * isLoading: boolean,
  * error: string|null,
  * refetch: Function,
- * setSearchTerm: React.Dispatch<React.SetStateAction<string>>,
- * setFilterStatus: React.Dispatch<React.SetStateAction<string>>
+ * setSearchTerm: {Function},
+ * setFilterStatus: {Function}
  * }} Un objeto que contiene los dispositivos procesados, el estado de carga, errores, y las funciones para actualizar los filtros y recargar los datos.
  */
 export const useDashboardDevice = () => {
@@ -31,21 +31,20 @@ export const useDashboardDevice = () => {
   /**
    * @state
    * @description Almacena la lista original de dispositivos (equipos y periféricos) obtenida de la API.
-   * @type {[Array<object>, Function]}
+   * @type {Array}
    */
   const [originalAssets, setOriginalAssets] = useState([]);
 
   /**
-   * @state
+   * @state {boolean} isLoading
    * @description Indica si se está realizando una petición a la API.
-   * @type {[boolean, Function]}
    */
   const [isLoading, setIsLoading] = useState(true);
 
   /**
    * @state
    * @description Almacena un mensaje de error si la petición a la API falla.
-   * @type {[string|null, Function]}
+   * @type {Array}
    */
   const [error, setError] = useState(null);
 

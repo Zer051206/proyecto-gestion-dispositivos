@@ -16,9 +16,9 @@ import logger from "../config/logger.js";
  * @async
  * @function getAllUsers
  * @description Obtiene una lista de todos los usuarios del sistema.
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
  */
 export const getAllUsers = async (req, res, next) => {
   try {
@@ -33,9 +33,9 @@ export const getAllUsers = async (req, res, next) => {
  * @async
  * @function getUserById
  * @description Obtiene un usuario específico por su ID.
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
  */
 export const getUserById = async (req, res, next) => {
   try {
@@ -51,9 +51,9 @@ export const getUserById = async (req, res, next) => {
  * @async
  * @function createUser
  * @description Crea uno o más usuarios nuevos en el sistema.
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
  */
 export const createUser = async (req, res, next) => {
   try {
@@ -80,9 +80,9 @@ export const createUser = async (req, res, next) => {
  * @async
  * @function updateUser
  * @description Actualiza la información de un usuario existente.
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
  */
 export const updateUser = async (req, res, next) => {
   try {
@@ -108,9 +108,9 @@ export const updateUser = async (req, res, next) => {
  * @async
  * @function stateUser
  * @description Cambia el estado (activo/inactivo) de un usuario.
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
  */
 export const stateUser = async (req, res, next) => {
   try {

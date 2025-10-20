@@ -16,9 +16,9 @@ import logger from "../config/logger.js";
  * @async
  * @function getAllOperationCenters
  * @description Obtiene una lista de todos los centros de operación.
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
  */
 export const getAllOperationCenters = async (req, res, next) => {
   try {
@@ -34,9 +34,9 @@ export const getAllOperationCenters = async (req, res, next) => {
  * @async
  * @function getOperationCenterById
  * @description Obtiene un centro de operación específico por su ID.
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
  */
 export const getOperationCenterById = async (req, res, next) => {
   try {
@@ -53,9 +53,9 @@ export const getOperationCenterById = async (req, res, next) => {
  * @async
  * @function createOperationCenter
  * @description Crea uno o más centros de operación nuevos.
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
  */
 export const createOperationCenter = async (req, res, next) => {
   try {
@@ -88,9 +88,9 @@ export const createOperationCenter = async (req, res, next) => {
  * @async
  * @function updateOperationCenter
  * @description Actualiza la información de un centro de operación existente.
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
  */
 export const updateOperationCenter = async (req, res, next) => {
   try {
@@ -119,9 +119,9 @@ export const updateOperationCenter = async (req, res, next) => {
  * @async
  * @function stateOperationCenter
  * @description Cambia el estado (activo/inactivo) de un centro de operación.
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
  */
 export const stateOperationCenter = async (req, res, next) => {
   try {

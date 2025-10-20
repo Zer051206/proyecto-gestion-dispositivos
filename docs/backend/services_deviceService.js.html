@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: services/deviceService.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: services/deviceService.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file deviceService.js
+ * @module Services
+ * @description Capa de servicio que contiene toda la lógica de negocio para la gestión de Equipos (CRUD).
+ * @requires ../models/index.js
+ * @requires ../repositories/deviceRepository.js
+ * @requires ../repositories/logRepository.js
+ * @requires ../repositories/decommissionRepository.js
+ * @requires ../utils/customErrors.js
+ * @requires ../config/logger.js
+ */
+import db from "../models/index.js";
+import * as deviceRepository from "../repositories/deviceRepository.js";
+import * as logRepository from "../repositories/logRepository.js";
+import * as decomissionRepository from "../repositories/decommissionRepository.js";
+import { AlreadyDesactivated, NotFoundError } from "../utils/customErrors.js";
+import logger from "../config/logger.js";
+
+/**
+ * @async
+ * @function fetchAllDevices
+ * @description Obtiene una lista de todos los equipos.
+ * @returns {Promise&lt;Array&lt;object>>}
+ */
+export const fetchAllDevices = async () => {
+  const allDevices = await deviceRepository.findAll();
+  return allDevices;
+};
+
+/**
+ * @async
+ * @function getDeviceById
+ * @description Obtiene un equipo específico por su ID.
+ * @param {number} id - El ID del equipo a buscar.
+ * @returns {Promise&lt;object>}
+ * @throws {NotFoundError} Si el equipo no se encuentra.
+ */
+export const getDeviceById = async (id) => {
+  const device = await deviceRepository.findById(id);
+  if (!device) throw new NotFoundError(`Equipo con ID ${id} no encontrado.`);
+  return device;
+};
+
+/**
+ * @async
+ * @function createDevice
+ * @description Crea uno o más equipos nuevos en una transacción, aplicando la lógica de rol.
+ * @param {Array&lt;object>} devicesData - Datos de los equipos a crear.
+ * @param {object} user - El objeto del usuario autenticado que realiza la creación.
+ * @param {string} ip_usuario - La dirección IP del usuario.
+ * @returns {Promise&lt;Array&lt;object>>}
+ */
+export const createDevice = async (devicesData, user, ip_usuario) => {
+  return db.sequelize.transaction(async (t) => {
+    const creationPromises = devicesData.map(async (deviceData) => {
+      if (deviceData.id_centro_costo === "") {
+        deviceData.id_centro_costo = null;
+      }
+
+      let deviceForDb = {
+        ...deviceData,
+        id_usuario_creador: user.id_usuario,
+      };
+
+      if (user.rol === "Encargado") {
+        deviceForDb.id_centro_operacion = user.id_centro_operacion;
+      }
+
+      const newDevice = await deviceRepository.create(deviceForDb, {
+        transaction: t,
+      });
+
+      await logRepository.create(
+        {
+          accion: "CREAR_EQUIPO",
+          id_usuario: user.id_usuario,
+          descripcion: `Se creó el equipo con serial '${newDevice.serial}' (ID: ${newDevice.id_equipo}).`,
+          ip_usuario: ip_usuario,
+        },
+        { transaction: t }
+      );
+
+      return newDevice;
+    });
+
+    const createdDevices = await Promise.all(creationPromises);
+
+    logger.info(
+      { userId: user.id_usuario, count: createdDevices.length },
+      "Equipo(s) creado(s) exitosamente."
+    );
+
+    return createdDevices;
+  });
+};
+
+/**
+ * @async
+ * @function updateDevice
+ * @description Actualiza los datos de un equipo existente.
+ * @param {number} id_equipo - El ID del equipo a actualizar.
+ * @param {object} updateData - Los datos a modificar.
+ * @returns {Promise&lt;object>}
+ * @throws {NotFoundError} Si el equipo no se encuentra.
+ */
+export const updateDevice = async (updateValidateData, id_equipo) => {
+  const deviceExists = await deviceRepository.findById(id_equipo);
+  if (!deviceExists) {
+    throw new NotFoundError(`Equipo con ID ${id_equipo} no encontrado.`);
+  }
+  const updatedDevice = await deviceRepository.update(
+    id_equipo,
+    updateValidateData
+  );
+  return updatedDevice;
+};
+
+/**
+ * @async
+ * @function stateDevice
+ * @description Cambia el estado (activo/inactivo) de un equipo.
+ * @param {number} id_equipo - El ID del equipo a modificar.
+ * @param {object} updateData - Objeto con el nuevo estado (ej. { estado_equipo: false }).
+ * @param {number} id_usuario - El ID del usuario que realiza la acción.
+ * @param {string} ip_usuario - La IP del usuario.
+ * @returns {Promise&lt;object>}
+ * @throws {NotFoundError} Si el equipo no se encuentra.
+ * @throws {AppError} Si se intenta aplicar un estado que el equipo ya tiene.
+ */
+export const stateDevice = async (
+  id_equipo,
+  updateData,
+  id_usuario,
+  ip_usuario
+) => {
+  return db.sequelize.transaction(async (t) => {
+    const deviceDb = await deviceRepository.findById(id_equipo, {
+      transaction: t,
+    });
+
+    if (updateData !== undefined) {
+      if (updateData.estado_equipo === deviceDb.estado_equipo) {
+        const message = deviceDb.estado_equipo
+          ? "El equipo ya se encuentra activo"
+          : "El equipo ya está dado de baja";
+        throw new AlreadyDesactivated(message);
+      }
+    }
+
+    const updatedDevice = await deviceRepository.update(
+      id_equipo,
+      { estado_equipo: updateData.estado_equipo },
+      {
+        transaction: t,
+      }
+    );
+
+    if (updateData.estado_equipo === false) {
+      await decomissionRepository.create(
+        {
+          id_equipo: id_equipo,
+          id_usuario: id_usuario,
+        },
+        { transaction: t }
+      );
+
+      await logRepository.create(
+        {
+          accion: "DAR_DE_BAJA_EQUIPO",
+          id_usuario: id_usuario,
+          descripcion: `Se dio de baja al equipo con serial '${deviceDb.serial}' (ID: ${id_equipo}).`,
+          ip_usuario: ip_usuario,
+        },
+        { transaction: t }
+      );
+      logger.info(
+        { userId: id_usuario, deviceId: id_equipo },
+        "Equipo dado de baja exitosamente."
+      );
+    } else {
+      await logRepository.create(
+        {
+          accion: "REACTIVAR_EQUIPO",
+          id_usuario: id_usuario,
+          descripcion: `Se reactivo el equipo con serial '${deviceDb.serial}' (ID: ${id_equipo}).`,
+          ip_usuario: ip_usuario,
+        },
+        { transaction: t }
+      );
+      logger.info(
+        { userId: id_usuario, deviceId: id_equipo },
+        "Equipo reactivado exitosamente."
+      );
+    }
+
+    return updatedDevice;
+  });
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Config.html">Config</a></li><li><a href="module-Controllers.html">Controllers</a></li><li><a href="module-Middlewares.html">Middlewares</a></li><li><a href="module-Models.html">Models</a></li><li><a href="module-Models_Catalogues.html">Models/Catalogues</a></li><li><a href="module-Repositories.html">Repositories</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Schemas.html">Schemas</a></li><li><a href="module-Services.html">Services</a></li><li><a href="module-Utils_Errors.html">Utils/Errors</a></li><li><a href="module-Utils_Tokens.html">Utils/Tokens</a></li></ul><h3>Classes</h3><ul><li><a href="module-Models_Catalogues-City.html">City</a></li><li><a href="module-Models_Catalogues-IdentificationType.html">IdentificationType</a></li><li><a href="module-Models_Catalogues-PeripheralType.html">PeripheralType</a></li><li><a href="module-Models-CostCenter.html">CostCenter</a></li><li><a href="module-Models-Decommission.html">Decommission</a></li><li><a href="module-Models-Device.html">Device</a></li><li><a href="module-Models-Log.html">Log</a></li><li><a href="module-Models-OperationCenter.html">OperationCenter</a></li><li><a href="module-Models-Peripheral.html">Peripheral</a></li><li><a href="module-Models-RefreshToken.html">RefreshToken</a></li><li><a href="module-Models-User.html">User</a></li><li><a href="module-Utils_Errors.AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AccountDisabledError.html">AccountDisabledError</a></li><li><a href="module-Utils_Errors-AlreadyDesactivated.html">AlreadyDesactivated</a></li><li><a href="module-Utils_Errors-AlreadyExistsError.html">AlreadyExistsError</a></li><li><a href="module-Utils_Errors-AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AuthError.html">AuthError</a></li><li><a href="module-Utils_Errors-DatabaseConnectionError.html">DatabaseConnectionError</a></li><li><a href="module-Utils_Errors-ForbiddenError.html">ForbiddenError</a></li><li><a href="module-Utils_Errors-InvalidTokenError.html">InvalidTokenError</a></li><li><a href="module-Utils_Errors-NotFoundError.html">NotFoundError</a></li><li><a href="module-Utils_Errors-UserAlreadyExistsError.html">UserAlreadyExistsError</a></li><li><a href="module-Utils_Errors-UserNotFoundOrInvalidPasswordError.html">UserNotFoundOrInvalidPasswordError</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Oct 20 2025 10:51:18 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

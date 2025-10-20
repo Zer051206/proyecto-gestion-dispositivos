@@ -25,7 +25,6 @@ export const useCatalogs = () => {
   /**
    * @state
    * @description Almacena los datos de los catálogos en un solo objeto para facilitar su manejo.
-   * @type {[{tiposIdentificacion: Array, centrosOperacion: Array}, Function]}
    */
   const [data, setData] = useState({
     tiposIdentificacion: [],
@@ -33,16 +32,15 @@ export const useCatalogs = () => {
   });
 
   /**
-   * @state
+   * @state {boolean} isLoading
    * @description Indica si las peticiones a la API para los catálogos están en curso.
-   * @type {[boolean, Function]}
    */
   const [isLoading, setIsLoading] = useState(true);
 
   /**
    * @state
    * @description Almacena un mensaje de error si alguna de las peticiones a la API falla.
-   * @type {[string|null, Function]}
+   * @type {Array}
    */
   const [error, setError] = useState(null);
 

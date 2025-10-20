@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: controllers/peripheralController.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: controllers/peripheralController.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file peripheralController.js
+ * @module Controllers
+ * @description Controlador para los endpoints de gestión de periféricos (CRUD).
+ * Maneja las solicitudes HTTP para obtener, crear y actualizar periféricos, delegando la
+ * lógica de negocio a `peripheralService`.
+ * @requires ../schemas/peripheralSchema.js
+ * @requires ../services/peripheralService.js
+ * @requires ../config/logger.js
+ */
+import * as peripheralService from "../services/peripheralService.js";
+import {
+  createPeripheralSchema,
+  updatePeripheralSchema,
+} from "../schemas/peripheralSchema.js";
+import logger from "../config/logger.js";
+
+/**
+ * @async
+ * @function getAllPeripherals
+ * @description Obtiene una lista de todos los periféricos.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
+ */
+export const getAllPeripherals = async (req, res, next) => {
+  try {
+    const allPeripherals = await peripheralService.fetchAllPeripherals();
+    return res.status(200).json(allPeripherals);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @async
+ * @function getPeripheralById
+ * @description Obtiene un periférico específico por su ID.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
+ */
+export const getPeripheralById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const peripheral = await peripheralService.getPeripheralById(id);
+    return res.status(200).json(peripheral);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @async
+ * @function createPeripheral
+ * @description Crea uno o más periféricos nuevos.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
+ */
+export const createPeripheral = async (req, res, next) => {
+  try {
+    const ip_usuario = req.ip;
+    const user = req.user;
+    const createValidateData = createPeripheralSchema.parse(req.body);
+
+    logger.info(
+      { userId: user.id_usuario, count: createValidateData.length },
+      "Solicitud para crear nuevo(s) periférico(s)"
+    );
+
+    const newPeripheral = await peripheralService.createPeripheral(
+      createValidateData,
+      ip_usuario,
+      user
+    );
+    return res.status(201).json({
+      message: "Periferico creado exitosamente.",
+      success: true,
+      peripheral: newPeripheral,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @async
+ * @function updatePeripheral
+ * @description Actualiza la información de un periférico existente.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
+ */
+export const updatePeripheral = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const updateValidateData = updatePeripheralSchema.parse(req.body);
+
+    logger.info(
+      { userId: req.user.id_usuario, targetPeripheralId: id },
+      "Solicitud para actualizar periférico"
+    );
+
+    const updatedPeripheral = await peripheralService.updatePeripheral(
+      updateValidateData,
+      id
+    );
+    return res.status(200).json({
+      message: "Periferico actualizado exitosamente",
+      success: true,
+      peripheral: updatedPeripheral,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @async
+ * @function statePeripheral
+ * @description Cambia el estado (activo/inactivo) de un periférico.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
+ */
+export const statePeripheral = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const id_usuario = req.user.id_usuario;
+    const ip_usuario = req.ip;
+    const updateData = req.body;
+
+    logger.info(
+      {
+        userId: id_usuario,
+        targetPeripheralId: id,
+        newState: updateData.estado_periferico,
+      },
+      "Solicitud para cambiar estado de periférico"
+    );
+
+    const peripheral = await peripheralService.statePeripheral(
+      id,
+      updateData,
+      id_usuario,
+      ip_usuario
+    );
+    return res.status(200).json({
+      message: "Periferico dado de baja exitosamente",
+      success: true,
+      peripheral: peripheral,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Config.html">Config</a></li><li><a href="module-Controllers.html">Controllers</a></li><li><a href="module-Middlewares.html">Middlewares</a></li><li><a href="module-Models.html">Models</a></li><li><a href="module-Models_Catalogues.html">Models/Catalogues</a></li><li><a href="module-Repositories.html">Repositories</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Schemas.html">Schemas</a></li><li><a href="module-Services.html">Services</a></li><li><a href="module-Utils_Errors.html">Utils/Errors</a></li><li><a href="module-Utils_Tokens.html">Utils/Tokens</a></li></ul><h3>Classes</h3><ul><li><a href="module-Models_Catalogues-City.html">City</a></li><li><a href="module-Models_Catalogues-IdentificationType.html">IdentificationType</a></li><li><a href="module-Models_Catalogues-PeripheralType.html">PeripheralType</a></li><li><a href="module-Models-CostCenter.html">CostCenter</a></li><li><a href="module-Models-Decommission.html">Decommission</a></li><li><a href="module-Models-Device.html">Device</a></li><li><a href="module-Models-Log.html">Log</a></li><li><a href="module-Models-OperationCenter.html">OperationCenter</a></li><li><a href="module-Models-Peripheral.html">Peripheral</a></li><li><a href="module-Models-RefreshToken.html">RefreshToken</a></li><li><a href="module-Models-User.html">User</a></li><li><a href="module-Utils_Errors.AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AccountDisabledError.html">AccountDisabledError</a></li><li><a href="module-Utils_Errors-AlreadyDesactivated.html">AlreadyDesactivated</a></li><li><a href="module-Utils_Errors-AlreadyExistsError.html">AlreadyExistsError</a></li><li><a href="module-Utils_Errors-AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AuthError.html">AuthError</a></li><li><a href="module-Utils_Errors-DatabaseConnectionError.html">DatabaseConnectionError</a></li><li><a href="module-Utils_Errors-ForbiddenError.html">ForbiddenError</a></li><li><a href="module-Utils_Errors-InvalidTokenError.html">InvalidTokenError</a></li><li><a href="module-Utils_Errors-NotFoundError.html">NotFoundError</a></li><li><a href="module-Utils_Errors-UserAlreadyExistsError.html">UserAlreadyExistsError</a></li><li><a href="module-Utils_Errors-UserNotFoundOrInvalidPasswordError.html">UserNotFoundOrInvalidPasswordError</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Oct 20 2025 10:51:18 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

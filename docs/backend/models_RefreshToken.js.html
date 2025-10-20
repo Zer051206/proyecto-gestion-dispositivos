@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: models/RefreshToken.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: models/RefreshToken.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file RefreshToken.js
+ * @module Models
+ * @description Define el modelo de Sequelize para la tabla 'refresh_tokens'.
+ * Este modelo es esencial para la estrategia de autenticación, permitiendo la renovación
+ * de tokens de acceso (JWT) sin que el usuario tenga que volver a iniciar sesión.
+ * @requires sequelize
+ */
+import { DataTypes } from "sequelize";
+
+/**
+ * @function defineRefreshTokenModel
+ * @description Define y devuelve el modelo 'RefreshToken' de Sequelize.
+ * @param {object} sequelize - La instancia de Sequelize.
+ * @returns {object} El modelo 'RefreshToken' definido.
+ */
+export default (sequelize) => {
+  /**
+   * @class RefreshToken
+   * @classdesc Modelo de Sequelize para la tabla `refresh_tokens`.
+   * @property {number} id_refresh_token - La clave primaria del token.
+   * @property {string} token - El valor del token, una cadena aleatoria y única.
+   * @property {Date} expira_en - La fecha y hora en que el token dejará de ser válido.
+   * @property {number} id_usuario - La clave foránea al usuario al que pertenece el token.
+   * @property {boolean} revocado - Indica si el token ha sido invalidado (ej. por un logout).
+   */
+  const RefreshToken = sequelize.define(
+    "RefreshToken",
+    {
+      id_refresh_token: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      token: { type: DataTypes.STRING(255), allowNull: false, unique: true },
+      expira_en: { type: DataTypes.DATE, allowNull: false },
+      id_usuario: { type: DataTypes.INTEGER, allowNull: false },
+      revocado: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+    },
+    {
+      tableName: "refresh_tokens",
+      timestamps: true,
+      createdAt: "created_at",
+      updatedAt: false,
+    }
+  );
+
+  /**
+   * @function associate
+   * @description Define las asociaciones del modelo RefreshToken con otros modelos.
+   * @param {object} models - Un objeto que contiene todos los modelos de la aplicación.
+   */
+  RefreshToken.associate = (models) => {
+    /**
+     * @description Asociación (belongsTo): Un Refresh Token pertenece a un único Usuario.
+     * @param {Model} models.User - El modelo de Usuario.
+     * @property {string} foreignKey - La clave foránea en la tabla `refresh_tokens`.
+     * @property {string} onDelete - 'CASCADE' asegura que si un usuario es eliminado, todos sus
+     * refresh tokens asociados también se eliminarán automáticamente.
+     */
+    RefreshToken.belongsTo(models.User, {
+      foreignKey: "id_usuario",
+      onDelete: "CASCADE",
+    });
+  };
+  return RefreshToken;
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Config.html">Config</a></li><li><a href="module-Controllers.html">Controllers</a></li><li><a href="module-Middlewares.html">Middlewares</a></li><li><a href="module-Models.html">Models</a></li><li><a href="module-Models_Catalogues.html">Models/Catalogues</a></li><li><a href="module-Repositories.html">Repositories</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Schemas.html">Schemas</a></li><li><a href="module-Services.html">Services</a></li><li><a href="module-Utils_Errors.html">Utils/Errors</a></li><li><a href="module-Utils_Tokens.html">Utils/Tokens</a></li></ul><h3>Classes</h3><ul><li><a href="module-Models_Catalogues-City.html">City</a></li><li><a href="module-Models_Catalogues-IdentificationType.html">IdentificationType</a></li><li><a href="module-Models_Catalogues-PeripheralType.html">PeripheralType</a></li><li><a href="module-Models-CostCenter.html">CostCenter</a></li><li><a href="module-Models-Decommission.html">Decommission</a></li><li><a href="module-Models-Device.html">Device</a></li><li><a href="module-Models-Log.html">Log</a></li><li><a href="module-Models-OperationCenter.html">OperationCenter</a></li><li><a href="module-Models-Peripheral.html">Peripheral</a></li><li><a href="module-Models-RefreshToken.html">RefreshToken</a></li><li><a href="module-Models-User.html">User</a></li><li><a href="module-Utils_Errors.AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AccountDisabledError.html">AccountDisabledError</a></li><li><a href="module-Utils_Errors-AlreadyDesactivated.html">AlreadyDesactivated</a></li><li><a href="module-Utils_Errors-AlreadyExistsError.html">AlreadyExistsError</a></li><li><a href="module-Utils_Errors-AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AuthError.html">AuthError</a></li><li><a href="module-Utils_Errors-DatabaseConnectionError.html">DatabaseConnectionError</a></li><li><a href="module-Utils_Errors-ForbiddenError.html">ForbiddenError</a></li><li><a href="module-Utils_Errors-InvalidTokenError.html">InvalidTokenError</a></li><li><a href="module-Utils_Errors-NotFoundError.html">NotFoundError</a></li><li><a href="module-Utils_Errors-UserAlreadyExistsError.html">UserAlreadyExistsError</a></li><li><a href="module-Utils_Errors-UserNotFoundOrInvalidPasswordError.html">UserNotFoundOrInvalidPasswordError</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Oct 20 2025 10:51:18 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

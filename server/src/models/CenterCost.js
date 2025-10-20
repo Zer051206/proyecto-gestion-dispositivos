@@ -11,8 +11,8 @@ import { DataTypes } from "sequelize";
 /**
  * @function defineCostCenterModel
  * @description Define y devuelve el modelo 'CostCenter' de Sequelize.
- * @param {import('sequelize').Sequelize} sequelize - La instancia de Sequelize.
- * @returns {import('sequelize').ModelCtor<Model>} El modelo 'CostCenter' definido.
+ * @param {object} sequelize - La instancia de Sequelize.
+ * @returns {object} El modelo 'CostCenter' definido.
  */
 export default (sequelize) => {
   /**

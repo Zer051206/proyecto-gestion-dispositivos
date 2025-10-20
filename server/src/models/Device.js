@@ -11,8 +11,8 @@ import { DataTypes } from "sequelize";
 /**
  * @function defineDeviceModel
  * @description Define y devuelve el modelo 'Device' de Sequelize.
- * @param {import('sequelize').Sequelize} sequelize - La instancia de Sequelize.
- * @returns {import('sequelize').ModelCtor<Model>} El modelo 'Device' definido.
+ * @param {object} sequelize - La instancia de Sequelize.
+ * @returns {object} El modelo 'Device' definido.
  */
 export default (sequelize) => {
   /**

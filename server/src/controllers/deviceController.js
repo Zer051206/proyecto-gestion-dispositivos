@@ -19,9 +19,9 @@ import logger from "../config/logger.js";
  * @async
  * @function getAllDevices
  * @description Obtiene una lista de todos los equipos.
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ * @param {} req - Objeto de solicitud de Express.
+ * @param {} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
  */
 export const getAllDevices = async (req, res, next) => {
   try {
@@ -36,9 +36,9 @@ export const getAllDevices = async (req, res, next) => {
  * @async
  * @function getDeviceById
  * @description Obtiene un equipo específico por su ID.
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ * @param {} req - Objeto de solicitud de Express.
+ * @param {} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
  */
 export const getDeviceById = async (req, res, next) => {
   try {
@@ -54,9 +54,9 @@ export const getDeviceById = async (req, res, next) => {
  * @async
  * @function createDevice
  * @description Crea uno o más equipos nuevos.
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ * @param {} req - Objeto de solicitud de Express.
+ * @param {} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
  */
 export const createDevice = async (req, res, next) => {
   try {
@@ -88,9 +88,9 @@ export const createDevice = async (req, res, next) => {
  * @async
  * @function updateDevice
  * @description Actualiza la información de un equipo existente.
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
  */
 export const updateDevice = async (req, res, next) => {
   try {
@@ -120,9 +120,9 @@ export const updateDevice = async (req, res, next) => {
  * @async
  * @function stateDevice
  * @description Cambia el estado (activo/inactivo) de un equipo.
- * @param {import('express').Request} req - Objeto de solicitud de Express.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - Función para pasar el control al siguiente middleware.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ * @param {Function} next - Función para pasar el control al siguiente middleware.
  */
 export const stateDevice = async (req, res, next) => {
   try {

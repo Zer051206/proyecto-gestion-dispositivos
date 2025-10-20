@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/history/DashboardHistory.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/history/DashboardHistory.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file DashboardHistory.jsx
+ * @module Components/History
+ * @description Página principal para la visualización del historial y la auditoría.
+ * Permite a los usuarios (principalmente Admins) ver un registro de todas las acciones (logs)
+ * y de todos los activos dados de baja. Incluye una interfaz con pestañas para navegar
+ * entre las dos vistas, así como filtros de búsqueda y ordenación.
+ * @requires react
+ * @requires react-router-dom
+ * @requires react-hot-toast
+ * @requires @fortawesome/react-fontawesome
+ * @requires ../../hooks/history/useDashboardHistory.js
+ * @requires ../../utils/dateFormat.js
+ */
+import React, { useState } from "react";
+import { useDashboardHistory } from "../../hooks/history/useDashboardHistory.js";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faEye,
+  faTimes,
+  faUserShield,
+  faDesktop,
+  faKeyboard,
+  faCalendarAlt,
+  faInfoCircle,
+} from "@fortawesome/free-solid-svg-icons";
+import { formatDate } from "../../utils/dateFormat.js";
+
+// --- SUBCOMPONENTES ---
+
+/**
+ * @function DetailModal
+ * @description Modal que muestra información detallada de un registro de log o de una baja.
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.item - El objeto de log o baja a mostrar.
+ * @param {Function} props.onClose - Función para cerrar el modal.
+ * @param {'log'|'baja'} props.type - El tipo de registro que se está mostrando.
+ * @returns {JSX.Element|null}
+ */
+const DetailModal = ({ item, onClose, type }) => {
+  if (!item) return null;
+  const DetailRow = ({ label, value, icon }) => (
+    &lt;div className="py-3 border-b border-gray-200 last:border-b-0">
+      &lt;p className="text-sm text-neutral-taupe font-semibold flex items-center gap-2">
+        &lt;FontAwesomeIcon icon={icon} className="w-4 text-primary/70" />
+        {label}
+      &lt;/p>
+      &lt;p className="text-md text-text-main pl-6">{value || "N/A"}&lt;/p>
+    &lt;/div>
+  );
+  return (
+    &lt;div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      onClick={onClose}
+    >
+      &lt;div
+        className="bg-secondary rounded-lg shadow-xl w-full max-w-lg text-left"
+        onClick={(e) => e.stopPropagation()}
+      >
+        &lt;header className="p-4 flex justify-between items-center border-b border-gray-200">
+          &lt;h3 className="text-xl font-bold text-primary">
+            {type === "log" ? "Detalle del Registro" : "Detalle de la Baja"}
+          &lt;/h3>
+          &lt;button onClick={onClose} className="text-text-main hover:opacity-70">
+            &lt;FontAwesomeIcon icon={faTimes} />
+          &lt;/button>
+        &lt;/header>
+        &lt;div className="p-6 max-h-[70vh] overflow-y-auto">
+          {type === "log" ? (
+            &lt;>
+              &lt;DetailRow
+                label="Acción"
+                value={item.accion}
+                icon={faInfoCircle}
+              />
+              &lt;DetailRow
+                label="Usuario"
+                value={`${item.User?.nombre} ${
+                  item.User?.apellido || ""
+                } (Rol: ${item.User?.rol})`}
+                icon={faUserShield}
+              />
+              &lt;DetailRow
+                label="Fecha"
+                value={formatDate(item.fecha_log)}
+                icon={faCalendarAlt}
+              />
+              &lt;DetailRow label="Dirección IP" value={item.ip_usuario} />
+              &lt;DetailRow label="Descripción" value={item.descripcion} />
+            &lt;/>
+          ) : (
+            &lt;>
+              &lt;DetailRow
+                label="Serial del Dispositivo Dado de Baja"
+                value={
+                  item.Device?.serial || item.Peripheral?.serial_periferico
+                }
+                icon={item.Device ? faDesktop : faKeyboard}
+              />
+              &lt;DetailRow
+                label="Tipo"
+                value={item.Device ? "Equipo" : "Periférico"}
+              />
+              &lt;DetailRow
+                label="Baja realizada por"
+                value={`${item.User?.nombre} ${item.User?.apellido || ""}`}
+                icon={faUserShield}
+              />
+              &lt;DetailRow
+                label="Fecha de Baja"
+                value={formatDate(item.fecha_baja)}
+                icon={faCalendarAlt}
+              />
+            &lt;/>
+          )}
+        &lt;/div>
+      &lt;/div>
+    &lt;/div>
+  );
+};
+
+/**
+ * @function LogTable
+ * @description Componente que renderiza una tabla de registros de logs.
+ * @param {object} props - Propiedades del componente.
+ * @param {Array&lt;object>} props.logs - Array de logs a mostrar.
+ * @param {Function} props.onAction - Callback para manejar acciones en cada fila.
+ * @returns {JSX.Element}
+ */
+const LogTable = ({ logs, onAction }) => (
+  &lt;div className="overflow-auto max-h-[500px] bg-secondary rounded-lg shadow-md">
+    &lt;table className="w-full text-left text-text-main">
+      &lt;thead className="bg-gray-100/80">
+        &lt;tr>
+          &lt;th className="p-4 font-semibold">Acción&lt;/th>
+          &lt;th className="p-4 font-semibold table-cell">Usuario&lt;/th>
+          &lt;th className="p-4 font-semibold hidden md:table-cell">Fecha&lt;/th>
+          &lt;th className="p-4 font-semibold text-center">Detalles&lt;/th>
+        &lt;/tr>
+      &lt;/thead>
+      &lt;tbody>
+        {logs.map((log) => (
+          &lt;tr
+            key={log.id_log}
+            className="border-t border-gray-200 hover:bg-gray-50"
+          >
+            &lt;td className="p-4 font-semibold whitespace-nowrap">
+              {log.accion}
+            &lt;/td>
+            &lt;td className="p-4 whitespace-nowrap">
+              {log.User?.nombre} ({log.User?.rol})
+            &lt;/td>
+            &lt;td className="p-4 whitespace-nowrap hidden md:table-cell">
+              {formatDate(log.fecha_log)}
+            &lt;/td>
+            &lt;td className="p-4 text-center">
+              &lt;button
+                onClick={() => onAction("log", log)}
+                className="text-primary hover:opacity-70"
+                title="Ver Detalles"
+              >
+                &lt;FontAwesomeIcon icon={faEye} />
+              &lt;/button>
+            &lt;/td>
+          &lt;/tr>
+        ))}
+      &lt;/tbody>
+    &lt;/table>
+  &lt;/div>
+);
+
+/**
+ * @function BajasTable
+ * @description Componente que renderiza una tabla de registros de bajas.
+ * @param {object} props - Propiedades del componente.
+ * @param {Array&lt;object>} props.bajas - Array de bajas a mostrar.
+ * @param {Function} props.onAction - Callback para manejar acciones en cada fila.
+ * @returns {JSX.Element}
+ */
+const BajasTable = ({ bajas, onAction }) => (
+  &lt;div className="overflow-auto bg-secondary rounded-lg max-h-[500px] shadow-md">
+    &lt;table className="w-full text-left text-text-main">
+      &lt;thead className="bg-gray-100/80">
+        &lt;tr>
+          &lt;th className="p-4 font-semibold">Serial&lt;/th>
+          &lt;th className="p-4 font-semibold table-cell">Tipo&lt;/th>
+          &lt;th className="p-4 font-semibold hidden md:table-cell">
+            Usuario (Baja)
+          &lt;/th>
+          &lt;th className="p-4 font-semibold">Fecha&lt;/th>
+          &lt;th className="p-4 font-semibold text-center">Detalles&lt;/th>
+        &lt;/tr>
+      &lt;/thead>
+      &lt;tbody>
+        {bajas.map((baja) => (
+          &lt;tr
+            key={baja.id_baja}
+            className="border-t border-gray-200 hover:bg-gray-50"
+          >
+            &lt;td className="p-4 font-mono whitespace-nowrap">
+              {baja.Device?.serial || baja.Peripheral?.serial_periferico}
+            &lt;/td>
+            &lt;td className="p-4 whitespace-nowrap">
+              {baja.Device ? "Equipo" : "Periférico"}
+            &lt;/td>
+            &lt;td className="p-4 whitespace-nowrap hidden md:table-cell">
+              {baja.User?.nombre}
+            &lt;/td>
+            &lt;td className="p-4 whitespace-nowrap">
+              {formatDate(baja.fecha_baja)}
+            &lt;/td>
+            &lt;td className="p-4 text-center">
+              &lt;button
+                onClick={() => onAction("baja", baja)}
+                className="text-primary hover:opacity-70"
+                title="Ver Detalles"
+              >
+                &lt;FontAwesomeIcon icon={faEye} />
+              &lt;/button>
+            &lt;/td>
+          &lt;/tr>
+        ))}
+      &lt;/tbody>
+    &lt;/table>
+  &lt;/div>
+);
+
+/**
+ * @function DashboardSkeleton
+ * @description Componente de esqueleto de carga que imita la estructura del Dashboard de Historial.
+ * @returns {JSX.Element}
+ */
+const DashboardSkeleton = () => (
+  &lt;div className="w-full animate-pulse">
+    &lt;header className="h-10 bg-gray-200 rounded w-1/3 mb-6">&lt;/header>
+    &lt;div className="border-b border-gray-200 mb-6">
+      &lt;div className="flex gap-6">
+        &lt;div className="h-8 bg-gray-200 rounded w-48">&lt;/div>
+        &lt;div className="h-8 bg-gray-200 rounded w-36">&lt;/div>
+      &lt;/div>
+    &lt;/div>
+    &lt;div className="flex flex-col md:flex-row gap-4 mb-6">
+      &lt;div className="h-10 bg-gray-200 rounded w-full md:w-1/2">&lt;/div>
+      &lt;div className="h-10 bg-gray-200 rounded w-full md:w-48">&lt;/div>
+    &lt;/div>
+    &lt;div className="bg-secondary rounded-lg shadow-md p-4">
+      &lt;div className="space-y-3">
+        {[...Array(5)].map((_, i) => (
+          &lt;div
+            key={i}
+            className="flex items-center space-x-4 p-2 border-b border-gray-200 last:border-b-0"
+          >
+            &lt;div className="h-4 bg-gray-200 rounded w-1/4">&lt;/div>
+            &lt;div className="h-4 bg-gray-200 rounded w-1/3 hidden sm:block">&lt;/div>
+            &lt;div className="h-4 bg-gray-200 rounded w-1/4 hidden md:block">&lt;/div>
+            &lt;div className="h-6 bg-gray-200 rounded-full w-8 ml-auto">&lt;/div>
+          &lt;/div>
+        ))}
+      &lt;/div>
+    &lt;/div>
+  &lt;/div>
+);
+
+/**
+ * @function DashboardHistory
+ * @description Componente principal de la página de Historial.
+ * @returns {JSX.Element}
+ */
+export default function DashboardHistory() {
+  const {
+    data,
+    activeTab,
+    setActiveTab,
+    isLoading,
+    error,
+    setSearchTerm,
+    setSortBy,
+  } = useDashboardHistory();
+  const [modal, setModal] = useState({ type: null, data: null });
+
+  const handleAction = (type, item) => setModal({ type, data: item });
+  const closeModal = () => setModal({ type: null, data: null });
+
+  const TabButton = ({ tabName, label }) => (
+    &lt;button
+      onClick={() => setActiveTab(tabName)}
+      className={`py-2 px-4 font-semibold transition-colors ${
+        activeTab === tabName
+          ? "border-b-2 border-primary text-primary"
+          : "text-neutral-taupe hover:text-text-main"
+      }`}
+    >
+      {label}
+    &lt;/button>
+  );
+
+  if (isLoading) return &lt;DashboardSkeleton />;
+
+  if (error)
+    return &lt;div className="text-center w-full p-10 text-error">{error}&lt;/div>;
+
+  return (
+    &lt;div className="w-full mb-10">
+      &lt;header className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+        &lt;h1 className="text-4xl font-bold text-text-main">
+          Historial y Auditoría
+        &lt;/h1>
+      &lt;/header>
+
+      &lt;div className="border-b border-gray-200 mb-6">
+        &lt;div className="flex gap-6">
+          &lt;TabButton tabName="logs" label="Registro de Acciones (Logs)" />
+          &lt;TabButton tabName="bajas" label="Registro de Bajas" />
+        &lt;/div>
+      &lt;/div>
+
+      &lt;div className="flex flex-col md:flex-row gap-4 mb-6">
+        &lt;input
+          type="text"
+          placeholder="Buscar..."
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full md:w-1/2 p-2 border border-gray-300 rounded-lg"
+        />
+        &lt;select
+          onChange={(e) => setSortBy(e.target.value)}
+          className="w-full md:w-auto p-2 border border-gray-300 rounded-lg"
+        >
+          &lt;option value="fecha_desc">Más Recientes Primero&lt;/option>
+          &lt;option value="fecha_asc">Más Antiguos Primero&lt;/option>
+          &lt;option value="nombre_asc">Usuario (A-Z)&lt;/option>
+          &lt;option value="nombre_desc">Usuario (Z-A)&lt;/option>
+        &lt;/select>
+      &lt;/div>
+
+      {isLoading &amp;&amp; (
+        &lt;div className="text-center w-full p-10">Cargando datos...&lt;/div>
+      )}
+      {error &amp;&amp; (
+        &lt;div className="text-center w-full p-10 text-error">{error}&lt;/div>
+      )}
+      {!isLoading &amp;&amp; !error &amp;&amp; data.length === 0 &amp;&amp; (
+        &lt;div className="text-center w-full p-10 text-neutral-taupe">
+          No hay registros que coincidan.
+        &lt;/div>
+      )}
+
+      {!isLoading &amp;&amp;
+        !error &amp;&amp;
+        data.length > 0 &amp;&amp;
+        (activeTab === "logs" ? (
+          &lt;LogTable logs={data} onAction={handleAction} />
+        ) : (
+          &lt;BajasTable bajas={data} onAction={handleAction} />
+        ))}
+
+      {modal.data &amp;&amp; (
+        &lt;DetailModal item={modal.data} onClose={closeModal} type={modal.type} />
+      )}
+    &lt;/div>
+  );
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Components.html">Components</a></li><li><a href="module-Components_Auth.html">Components/Auth</a></li><li><a href="module-Components_Devices.html">Components/Devices</a></li><li><a href="module-Components_History.html">Components/History</a></li><li><a href="module-Components_OperationCenters.html">Components/OperationCenters</a></li><li><a href="module-Components_Peripherals.html">Components/Peripherals</a></li><li><a href="module-Components_Users.html">Components/Users</a></li><li><a href="module-Config.html">Config</a></li><li><a href="module-DateUtils.html">DateUtils</a></li><li><a href="module-Hooks.html">Hooks</a></li><li><a href="module-Hooks_Auth.html">Hooks/Auth</a></li><li><a href="module-Hooks_Catalogue.html">Hooks/Catalogue</a></li><li><a href="module-Hooks_Devices.html">Hooks/Devices</a></li><li><a href="module-Hooks_History.html">Hooks/History</a></li><li><a href="module-Hooks_OperationCenters.html">Hooks/OperationCenters</a></li><li><a href="module-Hooks_Users.html">Hooks/Users</a></li><li><a href="module-InputHandlers.html">InputHandlers</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Routes_Admin.html">Routes/Admin</a></li><li><a href="module-Stores_Auth.html">Stores/Auth</a></li><li><a href="module-Utils.html">Utils</a></li></ul><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#LoginFormSkeleton">LoginFormSkeleton</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Oct 20 2025 10:51:20 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
