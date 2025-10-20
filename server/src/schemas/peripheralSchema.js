@@ -34,7 +34,7 @@ export const peripheralObjectSchema = z.object({
     required_error: "Debe indicar si es un activo fijo.",
   }),
   codigo_activo_fijo: z.string().max(80).optional().nullable(),
-  id_centro_costo: z.string().optional().nullable(),
+  id_centro_costo: z.coerce.string().optional().nullable(),
 });
 
 /**

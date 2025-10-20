@@ -53,6 +53,10 @@ export const getDeviceById = async (id) => {
 export const createDevice = async (devicesData, user, ip_usuario) => {
   return db.sequelize.transaction(async (t) => {
     const creationPromises = devicesData.map(async (deviceData) => {
+      if (deviceData.id_centro_costo === "") {
+        deviceData.id_centro_costo = null;
+      }
+
       let deviceForDb = {
         ...deviceData,
         id_usuario_creador: user.id_usuario,

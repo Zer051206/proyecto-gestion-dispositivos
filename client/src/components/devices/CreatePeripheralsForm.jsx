@@ -189,7 +189,7 @@ const PeripheralSubForm = ({
             )}
           </label>
         ) : (
-          <div className="block">
+          <div className="block mt-6">
             <span className="text-text-main font-semibold">
               Centro de Operación:
             </span>

@@ -79,7 +79,7 @@ export const useCreatePeripheralsForm = (onSuccess) => {
         schema
           .positive("Debe seleccionar un centro.")
           .required("El centro de costo es obligatorio."),
-      otherwise: (schema) => schema.trim().nullable(),
+      otherwise: (schema) => schema.nullable(),
     }),
   });
 

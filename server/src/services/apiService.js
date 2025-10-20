@@ -112,7 +112,7 @@ export const getLogs = async (user) => {
     }
     return logs;
   } else if (user.rol === "Encargado") {
-    const logs = await logRepository.findAllById(user.id_usuario);
+    const logs = await logRepository.findAllByUserId(user.id_usuario);
     if (!logs) {
       return [];
     }

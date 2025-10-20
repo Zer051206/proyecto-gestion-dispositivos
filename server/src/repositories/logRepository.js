@@ -31,7 +31,7 @@ export const findAll = async (options = {}) => {
  * @param {number} id_usuario - El ID del usuario por el cual filtrar los registros.
  * @returns {Promise<Array<Log>>} Un array de los registros de log encontrados para ese usuario.
  */
-export const findAllById = async (id) => {
+export const findAllByUserId = async (id) => {
   return Log.findAll({
     where: { id_usuario: id },
     include: [{ model: User, attributes: ["nombre", "apellido", "rol"] }],

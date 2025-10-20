@@ -281,7 +281,8 @@ const UserCards = ({ users, onAction }) => (
           <p className="text-sm text-neutral-taupe">{user.correo}</p>
           {user.rol === "Encargado" && (
             <p className="text-sm text-neutral-taupe">
-              Centro: {user.OperationCenter?.codigo || "N/A"}
+              Centro: {user.CentroAsignado?.codigo || "N/A"} -{" "}
+              {user.CentroAsignado?.direccion}
             </p>
           )}
         </div>
@@ -406,22 +407,26 @@ export default function UserDashboard() {
 
     setIsSubmitting(true);
 
-    await toast.promise(
-      api.patch(`/api/usuarios/${user.id_usuario}/estado`, {
-        activo: newState,
-      }),
-      {
-        loading: `Cambiando estado de ${user.nombre}...`,
-        success: `¡Usuario ${actionText} exitosamente!`,
-        error: (err) =>
-          err.response?.data?.message ||
-          `Error al ${actionText.slice(0, -1)}ar el usuario.`,
-      }
-    );
-
-    closeModal();
-    refetch();
-    setIsSubmitting(false);
+    try {
+      await toast.promise(
+        api.patch(`/api/usuarios/${user.id_usuario}/estado`, {
+          activo: newState,
+        }),
+        {
+          loading: `Cambiando estado de ${user.nombre}...`,
+          success: `¡Usuario ${actionText} exitosamente!`,
+          error: (err) =>
+            err.response?.data?.message ||
+            `Error al ${actionText.slice(0, -1)}ar el usuario.`,
+        }
+      );
+    } catch (err) {
+      console.log("Fallo la promesa del toast al cambiar estado:", err);
+    } finally {
+      closeModal();
+      refetch();
+      setIsSubmitting(false);
+    }
   };
 
   if (isLoading) return <DashboardSkeleton />;

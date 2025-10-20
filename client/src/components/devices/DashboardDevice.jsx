@@ -503,26 +503,30 @@ export default function DashboardDevice() {
     const actionText = newState ? "reactivado" : "dado de baja";
     const assetId = asset.id_equipo || asset.id_periferico;
     const endpoint =
-      asset.type === "equipo"
-        ? `/api/equipos/${assetId}/estado`
+      asset.type === "device"
+        ? `/api/dispositivos/${assetId}/estado`
         : `/api/perifericos/${assetId}/estado`;
     const payload =
-      asset.type === "equipo"
+      asset.type === "device"
         ? { estado_equipo: newState }
         : { estado_periferico: newState };
 
     setIsSubmitting(true);
 
-    await toast.promise(api.patch(endpoint, payload), {
-      loading: `Cambiando estado del activo...`,
-      success: `¡Activo ${actionText} exitosamente!`,
-      error: (err) =>
-        err.response?.data?.message || `Error al cambiar el estado.`,
-    });
-
-    closeModal();
-    refetch();
-    setIsSubmitting(false);
+    try {
+      await toast.promise(api.patch(endpoint, payload), {
+        loading: `Cambiando estado del activo...`,
+        success: `¡Activo ${actionText} exitosamente!`,
+        error: (err) =>
+          err.response?.data?.message || `Error al cambiar el estado.`,
+      });
+    } catch (err) {
+      console.log("Fallo la promesa del toast al cambiar estado:", err);
+    } finally {
+      closeModal();
+      refetch();
+      setIsSubmitting(false);
+    }
   };
 
   if (isLoading) return <DashboardSkeleton />;

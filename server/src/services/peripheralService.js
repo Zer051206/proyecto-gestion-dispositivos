@@ -59,6 +59,10 @@ export const getPeripheralById = async (id_periferico) => {
 export const createPeripheral = async (peripheralsData, ip_usuario, user) => {
   return db.sequelize.transaction(async (t) => {
     const creationPromises = peripheralsData.map(async (peripheralData) => {
+      if (peripheralData.id_centro_costo === "") {
+        peripheralData.id_centro_costo = null;
+      }
+
       let peripheralForDb = {
         ...peripheralData,
         id_usuario_creador: user.id_usuario,

@@ -100,7 +100,7 @@ export const useCreateDevicesForm = (onSuccess) => {
         schema
           .positive("Debe seleccionar un área.")
           .required("El centro de costo es obligatorio."),
-      otherwise: (schema) => schema.trim().nullable(),
+      otherwise: (schema) => schema.nullable(),
     }),
   });
 

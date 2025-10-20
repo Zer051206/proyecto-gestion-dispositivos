@@ -6,6 +6,7 @@
  * @requires ../models/index.js
  */
 import db from "../models/index.js";
+import { Op } from "sequelize";
 
 const User = db.User;
 const Device = db.Device;
@@ -48,12 +49,33 @@ export const findAll = async (options = {}) => {
  */
 export const findAllByCenterId = async (id_centro_operacion) => {
   return Decomission.findAll({
-    where: { id_centro_operacion: id_centro_operacion },
     include: [
       { model: User, attributes: ["nombre", "apellido", "rol"] },
-      { model: Peripheral, attributes: ["serial_periferico"] },
-      { model: Device, attributes: ["serial"] },
+      {
+        model: Peripheral,
+        attributes: ["serial_periferico"],
+        where: { id_centro_operacion: id_centro_operacion },
+      },
+      {
+        model: Device,
+        attributes: ["serial"],
+        where: { id_centro_operacion: id_centro_operacion },
+      },
     ],
+    where: {
+      [Op.or]: [
+        db.Sequelize.where(
+          db.Sequelize.col("Device.id_centro_operacion"),
+          "=",
+          id_centro_operacion
+        ),
+        db.Sequelize.where(
+          db.Sequelize.col("Peripheral.id_centro_operacion"),
+          "=",
+          id_centro_operacion
+        ),
+      ],
+    },
   });
 };
 

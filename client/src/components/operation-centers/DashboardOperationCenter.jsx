@@ -361,21 +361,28 @@ export default function DashboardOperationCenter() {
 
     setIsSubmitting(true);
 
-    await toast.promise(
-      api.patch(`/api/centros-operacion/${center.id_centro_operacion}/estado`, {
-        activo: newState,
-      }),
-      {
-        loading: `Cambiando estado del centro ${center.codigo}...`,
-        success: `¡Centro ${actionText} exitosamente!`,
-        error: (err) =>
-          err.response?.data?.message || `Error al cambiar el estado.`,
-      }
-    );
-
-    closeModal();
-    refetch();
-    setIsSubmitting(false);
+    try {
+      await toast.promise(
+        api.patch(
+          `/api/centros-operacion/${center.id_centro_operacion}/estado`,
+          {
+            activo: newState,
+          }
+        ),
+        {
+          loading: `Cambiando estado del centro ${center.codigo}...`,
+          success: `¡Centro ${actionText} exitosamente!`,
+          error: (err) =>
+            err.response?.data?.message || `Error al cambiar el estado.`,
+        }
+      );
+    } catch (err) {
+      console.log("Fallo la promesa del toast al cambiar estado:", err);
+    } finally {
+      closeModal();
+      refetch();
+      setIsSubmitting(false);
+    }
   };
 
   if (isLoading) return <DashboardSkeleton />;
