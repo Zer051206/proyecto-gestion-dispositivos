@@ -29,6 +29,10 @@ export default (sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
+      codigo_ciudad: {
+        type: DataTypes.STRING(20),
+        allowNull: false,
+      },
       nombre_ciudad: {
         type: DataTypes.STRING(255),
         allowNull: false,

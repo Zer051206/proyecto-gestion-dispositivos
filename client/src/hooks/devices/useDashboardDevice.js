@@ -10,7 +10,6 @@
  */
 import { useState, useEffect, useMemo, useCallback } from "react";
 import api from "../../config/axios.js";
-import { useAuthStore } from "../../stores/authStore.js";
 
 /**
  * @function useDashboardDevice
@@ -26,8 +25,6 @@ import { useAuthStore } from "../../stores/authStore.js";
  * }} Un objeto que contiene los dispositivos procesados, el estado de carga, errores, y las funciones para actualizar los filtros y recargar los datos.
  */
 export const useDashboardDevice = () => {
-  const { user } = useAuthStore();
-
   /**
    * @state
    * @description Almacena la lista original de dispositivos (equipos y periféricos) obtenida de la API.
