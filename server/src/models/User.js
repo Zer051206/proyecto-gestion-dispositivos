@@ -146,6 +146,21 @@ export default (sequelize) => {
     User.hasMany(models.Peripheral, {
       foreignKey: "id_usuario_creador",
     });
+
+    /**
+     * @description Asociación (belongsToMany): Un Usuario puede tener muchos Permisos.
+     * Esta relación utiliza la tabla intermedia 'usuarios_permisos'.
+     * @param {Model} models.Permission - El modelo de Permiso.
+     * @property {object} through - La tabla intermedia que gestiona la relación M:N.
+     * @property {string} foreignKey - La clave foránea de este modelo ('id_usuario').
+     * @property {string} otherKey - La clave del otro modelo ('permiso_id').
+     */
+    User.belongsToMany(models.Permission, {
+      through: "usuarios_permisos",
+      foreignKey: "id_usuario",
+      otherKey: "permiso_id",
+      as: "Permissions",
+    });
   };
   return User;
 };

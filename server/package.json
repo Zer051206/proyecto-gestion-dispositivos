@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon server.js",
+    "dev": "nodemon server.js | pino-colada",
     "test": "echo \"Error: no test specified\" && exit 1",
     "docs": "jsdoc -c  jsdoc.json"
   },
@@ -21,14 +21,14 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mariadb": "^3.4.5",
-    "pino": "^10.0.0",
+    "pino": "^10.1.0",
+    "pino-colada": "^2.2.2",
     "sequelize": "^6.37.7",
     "zod": "^4.1.11"
   },
   "devDependencies": {
     "eslint": "^9.36.0",
     "eslint-config-prettier": "^10.1.8",
-    "nodemon": "^3.1.10",
-    "pino-pretty": "^13.1.2"
+    "nodemon": "^3.1.10"
   }
 }

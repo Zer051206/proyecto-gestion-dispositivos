@@ -55,6 +55,10 @@ const authMiddleware = async (req, res, next) => {
       );
     }
 
+    const permissionsList = user.Permissions
+      ? user.Permissions.map((p) => p.nombre)
+      : [];
+
     // 5. Adjuntar la información esencial del usuario a la petición.
     // Esto enriquece el objeto `req` para que esté disponible en los controladores posteriores.
     req.user = {
@@ -63,6 +67,7 @@ const authMiddleware = async (req, res, next) => {
       correo: user.correo,
       rol: user.rol,
       id_centro_operacion: user.id_centro_operacion,
+      permisos: permissionsList,
     };
     // Si todas las verificaciones son exitosas, pasamos el control al siguiente middleware o controlador.
     next();

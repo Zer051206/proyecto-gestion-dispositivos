@@ -13,7 +13,7 @@ import * as operationCenterRepository from "../repositories/operationCenterRepos
 import * as logRepository from "../repositories/logRepository.js";
 import {
   AlreadyDesactivated,
-  AlreadyExistsError,
+  DuplicateError,
   NotFoundError,
 } from "../utils/customErrors.js";
 import logger from "../config/logger.js";
@@ -55,7 +55,7 @@ export const fetchOperationCenterById = async (id) => {
  * @param {number} id_usuario - El ID del admin que realiza la creación.
  * @param {string} ip_usuario - La dirección IP del admin.
  * @returns {Promise<Array<object>>}
- * @throws {AlreadyExistsError} Si uno de los códigos de centro ya existe.
+ * @throws {DuplicateError} Si uno de los códigos de centro ya existe.
  */
 export const createOperationCenter = async (
   operationCentersData,
@@ -78,7 +78,7 @@ export const createOperationCenter = async (
             "Intento de crear centro con código duplicado."
           );
 
-          throw new AlreadyExistsError(
+          throw new DuplicateError(
             "Ya existe un centro de operaciones con el mismo código"
           );
         }
@@ -124,7 +124,7 @@ export const createOperationCenter = async (
  * @param {object} updateData - Los datos a modificar.
  * @returns {Promise<object>}
  * @throws {NotFoundError} Si el centro no se encuentra.
- * @throws {AlreadyExistsError} Si se intenta cambiar a un código que ya está en uso.
+ * @throws {DuplicateError} Si se intenta cambiar a un código que ya está en uso.
  */
 export const updateOperationCenter = async (id, updateData) => {
   const operationCenterDb = await operationCenterRepository.findById(id);

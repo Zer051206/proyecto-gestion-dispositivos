@@ -10,6 +10,7 @@ import db from "../models/index.js";
 const User = db.User;
 const OperationCenter = db.OperationCenter;
 const IdentificationType = db.IdentificationType;
+const Permission = db.Permission;
 
 /**
  * @async
@@ -51,6 +52,12 @@ export const findById = async (id) => {
       },
       { model: IdentificationType, attributes: ["tipo_identificacion"] },
       { model: User, as: "Creador", attributes: ["nombre"] },
+      {
+        model: Permission,
+        as: "Permissions",
+        attributes: ["nombre"],
+        through: { attributes: [] },
+      },
     ],
   });
 };

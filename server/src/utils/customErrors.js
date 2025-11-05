@@ -41,14 +41,27 @@ export class NotFoundError extends AppError {
 }
 
 /**
- * @class AlreadyExistsError
- * @description Error para ser lanzado al intentar crear un recurso que ya existe (ej. un código duplicado).
- * Corresponde a un estado HTTP 409 (Conflict).
+ * @class DuplicateError
+ * @description Error para cuando hay se intenta crear algun recurso con un ID ya usado.
  * @extends AppError
  */
-export class AlreadyExistsError extends AppError {
-  constructor(message = "Ya existe un recurso igual") {
+export class DuplicateError extends AppError {
+  constructor(message = "Ya existe un recurso con el mismo identificador.") {
     super(message, 409);
+  }
+}
+
+/**
+ * @class ConfigurationError
+ * @description Error para ser lanzado cuando un componente de la aplicación falla debido a una configuración
+ * incorrecta o incompleta (ej. falta un valor esencial en un catálogo, variables de entorno faltantes).
+ * Indica un problema interno del servidor que el usuario final no puede resolver.
+ * Corresponde a un estado HTTP 500 (Internal Server Error).
+ * @extends AppError
+ */
+export class ConfigurationError extends AppError {
+  constructor(message = "Error de configuración interna del sistema.") {
+    super(message, 500);
   }
 }
 

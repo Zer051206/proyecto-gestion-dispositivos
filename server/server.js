@@ -31,6 +31,7 @@ import userRoutes from "./src/routes/userRoutes.js";
 import peripheralRoutes from "./src/routes/peripheralRoutes.js";
 import apiRoutes from "./src/routes/apiRoutes.js";
 import operationCenterRoutes from "./src/routes/operationCenterRoutes.js";
+import requirementRoutes from "./src/routes/requirementRoutes.js";
 
 // 4. Importaciones de Middlewares Personalizados
 import isAdmin from "./src/middlewares/AdminMiddleware.js";
@@ -108,7 +109,7 @@ app.use("/api", authMiddleware, limiter);
  * @section Rutas para Todos los Roles Autenticados
  * @description Estas rutas pueden ser accedidas tanto por 'Admins' como por 'Encargados'.
  */
-app.use("/api", [apiRoutes, deviceRoutes, peripheralRoutes]);
+app.use("/api", [apiRoutes, deviceRoutes, peripheralRoutes, requirementRoutes]);
 
 /**
  * @section Rutas Exclusivas para Administradores
