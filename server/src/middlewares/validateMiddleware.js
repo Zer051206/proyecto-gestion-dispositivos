@@ -7,7 +7,6 @@
  */
 
 import { z } from "zod";
-
 /**
  * @function validate
  * @description Crea una función middleware que valida la entrada de la petición contra un esquema Zod.

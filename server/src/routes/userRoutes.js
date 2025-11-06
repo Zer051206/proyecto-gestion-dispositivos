@@ -10,6 +10,9 @@
  */
 import { Router } from "express";
 import * as userController from "../controllers/userController.js";
+import { validate } from "../middlewares/validateMiddleware.js";
+import { IDParamSchema } from "../schemas/globalSchema.js";
+import { createUserSchema, updateUserSchema } from "../schemas/userSchema.js";
 
 const router = Router();
 
@@ -35,7 +38,7 @@ router.get("/usuarios/:id", userController.getUserById);
  * @returns {Error} 400 - Si los datos de validación fallan.
  * @returns {Error} 409 - Si uno de los correos o identificaciones ya existe.
  */
-router.post("/usuarios", userController.createUser);
+router.post("/usuarios", validate(createUserSchema), userController.createUser);
 
 /**
  * @route   PATCH /api/usuarios/:id
@@ -47,7 +50,12 @@ router.post("/usuarios", userController.createUser);
  * @returns {object} 200 - El objeto del usuario con los datos actualizados.
  * @returns {Error} 404 - Si el usuario no se encuentra.
  */
-router.patch("/usuarios/:id", userController.updateUser);
+router.patch(
+  "/usuarios/:id",
+  validate(IDParamSchema, "params"),
+  validate(updateUserSchema),
+  userController.updateUser
+);
 
 /**
  * @route   PATCH /api/usuarios/:id/estado
@@ -59,6 +67,10 @@ router.patch("/usuarios/:id", userController.updateUser);
  * @returns {Error} 404 - Si el usuario no se encuentra.
  * @returns {Error} 409 - Si se intenta poner un estado que el usuario ya tiene.
  */
-router.patch("/usuarios/:id/estado", userController.stateUser);
+router.patch(
+  "/usuarios/:id/estado",
+  validate(IDParamSchema, "params"),
+  userController.stateUser
+);
 
 export default router;

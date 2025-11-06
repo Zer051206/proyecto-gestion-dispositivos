@@ -51,6 +51,8 @@ export const userObjectSchema = z.object({
     .string()
     .min(8, "La contraseña debe tener al menos 8 caracteres."),
   id_centro_operacion: z.coerce.number().optional().nullable(),
+  es_ti: z.boolean().default(false).optional(),
+  es_rh: z.boolean().default(false).optional(),
 });
 
 /**

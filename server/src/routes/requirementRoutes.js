@@ -14,10 +14,10 @@ import { validateAssetDetails } from "../middlewares/validateAssetMiddleware.js"
 import { validate } from "../middlewares/validateMiddleware.js";
 import {
   CreateRequirementSchema,
-  IDParamSchema,
   SignTIAnalysisSchema,
   CreateAndLinkAssetControlSchema,
 } from "../schemas/requirementSchema.js";
+import { IDParamSchema } from "../schemas/globalSchema.js";
 
 const router = Router();
 
@@ -148,7 +148,7 @@ router.post(
 router.patch(
   "/requerimientos/:id/cancelar",
   validate(IDParamSchema, "params"),
-  requirementController.cancelRequirement
+  requirementController.rejectRequirement
 );
 
 export default router;

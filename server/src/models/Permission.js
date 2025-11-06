@@ -68,7 +68,7 @@ export default (sequelize) => {
      * @property {string} otherKey - La clave del otro modelo ('id_usuario').
      */
     Permission.belongsToMany(models.User, {
-      through: "usuarios_permisos",
+      through: models.UserPermission,
       foreignKey: "permiso_id",
       otherKey: "id_usuario",
       as: "Users", // Alias de la relación.

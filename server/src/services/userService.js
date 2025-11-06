@@ -17,6 +17,7 @@ import bcrypt from "bcrypt";
 import db from "../models/index.js";
 import * as userRepository from "../repositories/userRepository.js";
 import * as refreshTokenRepository from "../repositories/refreshTokenRepository.js";
+import * as permissionRepository from "../repositories/permissionRepository.js";
 import * as logRepository from "../repositories/logRepository.js";
 import * as tokenUtils from "../utils/tokenUtils.js";
 import {
@@ -28,6 +29,7 @@ import {
   AlreadyDesactivated,
 } from "../utils/customErrors.js";
 import logger from "../config/logger.js";
+import { FLOW_PERMISSIONS_MAP } from "../utils/permissionConstants.js";
 
 // --- Funciones de Autenticación ---
 
@@ -188,7 +190,7 @@ export const getUserById = async (id_usuario) => {
 export const createUser = async (id_admin, usersData, ip_admin) => {
   return db.sequelize.transaction(async (t) => {
     const creationPromises = usersData.map(async (userData) => {
-      const { correo, password, rol } = userData;
+      const { correo, password, rol, es_ti, es_rh, ...restOfData } = userData;
       const userDb = await userRepository.findByEmail(correo, {
         transaction: t,
       });
@@ -201,8 +203,11 @@ export const createUser = async (id_admin, usersData, ip_admin) => {
       }
 
       const contrasena_hash = await bcrypt.hash(password, 10);
+
       const userForDb = {
-        ...userData,
+        ...restOfData,
+        correo: correo,
+        rol: rol,
         contrasena_hash: contrasena_hash,
         id_creador: id_admin,
       };
@@ -214,6 +219,29 @@ export const createUser = async (id_admin, usersData, ip_admin) => {
       const newUser = await userRepository.create(userForDb, {
         transaction: t,
       });
+
+      let permissionsToAssign = [];
+
+      if (es_ti) {
+        permissionsToAssign = [
+          ...permissionsToAssign,
+          ...FLOW_PERMISSIONS_MAP.TI,
+        ];
+      }
+      if (es_rh) {
+        permissionsToAssign = [
+          ...permissionsToAssign,
+          ...FLOW_PERMISSIONS_MAP.RH,
+        ];
+      }
+
+      if (permissionsToAssign.length > 0) {
+        await permissionRepository.assignPermissionsToUser(
+          newUser.id_usuario,
+          permissionsToAssign,
+          { transaction: t }
+        );
+      }
 
       await logRepository.create(
         {
@@ -233,7 +261,9 @@ export const createUser = async (id_admin, usersData, ip_admin) => {
       `${createdUsers.length} usuario(s) creado(s) exitosamente.`
     );
 
-    return createdUsers;
+    return createdUsers.map(
+      ({ _contrasena_hash, ...userResponse }) => userResponse
+    );
   });
 };
 

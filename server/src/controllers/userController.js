@@ -9,7 +9,6 @@
  * @requires ../config/logger.js
  */
 import * as userService from "../services/userService.js";
-import { createUserSchema, updateUserSchema } from "../schemas/userSchema.js";
 import logger from "../config/logger.js";
 
 /**
@@ -59,7 +58,7 @@ export const createUser = async (req, res, next) => {
   try {
     const id_admin = req.user.id_usuario;
     const ip_admin = req.ip;
-    const createValidateData = createUserSchema.parse(req.body);
+    const createValidateData = req.body;
 
     logger.info(
       { adminId: id_admin, count: createValidateData.length },
@@ -87,7 +86,7 @@ export const createUser = async (req, res, next) => {
 export const updateUser = async (req, res, next) => {
   try {
     const { id_usuario } = req.params;
-    const updateValidateData = updateUserSchema.parse(req.body);
+    const updateValidateData = req.body;
 
     logger.info(
       { adminId: req.user.id_usuario, targetUserId: id_usuario },

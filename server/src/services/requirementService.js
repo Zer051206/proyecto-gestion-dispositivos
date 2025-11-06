@@ -1,4 +1,19 @@
+/**
+ * @file requirementService.js
+ * @module Services
+ * @description Capa de servicio que contiene toda la lógica de negocio para la gestión del flujo de requerimientos (workflow).
+ * Este módulo orquesta las interacciones con los repositorios, aplica reglas de negocio, valida estados de flujo
+ * y registra eventos de auditoría (logs) para cada paso del ciclo de vida del requerimiento.
+ * @requires ../repositories/deviceRepository.js
+ * @requires ../repositories/peripheralRepository.js
+ * @requires ../repositories/requirementRepository.js
+ * @requires ../models/index.js
+ * @requires ../utils/customErrors.js
+ */
+import * as deviceRepository from "../repositories/deviceRepository.js";
+import * as peripheralRepository from "../repositories/peripheralRepository.js";
 import * as requirementRepository from "../repositories/requirementRepository.js";
+import * as logRepository from "../repositories/logRepository.js";
 import db from "../models/index.js";
 import {
   ConfigurationError,
@@ -7,18 +22,45 @@ import {
   NotFoundError,
 } from "../utils/customErrors.js";
 
-const INITIAL_STATUS_CODE = "PENDIENTE_TI_ANALISIS";
-const SECOND_STATUS_CODE = "PENDIENTE_RH_PAGO";
+const STATUS_TI_ANALYSIS = "PENDIENTE_TI_ANALISIS";
+const STATUS_RH_PAYMENT = "PENDIENTE_RH_PAGO";
+const STATUS_TI_READY = "PENDIENTE_TI_ALISTAMIENTO";
+const STATUS_RH_DELIVERY = "PENDIENTE_RH_ENTREGA";
+const STATUS_DELIVERED = "ENTREGADO";
+const STATUS_CANCELLED = "CANCELADO";
+const STATUS_REJECT_TI = "RECHAZADO_TI";
+const STATUS_REJECT_RH = "RECHAZADO_RH";
 
+const ALL_STATUS_NAMES = [
+  STATUS_TI_ANALYSIS,
+  STATUS_RH_PAYMENT,
+  STATUS_TI_READY,
+  STATUS_RH_DELIVERY,
+  STATUS_DELIVERED,
+  STATUS_CANCELLED,
+  STATUS_REJECT_TI,
+  STATUS_REJECT_RH,
+];
+
+/**
+ * @async
+ * @function createRequirement
+ * @description Crea un nuevo requerimiento, asignándole el estado inicial y registrando la firma del Encargado (CO).
+ * @param {object} user - Objeto del usuario autenticado (Encargado), con `id_usuario` e `id_centro_operacion`.
+ * @param {string} ip - Dirección IP desde donde se realiza la solicitud.
+ * @param {object} data - Datos del nuevo requerimiento, incluyendo `codigo_requerimiento`.
+ * @returns {Promise<object>} El objeto del requerimiento recién creado.
+ * @throws {ConfigurationError} Si el estado inicial no existe en la base de datos.
+ * @throws {DuplicateError} Si ya existe un requerimiento con el mismo código.
+ */
 export const createRequirement = async (user, ip, data) => {
-  const initialStatus = await db.RequirementStatus.findOne({
-    where: { nombre_estado: INITIAL_STATUS_CODE },
-    attributes: ["id_estado_requerimiento"],
-  });
+  const initialStatus = await requirementRepository.findStatusByName(
+    STATUS_TI_ANALYSIS
+  );
 
   if (!initialStatus) {
     throw new ConfigurationError(
-      "`El estado inicial '${INITIAL_STATUS_CODE}' no fue encontrado en el catálogo.`"
+      `El estado inicial '${STATUS_TI_ANALYSIS}' no fue encontrado en el catálogo.`
     );
   }
 
@@ -50,7 +92,7 @@ export const createRequirement = async (user, ip, data) => {
       transaction: t,
     });
 
-    await db.Log.create(
+    await logRepository.create(
       {
         accion: "CREAR_REQUERIMIENTO",
         ip_usuario: ip,
@@ -64,6 +106,13 @@ export const createRequirement = async (user, ip, data) => {
   });
 };
 
+/**
+ * @async
+ * @function getRequirements
+ * @description Obtiene una lista de requerimientos. Filtra por usuario (Encargado) o trae todos (Admin).
+ * @param {object} user - Objeto del usuario autenticado, con `id_usuario` y `rol`.
+ * @returns {Promise<Array<object>>} Un array con los objetos de requerimiento. Retorna un array vacío si no hay resultados.
+ */
 export const getRequirements = async (user) => {
   if (user.rol !== "Admin") {
     const requirements = await requirementRepository.findByUser(
@@ -83,15 +132,46 @@ export const getRequirements = async (user) => {
   return [];
 };
 
+/**
+ * @async
+ * @function getRequirementById
+ * @description Obtiene un requerimiento específico por su ID.
+ * @param {number} id - El ID del requerimiento a buscar.
+ * @returns {Promise<object | Array>} El objeto del requerimiento encontrado o un array vacío si no se encuentra (depende del repositorio).
+ */
 export const getRequirementById = async (id) => {
   const requirement = await requirementRepository.findById(id);
-  if (requirement.length > 0) {
-    return requirement;
+  if (!requirement) {
+    throw new NotFoundError(`Requerimiento con ID ${id} no encontrado.`);
   }
-  return [];
+  return requirement;
 };
 
+/**
+ * @async
+ * @function singTIAnalysis
+ * @description Registra el análisis de TI y avanza el requerimiento de 'PENDIENTE_TI_ANALISIS' a 'PENDIENTE_RH_PAGO'.
+ * @param {object} user - Objeto del usuario autenticado (Admin/TI).
+ * @param {number} id - ID del requerimiento a firmar.
+ * @param {string} ip - Dirección IP del usuario.
+ * @param {object} analysisData - Datos del análisis, incluyendo `presupuesto_estimado`.
+ * @returns {Promise<object>} El objeto de análisis de TI creado.
+ * @throws {ConfigurationError} Si los estados esperados no se encuentran.
+ * @throws {NotFoundError} Si el requerimiento no existe.
+ * @throws {ForbiddenError} Si el requerimiento no está en el estado correcto para la firma.
+ */
 export const singTIAnalysis = async (user, id, ip, analysisData) => {
+  const expectedStatus = await requirementRepository.findStatusByName(
+    STATUS_TI_ANALYSIS
+  );
+
+  if (!expectedStatus) {
+    throw new ConfigurationError(
+      `Error de configuración: El estado esperado '${STATUS_TI_ANALYSIS}' no fue encontrado.`
+    );
+  }
+  const expectedStatusId = expectedStatus.id_estado_requerimiento;
+
   return db.sequelize.transaction(async (t) => {
     const currentRequirement = await requirementRepository.findById(id, {
       transaction: t,
@@ -101,25 +181,25 @@ export const singTIAnalysis = async (user, id, ip, analysisData) => {
       throw new NotFoundError(`Requerimiento con ID ${id} no encontrado.`);
     }
 
-    // Asumiendo que el estado actual para la firma debe ser PENDIENTE_TI_ANALISIS (ID 1)
-    if (currentRequirement.id_estado_requerimiento !== 1) {
+    if (currentRequirement.id_estado_requerimiento !== expectedStatusId) {
       throw new ForbiddenError(
-        "El requerimiento no se encuentra en el estado 'PENDIENTE_TI_ANALISIS' para ser firmado."
+        `El requerimiento no se encuentra en el estado '${STATUS_TI_ANALYSIS}' para ser firmado. Estado actual ID: ${currentRequirement.id_estado_requerimiento}`
       );
     }
 
-    const secondStatus = await db.RequirementStatus.findOne({
-      where: { nombre_estado: SECOND_STATUS_CODE },
-      attributes: ["id_estado_requerimiento"],
-      transaction: t, // Aunque es de catálogo, la incluimos por consistencia
-    });
+    const nextStatus = await requirementRepository.findStatusByName(
+      STATUS_RH_PAYMENT,
+      {
+        transaction: t,
+      }
+    );
 
-    if (!secondStatus) {
-      throw new Error(
-        `Error de configuración: El estado '${SECOND_STATUS_CODE}' no fue encontrado.`
+    if (!nextStatus) {
+      throw new ConfigurationError(
+        `Error de configuración: El estado '${STATUS_RH_PAYMENT}' no fue encontrado.`
       );
     }
-    const secondStatusId = secondStatus.id_estado_requerimiento;
+    const nextStatusId = nextStatus.id_estado_requerimiento;
 
     const data = {
       ...analysisData,
@@ -135,23 +215,499 @@ export const singTIAnalysis = async (user, id, ip, analysisData) => {
       presupuesto_estimado: analysisData.presupuesto_estimado,
       fk_firmante_ti_analisis_id: user.id_usuario,
       fecha_firma_ti_analisis: new Date(),
-      id_estado_requerimiento: secondStatusId,
+      id_estado_requerimiento: nextStatusId,
     };
 
     await requirementRepository.update(id, updateData, {
       transaction: t,
     });
 
-    await db.Log.create(
+    await logRepository.create(
       {
         accion: "ANALISIS_TI_APROBADO",
         ip_usuario: ip,
-        descripcion: `Se completó el análisis del requerimiento '${currentRequirement.codigo_requerimiento}' (ID: ${id}). Nuevo estado: ${SECOND_STATUS_CODE}.`,
+        descripcion: `Se completó el análisis del requerimiento '${currentRequirement.codigo_requerimiento}' (ID: ${id}). Nuevo estado: ${STATUS_RH_PAYMENT}.`,
         id_usuario: user.id_usuario,
       },
       { transaction: t }
     );
 
     return analysis;
+  });
+};
+
+/**
+ * @async
+ * @function singRHPayment
+ * @description Registra la firma de pago de RH y avanza el requerimiento de 'PENDIENTE_RH_PAGO' a 'PENDIENTE_TI_ALISTAMIENTO'.
+ * @param {object} user - Objeto del usuario autenticado (Admin/RH).
+ * @param {number} id - ID del requerimiento a firmar.
+ * @param {string} ip - Dirección IP del usuario.
+ * @returns {Promise<object>} El objeto del requerimiento actualizado.
+ * @throws {ConfigurationError} Si los estados esperados no se encuentran.
+ * @throws {NotFoundError} Si el requerimiento no existe.
+ * @throws {ForbiddenError} Si el requerimiento no está en el estado correcto para la firma.
+ */
+export const singRHPayment = async (user, id, ip) => {
+  const expectedStatus = await requirementRepository.findStatusByName(
+    STATUS_RH_PAYMENT
+  );
+
+  if (!expectedStatus) {
+    throw new ConfigurationError(
+      `Error de configuración: El estado esperado '${STATUS_RH_PAYMENT}' no fue encontrado.`
+    );
+  }
+  const expectedStatusId = expectedStatus.id_estado_requerimiento;
+
+  return db.sequelize.transaction(async (t) => {
+    const existingRequirement = await requirementRepository.findById(id, {
+      transaction: t,
+    });
+
+    if (!existingRequirement) {
+      throw new NotFoundError("No se pudo encontrar el requerimiento");
+    }
+
+    if (existingRequirement.id_estado_requerimiento !== expectedStatusId) {
+      throw new ForbiddenError(
+        `El requerimiento no se encuentra en el estado '${STATUS_RH_PAYMENT}' para ser firmado. Estado actual ID: ${existingRequirement.id_estado_requerimiento}`
+      );
+    }
+
+    const nextStatus = await requirementRepository.findStatusByName(
+      STATUS_TI_READY,
+      {
+        transaction: t,
+      }
+    );
+
+    if (!nextStatus) {
+      throw new ConfigurationError(
+        `Error de configuración: El estado '${STATUS_TI_READY}' no fue encontrado.`
+      );
+    }
+
+    const nextStatusId = nextStatus.id_estado_requerimiento;
+
+    const updateData = {
+      fk_firmante_rh_pago_id: user.id_usuario,
+      fecha_firma_rh_pago: new Date(),
+      id_estado_requerimiento: nextStatusId,
+    };
+
+    const updatedRequirement = await requirementRepository.update(
+      id,
+      updateData,
+      { transaction: t }
+    );
+
+    if (!updatedRequirement) {
+      throw new NotFoundError(
+        `Error al actualizar el requerimiento con ID ${id}.`
+      );
+    }
+
+    await logRepository.create(
+      {
+        accion: "PAGO_RH_APROBADO",
+        ip_usuario: ip,
+        descripcion: `Se aprobó el pago del requerimiento '${updatedRequirement.codigo_requerimiento}' (ID: ${id}). Nuevo estado: ${STATUS_TI_READY}.`,
+        id_usuario: user.id_usuario,
+      },
+      { transaction: t }
+    );
+
+    return updatedRequirement;
+  });
+};
+
+/**
+ * @async
+ * @function createAndLinkAsset
+ * @description Crea uno o más activos (equipo o periférico) y los vincula al requerimiento en la tabla pivote.
+ * @param {number} id - ID del requerimiento al que se vincularán los activos.
+ * @param {object} user - Objeto del usuario autenticado (Admin/TI).
+ * @param {string} ip - Dirección IP del usuario.
+ * @param {boolean} is_equipo - Indica si los activos son equipos (true) o periféricos (false).
+ * @param {Array<object>} asset_details - Array con los datos detallados de cada activo a crear.
+ * @returns {Promise<Array<object>>} Array con los objetos de la relación `RequirementAsset` creados.
+ * @throws {Error} Si el arreglo de activos es inválido.
+ * @throws {NotFoundError} Si el requerimiento no existe.
+ * @throws {ForbiddenError} Si el requerimiento no está en el estado 'PENDIENTE_TI_ALISTAMIENTO'.
+ */
+export const createAndLinkAsset = async (
+  id,
+  user,
+  ip,
+  is_equipo,
+  asset_details
+) => {
+  if (!Array.isArray(asset_details) || asset_details.length === 0) {
+    throw new Error(
+      "El arreglo de detalles de activos está vacío o no es un arreglo válido."
+    );
+  }
+
+  const expectedStatus = await requirementRepository.findStatusByName(
+    STATUS_TI_READY
+  );
+
+  const expectedStatusId = expectedStatus.id_estado_requerimiento;
+
+  return db.sequelize.transaction(async (t) => {
+    const requirement = await requirementRepository.findById(id, {
+      transaction: t,
+    });
+
+    if (!requirement) {
+      throw new NotFoundError(`Requerimiento con ID ${id} no encontrado.`);
+    }
+
+    if (requirement.id_estado_requerimiento !== expectedStatusId) {
+      throw new ForbiddenError(
+        "El requerimiento no está en el estado correcto (PENDIENTE_TI_ALISTAMIENTO) para crear activos."
+      );
+    }
+
+    const repository = is_equipo ? deviceRepository : peripheralRepository;
+    const creationFn = repository.create;
+
+    const assetPromises = asset_details.map((assetData) => {
+      const dataToCreate = {
+        ...assetData,
+        id_usuario_creador: user.id_usuario,
+        id_centro_operacion: user.id_centro_operacion,
+      };
+      return creationFn(dataToCreate, { transaction: t });
+    });
+
+    const createdAssets = await Promise.all(assetPromises);
+
+    const idField = is_equipo ? "id_dispositivo" : "id_periferico";
+
+    const linkPromises = createdAssets.map((asset) => {
+      const assetId = is_equipo ? asset.id_equipo : asset.id_periferico;
+
+      if (!assetId) {
+        throw new Error("El activo creado no devolvió su ID primario.");
+      }
+
+      const linkData = {
+        id_requerimiento: id,
+        [idField]: assetId,
+      };
+
+      return requirementRepository.createRequirementAsset(linkData, {
+        transaction: t,
+      });
+    });
+
+    const linkedAssets = await Promise.all(linkPromises);
+
+    await logRepository.create(
+      {
+        accion: "DISPOSITIVO(S)_CREADOS_Y_VINCULADOS",
+        ip_usuario: ip,
+        descripcion: `Se crearon ${createdAssets.length} ${
+          is_equipo ? "equipos" : "periféricos"
+        } y se vincularon al requerimiento (ID: ${id}).`,
+        id_usuario: user.id_usuario,
+      },
+      { transaction: t }
+    );
+
+    return linkedAssets;
+  });
+};
+
+/**
+ * @async
+ * @function singTIReady
+ * @description Registra la firma de alistamiento de TI y avanza el requerimiento de 'PENDIENTE_TI_ALISTAMIENTO' a 'PENDIENTE_RH_ENTREGA'.
+ * @param {object} user - Objeto del usuario autenticado (Admin/TI).
+ * @param {number} id - ID del requerimiento a firmar.
+ * @param {string} ip - Dirección IP del usuario.
+ * @returns {Promise<object>} El objeto del requerimiento actualizado.
+ * @throws {ConfigurationError} Si los estados esperados no se encuentran.
+ * @throws {NotFoundError} Si el requerimiento no existe.
+ * @throws {ForbiddenError} Si el requerimiento no está en el estado correcto para la firma.
+ */
+export const singTIReady = async (user, id, ip) => {
+  const expectedStatus = await requirementRepository.findStatusByName(
+    STATUS_TI_READY
+  );
+
+  if (!expectedStatus) {
+    throw new ConfigurationError(
+      `Error de configuración: El estado esperado '${STATUS_TI_READY}' no fue encontrado.`
+    );
+  }
+
+  const expectedStatusId = expectedStatus.id_estado_requerimiento;
+
+  return db.sequelize.transaction(async (t) => {
+    const currentRequirement = await requirementRepository.findById(id, {
+      transaction: t,
+    });
+
+    if (!currentRequirement) {
+      throw new NotFoundError(`Requerimiento con ID ${id} no encontrado.`);
+    }
+
+    if (currentRequirement.id_estado_requerimiento !== expectedStatusId) {
+      throw new ForbiddenError(
+        `El requerimiento no se encuentra en el estado '${STATUS_TI_READY}' para finalizar el alistamiento.`
+      );
+    }
+
+    const nextStatus = await requirementRepository.findStatusByName(
+      STATUS_RH_DELIVERY,
+      {
+        transaction: t,
+      }
+    );
+
+    if (!nextStatus) {
+      throw new ConfigurationError(
+        `Error de configuración: El estado destino '${STATUS_RH_DELIVERY}' no fue encontrado.`
+      );
+    }
+    const nextStatusId = nextStatus.id_estado_requerimiento;
+
+    const updateData = {
+      fk_firmante_ti_listo_id: user.id_usuario,
+      fecha_firma_ti_listo: new Date(),
+      id_estado_requerimiento: nextStatusId,
+    };
+
+    const updatedRequirement = await requirementRepository.update(
+      id,
+      updateData,
+      { transaction: t }
+    );
+
+    if (!updatedRequirement) {
+      throw new NotFoundError(
+        `Error al actualizar. Requerimiento con ID ${id} no fue afectado.`
+      );
+    }
+
+    await logRepository.create(
+      {
+        accion: "ALISTAMIENTO_TI_FINALIZADO",
+        ip_usuario: ip,
+        descripcion: `TI finalizó el alistamiento y firmó el requerimiento '${currentRequirement.codigo_requerimiento}'. Nuevo estado: ${STATUS_RH_DELIVERY}.`,
+        id_usuario: user.id_usuario,
+      },
+      { transaction: t }
+    );
+
+    return updatedRequirement;
+  });
+};
+
+/**
+ * @async
+ * @function singRHDelivery
+ * @description Registra la firma de entrega final de RH y avanza el requerimiento de 'PENDIENTE_RH_ENTREGA' a 'ENTREGADO' (finalizado).
+ * @param {object} user - Objeto del usuario autenticado (Admin/RH).
+ * @param {number} id - ID del requerimiento a firmar.
+ * @param {string} ip - Dirección IP del usuario.
+ * @returns {Promise<object>} El objeto del requerimiento actualizado.
+ * @throws {ConfigurationError} Si los estados esperados no se encuentran.
+ * @throws {NotFoundError} Si el requerimiento no existe.
+ * @throws {ForbiddenError} Si el requerimiento no está en el estado correcto para la firma.
+ */
+export const singRHDelivery = async (user, id, ip) => {
+  const expectedStatus = await requirementRepository.findStatusByName(
+    STATUS_RH_DELIVERY
+  );
+
+  if (!expectedStatus) {
+    throw new ConfigurationError(
+      `Error de configuración: El estado esperado '${STATUS_RH_DELIVERY}' no fue encontrado.`
+    );
+  }
+
+  const expectedStatusId = expectedStatus.id_estado_requerimiento;
+
+  return db.sequelize.transaction(async (t) => {
+    const currentRequirement = await requirementRepository.findById(id, {
+      transaction: t,
+    });
+
+    if (!currentRequirement) {
+      throw new NotFoundError(`Requerimiento con ID ${id} no encontrado.`);
+    }
+
+    if (currentRequirement.id_estado_requerimiento !== expectedStatusId) {
+      throw new ForbiddenError(
+        `El requerimiento no se encuentra en el estado '${STATUS_RH_DELIVERY}' para finalizar el alistamiento.`
+      );
+    }
+
+    const nextStatus = await requirementRepository.findStatusByName(
+      STATUS_DELIVERED,
+      { transaction: t }
+    );
+
+    const nextStatusId = nextStatus.id_estado_requerimiento;
+
+    const updateData = {
+      fk_firmante_rh_entrega_id: user.id_usuario,
+      fecha_aprobacion_rh_entrega: new Date(),
+      id_estado_requerimiento: nextStatusId,
+    };
+
+    const updatedRequirement = await requirementRepository.update(
+      id,
+      updateData,
+      { transaction: t }
+    );
+
+    if (!updatedRequirement) {
+      throw new NotFoundError(
+        `Error al actualizar. Requerimiento con ID ${id} no fue afectado.`
+      );
+    }
+
+    await logRepository.create(
+      {
+        accion: "ENTREGA_RH_FINALIZADA",
+        ip_usuario: ip,
+        descripcion: `Entrega finalizada y firmada por RR. HH. para el requerimiento '${currentRequirement.codigo_requerimiento}'. Estado final: ${STATUS_DELIVERED}.`,
+        id_usuario: user.id_usuario,
+      },
+      { transaction: t }
+    );
+
+    return updatedRequirement;
+  });
+};
+
+/**
+ * @async
+ * @function rejectRequirement
+ * @description Rechaza o cancela un requerimiento en cualquier fase válida, estableciendo el estado a CANCELADO (solo Encargado en análisis), RECHAZADO_TI, o RECHAZADO_RH.
+ * @param {object} user - Objeto del usuario autenticado (Admin o Encargado).
+ * @param {number} id - ID del requerimiento a rechazar.
+ * @param {string} ip - Dirección IP del usuario.
+ * @param {object} rejectData - Datos del rechazo, debe contener `razon_rechazo`.
+ * @returns {Promise<object>} El objeto del requerimiento actualizado al estado de rechazo/cancelación.
+ * @throws {Error} Si la razón de rechazo es nula.
+ * @throws {ConfigurationError} Si faltan estados de flujo o el estado actual no se reconoce.
+ * @throws {NotFoundError} Si el requerimiento no existe.
+ * @throws {ForbiddenError} Si el requerimiento está en un estado final o el rol no permite el rechazo en esa fase.
+ */
+export const rejectRequirement = async (user, id, ip, rejectData) => {
+  const { razon_rechazo } = rejectData;
+
+  if (!razon_rechazo) {
+    throw new Error(
+      "La justificación de rechazo es obligatoria para procesar la acción."
+    );
+  }
+
+  const allStatuses = await requirementRepository.findAllStatusesByName(
+    ALL_STATUS_NAMES
+  );
+
+  if (allStatuses.length !== ALL_STATUS_NAMES.length) {
+    throw new ConfigurationError(
+      "Error de configuración: Faltan uno o más estados de flujo de trabajo en el catálogo."
+    );
+  }
+
+  const idMap = allStatuses.reduce((acc, status) => {
+    acc[status.nombre_estado] = status.id_estado_requerimiento;
+    return acc;
+  }, {});
+  return db.sequelize.transaction(async (t) => {
+    const currentRequirement = await requirementRepository.findById(id, {
+      transaction: t,
+    });
+
+    if (!currentRequirement) {
+      throw new NotFoundError("No se pudo encontrar el requerimiento.");
+    }
+
+    const currentStatusId = currentRequirement.id_estado_requerimiento;
+
+    let nextStatusId;
+    let rejectStatusCodeName;
+
+    const currentStateEntry = allStatuses.find(
+      (s) => s.id_estado_requerimiento === currentStatusId
+    );
+
+    if (!currentStateEntry) {
+      throw new ConfigurationError(
+        "Estado actual del requerimiento no reconocido."
+      );
+    }
+    const currentStatusName = currentStateEntry.nombre_estado;
+
+    if (
+      currentStatusName === STATUS_DELIVERED ||
+      currentStatusName === STATUS_CANCELLED ||
+      currentStatusName.startsWith("RECHAZADO")
+    ) {
+      throw new ForbiddenError(
+        `El requerimiento ya se encuentra en el estado final '${currentStatusName}' y no puede ser rechazado.`
+      );
+    }
+
+    if (currentStatusName === STATUS_TI_ANALYSIS) {
+      if (user.rol === "Encargado") {
+        nextStatusId = idMap[STATUS_CANCELLED];
+        rejectStatusCodeName = STATUS_CANCELLED;
+      } else {
+        nextStatusId = idMap[STATUS_REJECT_TI];
+        rejectStatusCodeName = STATUS_REJECT_TI;
+      }
+    } else if (
+      currentStatusName === STATUS_RH_PAYMENT ||
+      currentStatusName === STATUS_RH_DELIVERY
+    ) {
+      nextStatusId = idMap[STATUS_REJECT_RH];
+      rejectStatusCodeName = STATUS_REJECT_RH;
+    } else if (currentStatusName === STATUS_TI_READY) {
+      nextStatusId = idMap[STATUS_REJECT_TI];
+      rejectStatusCodeName = STATUS_REJECT_TI;
+    } else {
+      throw new ForbiddenError(
+        `No es posible rechazar el requerimiento en el estado actual (${currentStatusName}).`
+      );
+    }
+
+    const updateData = {
+      id_estado_requerimiento: nextStatusId,
+      razon_rechazo: razon_rechazo,
+    };
+
+    const updatedRequirement = await requirementRepository.update(
+      id,
+      updateData,
+      { transaction: t }
+    );
+
+    if (!updatedRequirement) {
+      throw new NotFoundError(
+        `Error al actualizar. Requerimiento con ID ${id} no fue afectado.`
+      );
+    }
+
+    await logRepository.create(
+      {
+        accion: `REQUERIMIENTO_RECHAZADO_${rejectStatusCodeName}`,
+        ip_usuario: ip,
+        descripcion: `Requerimiento '${currentRequirement.codigo_requerimiento}' rechazado/cancelado por ${user.nombre}. Nuevo estado: ${rejectStatusCodeName}. Razón: ${razon_rechazo}`,
+        id_usuario: user.id_usuario,
+      },
+      { transaction: t }
+    );
+
+    return updatedRequirement;
   });
 };

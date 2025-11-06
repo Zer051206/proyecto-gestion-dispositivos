@@ -245,7 +245,40 @@ const UserSubForm = ({
           )}
         </label>
 
-        {/* Campo Condicional */}
+        {user.rol === "Admin" && (
+          <div className="lg:col-span-2 pt-4 flex gap-4 items-center justify-center animate-fade-in">
+            <span className="text-text-main font-semibold">
+              Asignar Roles de Flujo:
+            </span>
+
+            {/* Checkbox para Rol de Flujo: TI */}
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                className="form-checkbox h-4 w-4 text-accent-secondary rounded"
+                {...formik.getFieldProps(`users[${index}].es_ti`)}
+                checked={user.es_ti}
+              />
+              <span className="text-sm font-medium">
+                Es de Tecnologia de la Informacion (TI)
+              </span>
+            </label>
+
+            {/* Checkbox para Rol de Flujo: RH */}
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                className="form-checkbox h-4 w-4 text-accent-secondary rounded"
+                {...formik.getFieldProps(`users[${index}].es_rh`)}
+                checked={user.es_rh}
+              />
+              <span className="text-sm font-medium">
+                Es de Recursos Humanos (RH)
+              </span>
+            </label>
+          </div>
+        )}
+
         {user.rol === "Encargado" && (
           <label className="block animate-fade-in md:col-span-3">
             <span className="text-text-main font-semibold">

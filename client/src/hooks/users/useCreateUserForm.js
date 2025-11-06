@@ -54,6 +54,8 @@ const userValidationSchema = Yup.object({
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("password")], "Las contraseñas deben coincidir.")
     .required("Debes confirmar la contraseña."),
+  es_ti: Yup.boolean().default(false),
+  es_rh: Yup.boolean().default(false),
 });
 
 /**
@@ -71,6 +73,8 @@ export const initialUserValues = {
   id_centro_operacion: "",
   password: "",
   confirmPassword: "",
+  es_ti: false,
+  es_rh: false,
 };
 
 /**
