@@ -22,6 +22,7 @@ import {
   faBars,
   faTimes,
   faArrowLeft,
+  faClipboardList,
   faHouse,
 } from "@fortawesome/free-solid-svg-icons";
 import { useAuthStore } from "../stores/authStore.js";
@@ -57,7 +58,7 @@ const Header = ({ user, logout, toggleSidebar }) => {
         )}
       </div>
       {user?.rol === "Encargado" && !isSubPage && (
-        <div className="text-left font-semibold fixed t-0">
+        <div className="text-left font-semibold fixed top-0 left-0">
           <h2 className="text-primary">
             Bienvenido, {user?.nombre || "Usuario"}
           </h2>
@@ -66,7 +67,7 @@ const Header = ({ user, logout, toggleSidebar }) => {
       )}
 
       {user.rol === "Encargado" && isSubPage && (
-        <div className="text-left md:absolute md:t-0 hidden md:flex flex-col  justify-items-start font-semibold">
+        <div className="text-left md:absolute md:top-0 hidden md:flex flex-col  justify-items-start font-semibold">
           <h2 className="text-primary">Nombre: {user?.nombre || "Usuario"}</h2>
           <p className="text-neutral-taupe">Rol: {user?.rol}</p>
         </div>
@@ -168,6 +169,11 @@ const Sidebar = ({ isOpen, toggleSidebar, navigate, user }) => {
             icon={faHistory}
             text="Historial"
             path="/dashboard/historial"
+          />
+          <NavLink
+            icon={faClipboardList}
+            text="Requerimientos"
+            path="/dashboard/requerimientos"
           />
         </nav>
       </div>

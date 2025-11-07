@@ -45,4 +45,17 @@ router.get(
   catalogueController.getPeripheralTypes
 );
 
+/**
+ * @route  GET /api/catalogo/estados-requerimientos
+ * @description Obtiene una lista de todos los estados posibles en los que puede encontrarse un requerimiento.
+ * Este catálogo es estático e independiente de los requerimientos ya existentes.
+ * @access Public
+ * @returns {Array<object>} 200 - Un array de objetos que representan los estados de requerimiento.
+ * @example `[{ id_estado_requerimiento: 1, nombre_estado: "PENDIENTE_TI_ANALISIS" }, ...]`
+ */
+router.get(
+  "/catalogo/estados-requerimientos",
+  catalogueController.getRequirementStatus
+);
+
 export default router;

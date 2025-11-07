@@ -30,6 +30,12 @@ export const findAll = async () => {
       },
       { model: IdentificationType, attributes: ["tipo_identificacion"] },
       { model: User, as: "Creador", attributes: ["nombre", "apellido"] },
+      {
+        model: Permission,
+        as: "Permissions",
+        attributes: ["nombre"],
+        through: { attributes: [] },
+      },
     ],
   });
 };

@@ -52,6 +52,7 @@ export const useDashboardHistory = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("fecha_desc");
 
+  const [modal, setModal] = useState({ type: null, data: null });
   /**
    * @description `useEffect` que se dispara cada vez que `activeTab` cambia.
    * Es responsable de llamar a la API para obtener los datos correspondientes a la pestaña seleccionada.
@@ -128,6 +129,10 @@ export const useDashboardHistory = () => {
       });
   }, [logs, bajas, activeTab, searchTerm, sortBy]);
 
+  const handleAction = (type, item) => setModal({ type, data: item });
+
+  const closeModal = () => setModal({ type: null, data: null });
+
   // Devuelve el estado y las funciones que el componente de la UI necesitará.
   return {
     data: processedData,
@@ -137,5 +142,8 @@ export const useDashboardHistory = () => {
     error,
     setSearchTerm,
     setSortBy,
+    handleAction,
+    closeModal,
+    modal,
   };
 };

@@ -105,10 +105,6 @@ export const assignPermissionsToUser = async (
   }
 
   try {
-    console.log(
-      `[DEBUG] 1. Buscando permisos por nombres: ${permissionNames.join(", ")}`
-    );
-
     // 2. Buscar los IDs de los permisos por sus nombres
     const permissions = await Permission.findAll({
       attributes: ["permiso_id", "nombre"], // Necesitamos el ID y el nombre para la verificación
@@ -118,8 +114,6 @@ export const assignPermissionsToUser = async (
       },
       ...options,
     });
-
-    console.log(`[DEBUG] 2. Permisos encontrados (${permissions.length}):`);
 
     // 3. VERIFICACIÓN DE CONSISTENCIA (Manejo del Error)
     if (permissions.length !== permissionNames.length) {
@@ -147,16 +141,9 @@ export const assignPermissionsToUser = async (
 
     if (user) {
       const permissionIds = permissions.map((p) => {
-        console.log(
-          `[DEBUG] 3. Extrayendo ID: ${p.permiso_id} del objeto:`,
-          p.toJSON()
-        );
+        p.toJSON();
         return p.permiso_id;
       });
-
-      console.log(
-        `[DEBUG] 4. IDs de permisos a asignar: ${permissionIds.join(", ")}`
-      );
 
       // 5. Asignar los permisos (Método de asociación many-to-many de Sequelize)
       // Esto inserta las filas en la tabla pivote (e.g., usuarios_permisos)

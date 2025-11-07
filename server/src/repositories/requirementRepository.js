@@ -22,7 +22,7 @@ const {
   User,
   RequirementAsset,
   RequirementStatus,
-  OperationalCenter,
+  OperationCenter,
 } = db;
 
 // --- Funciones de Búsqueda y Consulta ---
@@ -56,7 +56,7 @@ export const findById = async (id, options = {}) => {
     include: [
       { model: RequirementStatus, as: "Status" },
       { model: User, as: "SignerCO" },
-      { model: OperationalCenter, as: "CenterOfOperation" },
+      { model: OperationCenter, as: "CenterOfOperation" },
       // Se pueden agregar más inclusiones si son necesarias para la lectura/flujo
     ],
     ...options,
@@ -74,9 +74,9 @@ export const findAll = async () => {
     include: [
       { model: RequirementStatus, as: "Status" },
       { model: User, as: "SignerCO" },
-      { model: OperationalCenter, as: "CenterOfOperation" },
+      { model: OperationCenter, as: "CenterOfOperation" },
     ],
-    order: [["fecha_creacion", "DESC"]],
+    order: [["fecha_solicitud", "DESC"]],
   });
 };
 
@@ -93,9 +93,9 @@ export const findByUser = async (id_usuario) => {
     include: [
       { model: RequirementStatus, as: "Status" },
       { model: User, as: "SignerCO" },
-      { model: OperationalCenter, as: "CenterOfOperation" },
+      { model: OperationCenter, as: "CenterOfOperation" },
     ],
-    order: [["fecha_creacion", "DESC"]],
+    order: [["fecha_solicitud", "DESC"]],
   });
 };
 
@@ -186,4 +186,28 @@ export const findAllStatusesByName = async (nombre_estados, options = {}) => {
  */
 export const createRequirementAsset = async (data, options = {}) => {
   return RequirementAsset.create(data, options);
+};
+
+/**
+ * @async
+ * @function findLastRequirementByCO
+ * @description Busca el último requerimiento creado para un Centro de Operación específico,
+ * ordenado por el código de requerimiento (asumiendo que es alfanuméricamente secuencial)
+ * o por la fecha de solicitud, para determinar el consecutivo.
+ * @param {number} id_center - El ID del Centro de Operación (`id_centro_operacion`).
+ * @param {object} [options] - Opciones de consulta de Sequelize (ej. { transaction: t }).
+ * @returns {Promise<object | null>} El objeto del último requerimiento encontrado o `null` si no existe.
+ */
+export const findLastRequirementByCO = async (id_center, options = {}) => {
+  const lastRequirement = await Requirement.findOne({
+    where: {
+      id_centro_operacion: id_center,
+    },
+    order: [["codigo_requerimiento", "DESC"]],
+    limit: 1, // Solo necesitamos el más reciente
+    ...options,
+  });
+
+  // Retorna el objeto del requerimiento o null si no se encuentra
+  return lastRequirement;
 };

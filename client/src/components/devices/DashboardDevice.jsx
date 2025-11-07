@@ -29,6 +29,11 @@ import CreateDeviceForm from "./CreateDevicesForm.jsx";
 import CreatePeripheralForm from "./CreatePeripheralsForm.jsx";
 import { toast } from "react-hot-toast";
 import { exportToExcel } from "../../utils/exportUtils.js";
+import DetailModal from "../utils/DetailModal.jsx";
+import {
+  deviceConfig,
+  peripheralConfig,
+} from "../../hooks/utils/detailConfig.js";
 
 // --- SUBCOMPONENTES ---
 
@@ -96,103 +101,6 @@ const ConfirmStatusChangeModal = ({
                   actionText.charAt(0).toUpperCase() + actionText.slice(1)
                 }`}
           </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-/**
- * @function AssetDetailModal
- * @description Modal que muestra información detallada de un activo (equipo o periférico).
- * @param {object} props - Propiedades del componente.
- * @param {object} props.asset - El objeto del activo a mostrar.
- * @param {Function} props.onClose - Función para cerrar el modal.
- * @returns {JSX.Element|null}
- */
-const AssetDetailModal = ({ asset, onClose }) => {
-  if (!asset) return null;
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-fade-in"
-      onClick={onClose}
-    >
-      <div
-        className="bg-secondary rounded-lg shadow-xl p-6 w-full max-w-lg text-left"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center border-b border-gray-200 pb-3 mb-4">
-          <h3 className="text-xl font-bold text-primary">
-            {asset.type === "device"
-              ? "Detalle del Equipo"
-              : "Detalle del Periférico"}
-          </h3>
-          <button onClick={onClose} className="text-text-main hover:opacity-70">
-            <FontAwesomeIcon icon={faTimes} />
-          </button>
-        </div>
-        <div className="space-y-3 text-text-main text-sm">
-          <p>
-            <strong>Serial:</strong>{" "}
-            <span className="font-mono">
-              {asset.serial || asset.serial_periferico}
-            </span>
-          </p>
-          <p>
-            <strong>Tipo:</strong>{" "}
-            {asset.equipo_laptop ? "Laptop" : "PC de Escritorio"}
-          </p>
-          <p>
-            <strong>Centro de Operación:</strong>{" "}
-            {asset.OperationCenter?.codigo || "N/A"} -{" "}
-            {asset.OperationCenter?.direccion}
-          </p>
-          <p>
-            <strong>Registrado por:</strong> {asset.Creador?.nombre}{" "}
-            {asset.Creador?.apellido}
-          </p>
-          <hr className="my-2 border-primary/20" />
-          {asset.type === "device" && (
-            <>
-              <p>
-                <strong>
-                  <FontAwesomeIcon
-                    icon={faHdd}
-                    className="mr-2 text-neutral-taupe"
-                  />
-                  Disco Duro:
-                </strong>{" "}
-                {asset.tamano_disco_duro} GB
-              </p>
-              <p>
-                <strong>
-                  <FontAwesomeIcon
-                    icon={faMicrochip}
-                    className="mr-2 text-neutral-taupe"
-                  />
-                  Tarjeta Gráfica:
-                </strong>{" "}
-                {asset.equipo_tarjeta_grafica
-                  ? asset.referencia_tarjeta_grafica || "Integrada"
-                  : "No tiene"}
-              </p>
-              <p>
-                <strong>Serial Pantalla:</strong>{" "}
-                {asset.serial_pantalla || "N/A"}
-              </p>
-            </>
-          )}
-          {asset.type === "peripheral" && (
-            <>
-              <p>
-                <strong>Marca:</strong> {asset.marca_periferico}
-              </p>
-              <p>
-                <strong>Tipo de Periférico:</strong>{" "}
-                {asset.PeripheralType?.tipo_periferico || "No especificado"}
-              </p>
-            </>
-          )}
         </div>
       </div>
     </div>
@@ -529,7 +437,14 @@ export default function DashboardDevice() {
     }
   };
 
+  const assetIsDevice = modal.data?.type === "device";
+  const detailConfig = assetIsDevice ? deviceConfig : peripheralConfig;
+  const detailTitle = assetIsDevice
+    ? "Detalles del Equipo"
+    : "Detalles del Periférico";
+
   if (isLoading) return <DashboardSkeleton />;
+
   if (error)
     return <div className="text-center w-full p-10 text-error">{error}</div>;
 
@@ -629,7 +544,13 @@ export default function DashboardDevice() {
         <CreatePeripheralForm onClose={closeModal} onSuccess={handleSuccess} />
       )}
       {modal.type === "details" && (
-        <AssetDetailModal asset={modal.data} onClose={closeModal} />
+        <DetailModal
+          item={modal.data}
+          onClose={closeModal}
+          title={detailTitle}
+          config={detailConfig}
+          themeColor={assetIsDevice ? "primary" : "accent-secondary"}
+        />
       )}
       {modal.type === "status" && (
         <ConfirmStatusChangeModal

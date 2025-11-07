@@ -10,6 +10,7 @@ import db from "../models/index.js";
 const City = db.City;
 const IdentificationType = db.IdentificationType;
 const PeripheralType = db.PeripheralType;
+const RequirementStatus = db.RequirementStatus;
 
 /**
  * @async
@@ -45,4 +46,13 @@ export const findAllPeripheralTypes = async () => {
   return PeripheralType.findAll({
     order: [["tipo_periferico", "ASC"]],
   });
+};
+/**
+ * @async
+ * @function findAllRequirementStatus
+ * @description Busca y devuelve todos los estados posibles de requerimiento (catálogo) de la base de datos.
+ * @returns {Promise<Array<RequirementStatus>>} Un array de todos los objetos de estado de requerimiento.
+ */
+export const findAllRequirementStatus = async () => {
+  return RequirementStatus.findAll();
 };

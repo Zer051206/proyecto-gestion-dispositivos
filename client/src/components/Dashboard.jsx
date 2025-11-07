@@ -17,6 +17,7 @@ import {
   faWarehouse,
   faDesktop,
   faHistory,
+  faClipboardList,
 } from "@fortawesome/free-solid-svg-icons";
 import { useAuthStore } from "../stores/authStore.js";
 
@@ -53,16 +54,14 @@ export default function DashboardPage() {
 
   return (
     <>
-      <div className="flex w-full justify-between mr-6 mb-6 md:fixed md:top-20 md:left-10 md:mt-2">
-        {user?.rol === "Admin" && (
-          <div className="mb-4 text-left font-semibold">
-            <h2 className="text-primary">
-              Bienvenido, {user?.nombre || "Usuario"}
-            </h2>
-            <p className="text-neutral-taupe">Rol: {user?.rol}</p>
-          </div>
-        )}
-      </div>
+      {user?.rol === "Admin" && (
+        <div className="mb-4 text-left font-semibold text-lg  md:fixed md:top-[80px] md:left-6">
+          <h2 className="text-primary">
+            Bienvenido, {user?.nombre || "Usuario"}
+          </h2>
+          <p className="text-neutral-taupe">Rol: {user?.rol}</p>
+        </div>
+      )}
 
       <div>
         <h2 className="text-3xl font-bold mb-16 md:mt-4 w-full text-center">
@@ -71,8 +70,14 @@ export default function DashboardPage() {
       </div>
 
       <div className="justify-center">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 w-full">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-10 w-full">
           {/* Acción para todos */}
+          <NavButton
+            icon={faClipboardList}
+            text="Requerimientos"
+            onClick={() => navigate("/dashboard/requerimientos")}
+            colorClass="bg-red-500/90 hover:opacity-100"
+          />
           <NavButton
             icon={faDesktop}
             text="Gestión de Dispositivos"

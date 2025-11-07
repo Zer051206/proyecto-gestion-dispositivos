@@ -21,6 +21,7 @@ import {
   ForbiddenError,
   NotFoundError,
 } from "../utils/customErrors.js";
+import { generateRequirementCode } from "../utils/codeGenerator.js";
 
 const STATUS_TI_ANALYSIS = "PENDIENTE_TI_ANALISIS";
 const STATUS_RH_PAYMENT = "PENDIENTE_RH_PAGO";
@@ -66,11 +67,13 @@ export const createRequirement = async (user, ip, data) => {
 
   const initialStatusId = initialStatus.id_estado_requerimiento;
 
-  return db.sequelize.transaction(async (t) => {
-    const { codigo_requerimiento } = data;
+  const newRequirementCode = await generateRequirementCode(
+    user.id_centro_operacion
+  );
 
+  return db.sequelize.transaction(async (t) => {
     const requirementDb = await requirementRepository.findByCode(
-      codigo_requerimiento,
+      newRequirementCode,
       { transaction: t }
     );
 
@@ -82,6 +85,7 @@ export const createRequirement = async (user, ip, data) => {
 
     const requirementData = {
       ...data,
+      codigo_requerimiento: newRequirementCode,
       id_centro_operacion: user.id_centro_operacion,
       id_estado_requerimiento: initialStatusId,
       fk_firmante_co_id: user.id_usuario,
@@ -161,6 +165,12 @@ export const getRequirementById = async (id) => {
  * @throws {ForbiddenError} Si el requerimiento no está en el estado correcto para la firma.
  */
 export const singTIAnalysis = async (user, id, ip, analysisData) => {
+  if (!user.CAN_SING_TI_ANALYSIS) {
+    throw new ForbiddenError(
+      "No tiene permiso para firmar el análisis de TI (CAN_SIGN_TI_ANALYSIS)."
+    );
+  }
+
   const expectedStatus = await requirementRepository.findStatusByName(
     STATUS_TI_ANALYSIS
   );
@@ -249,6 +259,12 @@ export const singTIAnalysis = async (user, id, ip, analysisData) => {
  * @throws {ForbiddenError} Si el requerimiento no está en el estado correcto para la firma.
  */
 export const singRHPayment = async (user, id, ip) => {
+  if (!user.CAN_SING_RH_PAYMENT) {
+    throw new ForbiddenError(
+      "No tiene permiso para firmar el pago (CAN_SIGN_RH_PAYMENT)."
+    );
+  }
+
   const expectedStatus = await requirementRepository.findStatusByName(
     STATUS_RH_PAYMENT
   );
@@ -343,6 +359,12 @@ export const createAndLinkAsset = async (
   is_equipo,
   asset_details
 ) => {
+  if (!user.CAN_LINK_ASSETS) {
+    throw new ForbiddenError(
+      "No tiene permiso para crear los dispositivos y relacionarlos (CAN_LINK_ASSETS)."
+    );
+  }
+
   if (!Array.isArray(asset_details) || asset_details.length === 0) {
     throw new Error(
       "El arreglo de detalles de activos está vacío o no es un arreglo válido."
@@ -434,6 +456,12 @@ export const createAndLinkAsset = async (
  * @throws {ForbiddenError} Si el requerimiento no está en el estado correcto para la firma.
  */
 export const singTIReady = async (user, id, ip) => {
+  if (!user.CAN_SING_TI_READY) {
+    throw new ForbiddenError(
+      "No tiene permiso para firmar la preparacion de los dispositivos (CAN_SIGN_TI_READY)."
+    );
+  }
+
   const expectedStatus = await requirementRepository.findStatusByName(
     STATUS_TI_READY
   );
@@ -520,6 +548,12 @@ export const singTIReady = async (user, id, ip) => {
  * @throws {ForbiddenError} Si el requerimiento no está en el estado correcto para la firma.
  */
 export const singRHDelivery = async (user, id, ip) => {
+  if (!user.CAN_SING_RH_DELIVERY) {
+    throw new ForbiddenError(
+      "No tiene permiso para firmar la entrega de los dispositivos (CAN_SIGN_RH_DELIVERY)."
+    );
+  }
+
   const expectedStatus = await requirementRepository.findStatusByName(
     STATUS_RH_DELIVERY
   );
@@ -662,17 +696,31 @@ export const rejectRequirement = async (user, id, ip, rejectData) => {
       if (user.rol === "Encargado") {
         nextStatusId = idMap[STATUS_CANCELLED];
         rejectStatusCodeName = STATUS_CANCELLED;
-      } else {
+      } else if (
+        user.rol === "Admin" &&
+        user.CAN_SING_TI_ANALYSIS &&
+        user.CAN_SING_TI_READY &&
+        user.CAN_LINK_ASSETS
+      ) {
         nextStatusId = idMap[STATUS_REJECT_TI];
         rejectStatusCodeName = STATUS_REJECT_TI;
       }
     } else if (
       currentStatusName === STATUS_RH_PAYMENT ||
-      currentStatusName === STATUS_RH_DELIVERY
+      (currentStatusName === STATUS_RH_DELIVERY &&
+        user.CAN_SING_RH_DELIVERY &&
+        user.CAN_SING_RH_PAYMENT &&
+        user.rol === "Admin")
     ) {
       nextStatusId = idMap[STATUS_REJECT_RH];
       rejectStatusCodeName = STATUS_REJECT_RH;
-    } else if (currentStatusName === STATUS_TI_READY) {
+    } else if (
+      currentStatusName === STATUS_TI_READY &&
+      user.rol === "Admin" &&
+      user.CAN_SING_TI_ANALYSIS &&
+      user.CAN_SING_TI_READY &&
+      user.CAN_LINK_ASSETS
+    ) {
       nextStatusId = idMap[STATUS_REJECT_TI];
       rejectStatusCodeName = STATUS_REJECT_TI;
     } else {

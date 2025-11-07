@@ -25,99 +25,8 @@ import {
   faInfoCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { formatDate } from "../../utils/dateFormat.js";
-
-// --- SUBCOMPONENTES ---
-
-/**
- * @function DetailModal
- * @description Modal que muestra información detallada de un registro de log o de una baja.
- * @param {object} props - Propiedades del componente.
- * @param {object} props.item - El objeto de log o baja a mostrar.
- * @param {Function} props.onClose - Función para cerrar el modal.
- * @param {'log'|'baja'} props.type - El tipo de registro que se está mostrando.
- * @returns {JSX.Element|null}
- */
-const DetailModal = ({ item, onClose, type }) => {
-  if (!item) return null;
-  const DetailRow = ({ label, value, icon }) => (
-    <div className="py-3 border-b border-gray-200 last:border-b-0">
-      <p className="text-sm text-neutral-taupe font-semibold flex items-center gap-2">
-        <FontAwesomeIcon icon={icon} className="w-4 text-primary/70" />
-        {label}
-      </p>
-      <p className="text-md text-text-main pl-6">{value || "N/A"}</p>
-    </div>
-  );
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-secondary rounded-lg shadow-xl w-full max-w-lg text-left"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <header className="p-4 flex justify-between items-center border-b border-gray-200">
-          <h3 className="text-xl font-bold text-primary">
-            {type === "log" ? "Detalle del Registro" : "Detalle de la Baja"}
-          </h3>
-          <button onClick={onClose} className="text-text-main hover:opacity-70">
-            <FontAwesomeIcon icon={faTimes} />
-          </button>
-        </header>
-        <div className="p-6 max-h-[70vh] overflow-y-auto">
-          {type === "log" ? (
-            <>
-              <DetailRow
-                label="Acción"
-                value={item.accion}
-                icon={faInfoCircle}
-              />
-              <DetailRow
-                label="Usuario"
-                value={`${item.User?.nombre} ${
-                  item.User?.apellido || ""
-                } (Rol: ${item.User?.rol})`}
-                icon={faUserShield}
-              />
-              <DetailRow
-                label="Fecha"
-                value={formatDate(item.fecha_log)}
-                icon={faCalendarAlt}
-              />
-              <DetailRow label="Dirección IP" value={item.ip_usuario} />
-              <DetailRow label="Descripción" value={item.descripcion} />
-            </>
-          ) : (
-            <>
-              <DetailRow
-                label="Serial del Dispositivo Dado de Baja"
-                value={
-                  item.Device?.serial || item.Peripheral?.serial_periferico
-                }
-                icon={item.Device ? faDesktop : faKeyboard}
-              />
-              <DetailRow
-                label="Tipo"
-                value={item.Device ? "Equipo" : "Periférico"}
-              />
-              <DetailRow
-                label="Baja realizada por"
-                value={`${item.User?.nombre} ${item.User?.apellido || ""}`}
-                icon={faUserShield}
-              />
-              <DetailRow
-                label="Fecha de Baja"
-                value={formatDate(item.fecha_baja)}
-                icon={faCalendarAlt}
-              />
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
+import DetailModal from "../utils/DetailModal.jsx";
+import { logConfig, bajaConfig } from "../../hooks/utils/detailConfig.js";
 
 /**
  * @function LogTable
@@ -269,17 +178,20 @@ const DashboardSkeleton = () => (
 export default function DashboardHistory() {
   const {
     data,
+    modal,
     activeTab,
     setActiveTab,
     isLoading,
     error,
     setSearchTerm,
     setSortBy,
+    handleAction,
+    closeModal,
   } = useDashboardHistory();
-  const [modal, setModal] = useState({ type: null, data: null });
 
-  const handleAction = (type, item) => setModal({ type, data: item });
-  const closeModal = () => setModal({ type: null, data: null });
+  const modalConfig = activeTab === "logs" ? logConfig : bajaConfig;
+  const modalTitle =
+    activeTab === "logs" ? "Detalle del Registro (Log)" : "Detalle de la Baja";
 
   const TabButton = ({ tabName, label }) => (
     <button
@@ -354,7 +266,13 @@ export default function DashboardHistory() {
         ))}
 
       {modal.data && (
-        <DetailModal item={modal.data} onClose={closeModal} type={modal.type} />
+        <DetailModal
+          item={modal.data}
+          onClose={closeModal}
+          title={modalTitle}
+          config={modalConfig}
+          formatDate={formatDate}
+        />
       )}
     </div>
   );

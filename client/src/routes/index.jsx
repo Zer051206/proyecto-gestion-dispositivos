@@ -31,6 +31,7 @@ import DashboardDevice from "../components/devices/DashboardDevice.jsx";
 import DashboardUser from "../components/users/DashboardUser.jsx";
 import DashboardOperationCenter from "../components/operation-centers/DashboardOperationCenter.jsx";
 import DashboardHistory from "../components/history/DashboardHistory.jsx";
+import DashboardRequirement from "../components/requirements/DashboardRequirement.jsx";
 import AdminRoute from "./AdminRoutes.jsx";
 
 /**
@@ -71,6 +72,10 @@ export function AppRoutes() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/dashboard/dispositivos" element={<DashboardDevice />} />
         <Route path="/dashboard/historial" element={<DashboardHistory />} />
+        <Route
+          path="/dashboard/requerimientos"
+          element={<DashboardRequirement />}
+        />
 
         {/* --- Rutas anidadas SOLO PARA ADMINS --- */}
         {/* Envolvemos otro grupo de rutas con el guardia <AdminRoute />.

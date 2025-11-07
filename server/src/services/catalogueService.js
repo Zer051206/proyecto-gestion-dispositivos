@@ -40,3 +40,15 @@ export const getPeripheralTypes = async () => {
   const peripheralTypes = await catalogueRepository.findAllPeripheralTypes();
   return peripheralTypes;
 };
+
+/**
+ * @async
+ * @function getRequirementStatus
+ * @description Lógica de negocio para obtener todos los estados de requerimiento.
+ * Delega la consulta a la capa de repositorio.
+ * @returns {Promise<Array<object>>} Una promesa que resuelve con un array de objetos de estado.
+ */
+export const getRequirementStatus = async () => {
+  const status = await catalogueRepository.findAllRequirementStatus();
+  return status;
+};

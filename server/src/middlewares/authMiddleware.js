@@ -59,6 +59,21 @@ const authMiddleware = async (req, res, next) => {
       ? user.Permissions.map((p) => p.nombre)
       : [];
 
+    const permissionsObject = {};
+
+    const allPermissionFlags = [
+      "CAN_SIGN_TI_ANALYSIS",
+      "CAN_LINK_ASSETS",
+      "CAN_SIGN_RH_PAYMENT",
+      "CAN_SIGN_TI_READY",
+      "CAN_SIGN_RH_DELIVERY",
+    ];
+
+    allPermissionFlags.forEach((flag) => {
+      // Establece la flag en 'true' si el nombre del permiso está en la lista del usuario.
+      permissionsObject[flag] = permissionsList.includes(flag);
+    });
+
     // 5. Adjuntar la información esencial del usuario a la petición.
     // Esto enriquece el objeto `req` para que esté disponible en los controladores posteriores.
     req.user = {
@@ -68,6 +83,7 @@ const authMiddleware = async (req, res, next) => {
       rol: user.rol,
       id_centro_operacion: user.id_centro_operacion,
       permisos: permissionsList,
+      ...permissionsObject,
     };
     // Si todas las verificaciones son exitosas, pasamos el control al siguiente middleware o controlador.
     next();

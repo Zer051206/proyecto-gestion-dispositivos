@@ -181,8 +181,6 @@ const UserSubForm = ({
             </div>
           )}
         </label>
-
-        {/* --- Fila 2: Credenciales y Asignación --- */}
         <div className="relative">
           <label className="block">
             <span className="text-text-main font-semibold">Contraseña:</span>
@@ -195,9 +193,9 @@ const UserSubForm = ({
             <button
               type="button"
               onClick={toggleVisibility}
-              className="absolute right-0 top-9 flex items-center pr-3 text-gray-500"
+              className="absolute right-0 top-[42px] flex items-center pr-3 text-gray-500"
             >
-              <FontAwesomeIcon icon={Icon} />
+              <Icon />
             </button>
             {getError("password") && (
               <div className="text-error text-sm mt-1">
@@ -220,9 +218,9 @@ const UserSubForm = ({
             <button
               type="button"
               onClick={toggleVisibilityConfirm}
-              className="absolute right-0 top-9 flex items-center pr-3 text-gray-500"
+              className="absolute right-0 top-[42px] flex items-center pr-3 text-gray-500"
             >
-              <FontAwesomeIcon icon={IconConfirm} />
+              <IconConfirm />
             </button>
             {getError("confirmPassword") && (
               <div className="text-error text-sm mt-1">

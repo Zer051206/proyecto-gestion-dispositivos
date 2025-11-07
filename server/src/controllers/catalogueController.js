@@ -71,3 +71,26 @@ export const getPeripheralTypes = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * @async
+ * @function getRequirementStatus
+ * @description Maneja la solicitud GET para obtener todos los estados de requerimiento disponibles.
+ * Llama al servicio para obtener la lista de estados y responde con la data.
+ * @param {object} req - Objeto de solicitud de Express (request).
+ * @param {object} res - Objeto de respuesta de Express (response).
+ * @param {function} next - Función para pasar el control al siguiente middleware de errores.
+ * @returns {Promise<void>} Responde con un JSON que contiene un mensaje, éxito y la lista de estados.
+ */
+export const getRequirementStatus = async (req, res, next) => {
+  try {
+    const status = await catalogueService.getRequirementStatus();
+    return res.status(200).json({
+      message: "Estados obtenidos exitosamente.",
+      success: true,
+      data: status,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

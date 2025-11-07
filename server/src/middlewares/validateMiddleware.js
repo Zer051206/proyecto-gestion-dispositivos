@@ -33,18 +33,20 @@ export const validate =
     } catch (error) {
       // 4. Manejo de errores de Zod
       if (error instanceof z.ZodError) {
-        // Mapeamos los errores para generar una respuesta JSON limpia y clara
-        const formattedErrors = error.errors.map((err) => ({
-          field: err.path.join("."), // Muestra la ruta del campo con error (ej. nombre, usuario.email)
-          message: err.message,
-        }));
+        // *** MODIFICACIÓN CLAVE: AÑADIR VERIFICACIÓN DE ARRAY ***
+        if (Array.isArray(error.errors)) {
+          // Mapeamos los errores para generar una respuesta JSON limpia y clara
+          const formattedErrors = error.errors.map((err) => ({
+            field: err.path.join("."), // Muestra la ruta del campo con error (ej. nombre, usuario.email)
+            message: err.message,
+          })); // Respuesta 400 Bad Request
 
-        // Respuesta 400 Bad Request
-        return res.status(400).json({
-          status: "error",
-          message: `Error de validación en los datos de ${source}.`,
-          errors: formattedErrors,
-        });
+          return res.status(400).json({
+            status: "error",
+            message: `Error de validación en los datos de ${source}.`,
+            errors: formattedErrors,
+          });
+        }
       }
 
       // 5. Si es otro tipo de error, lo pasamos al manejador de errores global
