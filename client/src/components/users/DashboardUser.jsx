@@ -14,11 +14,6 @@ import {
   faEye,
   faToggleOn,
   faToggleOff,
-  faTimes,
-  faIdCard,
-  faPhone,
-  faBuilding,
-  faUserShield,
   faExclamationTriangle,
   faTable,
   faThLarge,
@@ -26,88 +21,11 @@ import {
 import api from "../../config/axios.js";
 import CreateUserModal from "./CreateUserForm.jsx";
 import { toast } from "react-hot-toast";
+import DetailModal from "../utils/DetailModal.jsx";
+import { userConfig } from "../../hooks/utils/detailConfig.js";
+import { formatDate } from "../../utils/dateFormat.js";
 
 // --- SUBCOMPONENTES ---
-
-/**
- * @function UserDetailModal
- * @description Modal que muestra información detallada de un usuario.
- * @param {object} props - Propiedades del componente.
- * @param {object} props.user - El objeto de usuario a mostrar.
- * @param {Function} props.onClose - Función para cerrar el modal.
- * @returns {JSX.Element|null}
- */
-const UserDetailModal = ({ user, onClose }) => {
-  if (!user) return null;
-
-  const DetailRow = ({ label, value, icon }) => (
-    <div className="py-3 border-b border-gray-200 last:border-b-0">
-      <p className="text-sm text-neutral-taupe font-semibold flex items-center gap-2">
-        <FontAwesomeIcon icon={icon} className="w-4 text-primary/70" />
-        {label}
-      </p>
-      <p className="text-md text-text-main pl-6">
-        {value || "No especificado"}
-      </p>
-    </div>
-  );
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-fade-in"
-      onClick={onClose}
-    >
-      <div
-        className="bg-secondary rounded-lg shadow-xl w-full max-w-lg text-left"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <header className="p-4 flex justify-between items-center border-b border-gray-200">
-          <h3 className="text-xl font-bold text-primary">
-            Detalles del Usuario
-          </h3>
-          <button onClick={onClose} className="text-text-main hover:opacity-70">
-            <FontAwesomeIcon icon={faTimes} />
-          </button>
-        </header>
-        <div className="p-6 max-h-[70vh] overflow-y-auto">
-          <div className="text-center mb-6">
-            <p className="text-2xl font-bold text-text-main">
-              {user.nombre} {user.apellido}
-            </p>
-            <p className="text-md text-primary font-semibold">{user.rol}</p>
-          </div>
-          <DetailRow
-            label="Correo Electrónico"
-            value={user.correo}
-            icon={faEye}
-          />
-          <DetailRow
-            label="Identificación"
-            value={`${user.IdentificationType?.tipo_identificacion || ""} - ${
-              user.identificacion
-            }`}
-            icon={faIdCard}
-          />
-          <DetailRow label="Teléfono" value={user.telefono} icon={faPhone} />
-          {user.rol === "Encargado" && (
-            <DetailRow
-              label="Centro de Operación"
-              value={`${user.CentroAsignado?.codigo || ""} - ${
-                user.CentroAsignado?.direccion
-              }`}
-              icon={faBuilding}
-            />
-          )}
-          <DetailRow
-            label="Creado por (Admin)"
-            value={user.Creador?.nombre || "Sistema"}
-            icon={faUserShield}
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
 
 /**
  * @function ConfirmStatusChangeModal
@@ -507,7 +425,13 @@ export default function UserDashboard() {
         <CreateUserModal onClose={closeModal} onSuccess={handleSuccess} />
       )}
       {modal.type === "details" && (
-        <UserDetailModal user={modal.data} onClose={closeModal} />
+        <DetailModal
+          item={modal.data}
+          onClose={closeModal}
+          config={userConfig}
+          title="Detalles del Usuario"
+          formatDate={formatDate}
+        />
       )}
       {modal.type === "status" && (
         <ConfirmStatusChangeModal

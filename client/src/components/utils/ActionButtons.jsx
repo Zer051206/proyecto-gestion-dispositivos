@@ -1,5 +1,5 @@
 /**
- * @file ActionButtons.jsx
+ * @file ActionactionButtons.jsx
  * @description Componente para renderizar el botón de acción condicional en la tabla de requerimientos.
  */
 import React from "react";
@@ -9,6 +9,7 @@ import {
   faMoneyBillWave,
   faTruckMoving,
   faTools,
+  faBan,
 } from "@fortawesome/free-solid-svg-icons";
 import { useAuthStore } from "../../stores/authStore.js";
 
@@ -25,7 +26,7 @@ export default function ActionButtons({ req, onAction }) {
 
   const status = req.Status?.nombre_estado;
   const userRole = user?.rol;
-  let button = null;
+  let actionButton = null;
 
   // --- Lógica de Renderizado Condicional de Botones ---
 
@@ -33,7 +34,7 @@ export default function ActionButtons({ req, onAction }) {
     switch (status) {
       case "PENDIENTE_TI_ANALISIS":
         // Solo Admin/TI puede firmar el análisis
-        button = {
+        actionButton = {
           title: "Firmar Análisis TI",
           icon: faFileSignature,
           actionType: "signTIAnalysis",
@@ -42,7 +43,7 @@ export default function ActionButtons({ req, onAction }) {
         break;
       case "PENDIENTE_RH_PAGO":
         // Solo Admin/RH puede aprobar el pago
-        button = {
+        actionButton = {
           title: "Aprobar Pago RH",
           icon: faMoneyBillWave,
           actionType: "signRHPago",
@@ -51,7 +52,7 @@ export default function ActionButtons({ req, onAction }) {
         break;
       case "PENDIENTE_TI_ALISTAMIENTO":
         // Solo Admin/TI gestiona el alistamiento/vinculación
-        button = {
+        actionButton = {
           title: "Gestionar Alistamiento",
           icon: faTools,
           actionType: "manageTIAsset",
@@ -60,7 +61,7 @@ export default function ActionButtons({ req, onAction }) {
         break;
       case "PENDIENTE_RH_ENTREGA":
         // Solo Admin/RH gestiona la entrega final
-        button = {
+        actionButton = {
           title: "Firmar Entrega Final",
           icon: faTruckMoving,
           actionType: "signRHEntrega",
@@ -72,29 +73,63 @@ export default function ActionButtons({ req, onAction }) {
         return null;
     }
   } else if (userRole === "Encargado") {
-    // Los encargados solo pueden ver detalles y editar el requerimiento si está en análisis.
-    if (status === "PENDIENTE_TI_ANALISIS") {
-      button = {
-        title: "Editar Requerimiento Inicial",
-        icon: faTools,
-        actionType: "editRequirement",
-        color: "text-neutral-taupe",
-      };
-    } else {
-      return null;
-    }
+    return null;
   } else {
     return null;
   }
 
+  const isFinalState =
+    status === "ENTREGADO" ||
+    status === "CANCELADO" ||
+    status === "RECHAZADO_TI" ||
+    status === "RECHAZADO_RH";
+
+  const canShowRejectButton = (() => {
+    // 1. Si está en un estado final (Entregado, Cancelado, Rechazado), NO se muestra.
+    if (isFinalState) return false;
+
+    // 2. Lógica para el Encargado: Solo en el estado inicial PENDIENTE_TI_ANALISIS
+    if (userRole === "Encargado") {
+      return status === "PENDIENTE_TI_ANALISIS";
+    }
+
+    // 3. Lógica para el Administrador: En cualquier estado no final
+    if (userRole === "Admin") {
+      return true;
+    }
+
+    return false;
+  })();
+
   // Renderiza el botón si se definió
   return (
-    <button
-      onClick={() => onAction(button.actionType, req)}
-      className={`${button.color} hover:opacity-70 transition-colors`}
-      title={button.title}
-    >
-      <FontAwesomeIcon icon={button.icon} />
-    </button>
+    <div className="flex space-x-2">
+      {canShowRejectButton && (
+        <button
+          // Nota: El actionType sigue siendo "reject". El backend y el wrapper
+          // determinan si es CANCELADO o RECHAZADO_X basándose en el rol/estado.
+          onClick={() => onAction("reject", req)}
+          className="text-error hover:opacity-70 transition-colors"
+          // Adaptar el title según el rol para mejorar la UX
+          title={
+            userRole === "Encargado"
+              ? "Cancelar Requerimiento"
+              : "Rechazar/Cancelar Requerimiento"
+          }
+        >
+          <FontAwesomeIcon icon={faBan} />
+        </button>
+      )}
+      {/* Botón de Avance de Estado */}
+      {actionButton && (
+        <button
+          onClick={() => onAction(actionButton.actionType, req)}
+          className={`${actionButton.color} hover:opacity-70 transition-colors`}
+          title={actionButton.title}
+        >
+          <FontAwesomeIcon icon={actionButton.icon} />
+        </button>
+      )}
+    </div>
   );
 }

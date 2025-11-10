@@ -21,6 +21,11 @@ import {
 import CreateRequirementForm from "./CreateRequirementForm.jsx";
 import { useAuthStore } from "../../stores/authStore.js";
 import ActionButtons from "../utils/ActionButtons.jsx";
+import DetailModal from "../utils/DetailModal.jsx";
+import { getRequerimientoDetailConfig } from "../../hooks/utils/detailConfig.js";
+import { formatDate } from "../../utils/dateFormat.js";
+import TechnicalAnalysisModal from "./TechnicalAnalysisModal.jsx";
+import ConfirmationModal from "../utils/ConfirmationModal.jsx";
 
 /**
  * @function RequirementTable
@@ -119,7 +124,7 @@ const RequirementTable = ({
 
                 {/* 2. FECHA SOLICITUD (req.fecha_solicitud) */}
                 <td className="p-4 whitespace-nowrap text-sm">
-                  {new Date(req.fecha_solicitud).toLocaleDateString()}
+                  {formatDate(req.fecha_solicitud)}
                 </td>
 
                 {/* 3. ESTADO (req.Status.nombre_estado) */}
@@ -167,6 +172,95 @@ const RequirementTable = ({
 };
 
 /**
+ * @function ConfirmationModalWrapper
+ * @description Componente que orquesta los props para el ConfirmationModal, mapeando el actionType a texto y colores.
+ * @param {object} props
+ * @param {object} props.modal - Estado del modal: {type, data: {req, actionType}}
+ * @param {Function} props.closeModal - Handler para cerrar el modal.
+ * @param {Function} props.executeRequirementAction - Función que ejecuta la llamada a la API.
+ * @returns {JSX.Element | null}
+ */
+const ConfirmationModalWrapper = ({
+  modal,
+  closeModal,
+  executeRequirementAction,
+}) => {
+  // Validamos que el modal esté abierto y sea de tipo 'confirmation'
+  if (modal.type !== "confirmation" || !modal.data?.req) {
+    return null;
+  }
+
+  const { req, actionType } = modal.data;
+  const reqCode = req.codigo_requerimiento;
+  let props = {
+    title: "",
+    message: "",
+    confirmText: "Confirmar",
+    confirmColor: "bg-success",
+    requiresReason: false,
+  };
+
+  switch (actionType) {
+    case "signRHPago":
+      props.title = `Aprobar Pago RH para ${reqCode}`;
+      props.message =
+        "Esta acción confirma la aprobación de pago/gasto por Recursos Humanos y avanza el requerimiento a la fase de Alistamiento TI.";
+      props.confirmText = "Aprobar Pago";
+      props.confirmColor = "bg-success";
+      break;
+
+    case "manageTIAsset":
+      props.title = `Finalizar Alistamiento TI para ${reqCode}`;
+      props.message =
+        "Esta acción confirma que todos los activos del análisis técnico han sido vinculados y el requerimiento está listo para entrega administrativa de RH. (Asegúrese de haber vinculado todos los activos antes de confirmar).";
+      props.confirmText = "Finalizar Alistamiento";
+      props.confirmColor = "bg-warning";
+      break;
+
+    case "signRHEntrega":
+      props.title = `Firmar Entrega Final para ${reqCode}`;
+      props.message =
+        "Esta acción finaliza y Cierra el requerimiento. Confirme que la entrega administrativa por RR. HH. ha sido completada.";
+      props.confirmText = "Cerrar Requerimiento";
+      props.confirmColor = "bg-success";
+      break;
+
+    case "reject":
+      props.title = `Rechazar/Cancelar Requerimiento ${reqCode}`;
+      props.message =
+        "Debe proporcionar una razón para cancelar este requerimiento. Esta acción lo marca como CANCELADO y no podrá ser revertida.";
+      props.confirmText = "Cancelar Requerimiento";
+      props.confirmColor = "bg-error";
+      props.requiresReason = true;
+      break;
+
+    default:
+      return null; // Si el actionType no es conocido
+  }
+
+  // Handler unificado para la confirmación
+  const handleConfirm = async (reason) => {
+    const success = await executeRequirementAction(actionType, req, reason);
+    if (success) {
+      closeModal();
+    }
+    // Si falla (success es false), el hook ya muestra el toast de error y no se cierra el modal.
+  };
+
+  return (
+    <ConfirmationModal
+      title={props.title}
+      message={props.message}
+      onConfirm={handleConfirm}
+      onClose={closeModal}
+      requiresReason={props.requiresReason}
+      confirmText={props.confirmText}
+      confirmColor={props.confirmColor}
+    />
+  );
+};
+
+/**
  * @function DashboardRequirement
  * @description Componente principal de la página de gestión de requerimientos.
  * Orquesta la obtención de datos, los filtros, la tabla y la gestión de modales.
@@ -190,6 +284,7 @@ export default function DashboardRequirement() {
     availableStatuses,
     modal,
     handleSortClick,
+    executeRequirementAction,
   } = useDashboardRequirement();
 
   const { user } = useAuthStore();
@@ -268,9 +363,35 @@ export default function DashboardRequirement() {
         handleSortClick={handleSortClick}
       />
 
+      {modal.type === "details" && modal.data && (
+        <DetailModal
+          title={`Detalles del Requerimiento ${modal.data.codigo_requerimiento}`}
+          isOpen={true}
+          onClose={closeModal}
+          config={getRequerimientoDetailConfig(modal.data, formatDate)}
+          item={modal.data}
+          formatDate={formatDate}
+          layoutType="two-column"
+        />
+      )}
+
       {modal.type === "createRequirement" && (
         <CreateRequirementForm onClose={closeModal} onSuccess={handleSuccess} />
       )}
+
+      {modal.type === "signTIAnalysis" && modal.data && (
+        <TechnicalAnalysisModal
+          requerimiento={modal.data}
+          onClose={closeModal}
+          onSuccess={handleSuccess}
+        />
+      )}
+
+      <ConfirmationModalWrapper
+        modal={modal}
+        closeModal={closeModal}
+        executeRequirementAction={executeRequirementAction}
+      />
     </div>
   );
 }

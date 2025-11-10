@@ -16,12 +16,9 @@ import {
   faThLarge,
   faEye,
   faArrowDown,
-  faTimes,
   faDesktop,
   faKeyboard,
   faExclamationTriangle,
-  faHdd,
-  faMicrochip,
   faFileExcel,
 } from "@fortawesome/free-solid-svg-icons";
 import api from "../../config/axios.js";

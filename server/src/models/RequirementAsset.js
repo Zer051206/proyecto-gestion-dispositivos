@@ -59,12 +59,16 @@ export default (sequelize) => {
     /**
      * @description Asociación (belongsTo): El registro se vincula a un único Equipo (si aplica).
      */
-    RequirementAsset.belongsTo(models.Device, { foreignKey: "id_equipo" });
+    RequirementAsset.belongsTo(models.Device, {
+      as: "EquipoAsignado",
+      foreignKey: "id_equipo",
+    });
 
     /**
      * @description Asociación (belongsTo): El registro se vincula a un único Periférico (si aplica).
      */
     RequirementAsset.belongsTo(models.Peripheral, {
+      as: "PerifericoAsignado",
       foreignKey: "id_periferico",
     });
   };

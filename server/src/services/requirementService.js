@@ -165,7 +165,7 @@ export const getRequirementById = async (id) => {
  * @throws {ForbiddenError} Si el requerimiento no está en el estado correcto para la firma.
  */
 export const singTIAnalysis = async (user, id, ip, analysisData) => {
-  if (!user.CAN_SING_TI_ANALYSIS) {
+  if (!user.CAN_SIGN_TI_ANALYSIS) {
     throw new ForbiddenError(
       "No tiene permiso para firmar el análisis de TI (CAN_SIGN_TI_ANALYSIS)."
     );
@@ -259,7 +259,7 @@ export const singTIAnalysis = async (user, id, ip, analysisData) => {
  * @throws {ForbiddenError} Si el requerimiento no está en el estado correcto para la firma.
  */
 export const singRHPayment = async (user, id, ip) => {
-  if (!user.CAN_SING_RH_PAYMENT) {
+  if (!user.CAN_SIGN_RH_PAYMENT) {
     throw new ForbiddenError(
       "No tiene permiso para firmar el pago (CAN_SIGN_RH_PAYMENT)."
     );
@@ -456,7 +456,7 @@ export const createAndLinkAsset = async (
  * @throws {ForbiddenError} Si el requerimiento no está en el estado correcto para la firma.
  */
 export const singTIReady = async (user, id, ip) => {
-  if (!user.CAN_SING_TI_READY) {
+  if (!user.CAN_SIGN_TI_READY) {
     throw new ForbiddenError(
       "No tiene permiso para firmar la preparacion de los dispositivos (CAN_SIGN_TI_READY)."
     );
@@ -548,7 +548,7 @@ export const singTIReady = async (user, id, ip) => {
  * @throws {ForbiddenError} Si el requerimiento no está en el estado correcto para la firma.
  */
 export const singRHDelivery = async (user, id, ip) => {
-  if (!user.CAN_SING_RH_DELIVERY) {
+  if (!user.CAN_SIGN_RH_DELIVERY) {
     throw new ForbiddenError(
       "No tiene permiso para firmar la entrega de los dispositivos (CAN_SIGN_RH_DELIVERY)."
     );
@@ -698,8 +698,8 @@ export const rejectRequirement = async (user, id, ip, rejectData) => {
         rejectStatusCodeName = STATUS_CANCELLED;
       } else if (
         user.rol === "Admin" &&
-        user.CAN_SING_TI_ANALYSIS &&
-        user.CAN_SING_TI_READY &&
+        user.CAN_SIGN_TI_ANALYSIS &&
+        user.CAN_SIGN_TI_READY &&
         user.CAN_LINK_ASSETS
       ) {
         nextStatusId = idMap[STATUS_REJECT_TI];
@@ -708,8 +708,8 @@ export const rejectRequirement = async (user, id, ip, rejectData) => {
     } else if (
       currentStatusName === STATUS_RH_PAYMENT ||
       (currentStatusName === STATUS_RH_DELIVERY &&
-        user.CAN_SING_RH_DELIVERY &&
-        user.CAN_SING_RH_PAYMENT &&
+        user.CAN_SIGN_RH_DELIVERY &&
+        user.CAN_SIGN_RH_PAYMENT &&
         user.rol === "Admin")
     ) {
       nextStatusId = idMap[STATUS_REJECT_RH];
@@ -717,8 +717,8 @@ export const rejectRequirement = async (user, id, ip, rejectData) => {
     } else if (
       currentStatusName === STATUS_TI_READY &&
       user.rol === "Admin" &&
-      user.CAN_SING_TI_ANALYSIS &&
-      user.CAN_SING_TI_READY &&
+      user.CAN_SIGN_TI_ANALYSIS &&
+      user.CAN_SIGN_TI_READY &&
       user.CAN_LINK_ASSETS
     ) {
       nextStatusId = idMap[STATUS_REJECT_TI];

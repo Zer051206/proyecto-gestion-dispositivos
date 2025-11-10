@@ -14,81 +14,18 @@ import {
   faEye,
   faToggleOn,
   faToggleOff,
-  faTimes,
-  faIdCard,
-  faPhone,
-  faBuilding,
-  faUserShield,
   faExclamationTriangle,
   faTable,
   faThLarge,
-  faMapMarkerAlt,
-  faEnvelope,
 } from "@fortawesome/free-solid-svg-icons";
 import api from "../../config/axios.js";
 import CreateOperationCenterForm from "./CreateOperationCenterForm.jsx";
 import { toast } from "react-hot-toast";
+import DetailModal from "../utils/DetailModal.jsx";
+import { formatDate } from "../../utils/dateFormat.js";
+import { centroOperacionConfig } from "../../hooks/utils/detailConfig.js";
 
 // --- SUBCOMPONENTES ---
-
-/**
- * @function CenterDetailModal
- * @description Modal que muestra información detallada de un Centro de Operación.
- * @param {object} props - Propiedades del componente.
- * @returns {JSX.Element|null}
- */
-const CenterDetailModal = ({ center, onClose }) => {
-  if (!center) return null;
-  const DetailRow = ({ label, value, icon }) => (
-    <div className="py-3 border-b border-gray-200 last:border-b-0">
-      <p className="text-sm text-neutral-taupe font-semibold flex items-center gap-2">
-        <FontAwesomeIcon icon={icon} className="w-4 text-primary/70" />
-        {label}
-      </p>
-      <p className="text-md text-text-main pl-6">{value || "N/A"}</p>
-    </div>
-  );
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-secondary rounded-lg shadow-xl w-full max-w-lg text-left"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <header className="p-4 flex justify-between items-center border-b border-gray-200">
-          <h3 className="text-xl font-bold text-primary">
-            Detalles del Centro
-          </h3>
-          <button onClick={onClose} className="text-text-main hover:opacity-70">
-            <FontAwesomeIcon icon={faTimes} />
-          </button>
-        </header>
-        <div className="p-6 max-h-[70vh] overflow-y-auto">
-          <DetailRow label="Código" value={center.codigo} icon={faIdCard} />
-          <DetailRow
-            label="Dirección"
-            value={center.direccion}
-            icon={faMapMarkerAlt}
-          />
-          <DetailRow label="Correo" value={center.correo} icon={faEnvelope} />
-          <DetailRow label="Teléfono" value={center.telefono} icon={faPhone} />
-          <DetailRow
-            label="Ciudad"
-            value={center.City?.nombre_ciudad}
-            icon={faBuilding}
-          />
-          <DetailRow
-            label="Creado por (Admin)"
-            value={center.AdminCreador?.nombre}
-            icon={faUserShield}
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
 
 /**
  * @function ConfirmStatusChangeModal
@@ -458,7 +395,13 @@ export default function DashboardOperationCenter() {
         />
       )}
       {modal.type === "details" && (
-        <CenterDetailModal center={modal.data} onClose={closeModal} />
+        <DetailModal
+          item={modal.data}
+          config={centroOperacionConfig}
+          title={`Detalles del Centro ${modal.data.codigo}`}
+          onClose={closeModal}
+          formatDate={formatDate}
+        />
       )}
       {modal.type === "status" && (
         <ConfirmStatusChangeModal

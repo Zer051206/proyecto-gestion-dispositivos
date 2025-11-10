@@ -15,15 +15,7 @@
 import React, { useState } from "react";
 import { useDashboardHistory } from "../../hooks/history/useDashboardHistory.js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faEye,
-  faTimes,
-  faUserShield,
-  faDesktop,
-  faKeyboard,
-  faCalendarAlt,
-  faInfoCircle,
-} from "@fortawesome/free-solid-svg-icons";
+import { faEye } from "@fortawesome/free-solid-svg-icons";
 import { formatDate } from "../../utils/dateFormat.js";
 import DetailModal from "../utils/DetailModal.jsx";
 import { logConfig, bajaConfig } from "../../hooks/utils/detailConfig.js";

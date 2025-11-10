@@ -86,7 +86,7 @@ export const useDashboardOperationCenter = () => {
   const processedCenters = useMemo(() => {
     return [...centers]
       .filter((center) => {
-        // Lógica de filtrado por término de búsqueda en varios campos.
+        // Lógica de filtrado (se mantiene igual)
         const term = searchTerm.toLowerCase();
         if (!term) return true;
         const codigo = String(center.codigo).toLowerCase();
@@ -101,8 +101,24 @@ export const useDashboardOperationCenter = () => {
       .sort((a, b) => {
         // Lógica de ordenación basada en el valor de 'sortBy'.
         const [field, order] = sortBy.split("_");
-        if (a[field] < b[field]) return order === "asc" ? -1 : 1;
-        if (a[field] > b[field]) return order === "asc" ? 1 : -1;
+        const isAsc = order === "asc";
+
+        let valA = a[field];
+        let valB = b[field];
+
+        if (field === "codigo") {
+          const numA = parseInt(String(valA), 10);
+          const numB = parseInt(String(valB), 10);
+
+          if (numA < numB) return isAsc ? -1 : 1;
+          if (numA > numB) return isAsc ? 1 : -1;
+          return 0;
+        }
+
+        // Lógica estándar de ordenación de cadenas para otros campos
+        if (valA < valB) return isAsc ? -1 : 1;
+        if (valA > valB) return isAsc ? 1 : -1;
+
         return 0;
       });
   }, [centers, searchTerm, sortBy]);

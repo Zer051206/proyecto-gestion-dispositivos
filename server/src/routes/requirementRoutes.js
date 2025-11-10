@@ -69,7 +69,7 @@ router.get(
  * @returns {object} 200 - Confirmación de la firma.
  */
 router.patch(
-  "/requerimientos/:id/ti-analisis",
+  "/requerimientos/:id/ti-analysis",
   validate(IDParamSchema, "params"),
   validate(SignTIAnalysisSchema, "body"),
   requirementController.singTIAnalysis

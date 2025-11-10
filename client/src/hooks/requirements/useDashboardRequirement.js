@@ -82,6 +82,73 @@ export function useDashboardRequirement() {
     fetchRequirements();
   }, [fetchRequirements]);
 
+  const executeRequirementAction = useCallback(
+    async (actionType, requerimiento, reason = null) => {
+      const id = requerimiento?.id_requerimiento;
+      if (!id) {
+        toast.error("Requerimiento inválido para esta acción.");
+        return false;
+      }
+
+      let url = "";
+      let successMessage = "";
+      const body = {}; // Inicializamos el body
+
+      // Mapeo de URL y mensaje de éxito
+      switch (actionType) {
+        case "signRHPago":
+          url = `/requerimientos/${id}/rh-pago`;
+          successMessage =
+            "¡Pago RH Aprobado! Requerimiento en Alistamiento TI.";
+          break;
+
+        case "manageTIAsset":
+          url = `/requerimientos/${id}/ti-alistamiento`;
+          successMessage = "¡Alistamiento TI Finalizado! Pasa a Entrega RH.";
+          break;
+
+        case "signRHEntrega":
+          url = `/requerimientos/${id}/rh-entrega`;
+          successMessage = "¡Entrega Final RH Firmada! Requerimiento cerrado.";
+          break;
+
+        case "reject":
+          // Ruta para Cancelar/Rechazar
+          url = `/requerimientos/${id}/cancelar`;
+          successMessage = "Requerimiento Rechazado/Cancelado exitosamente.";
+
+          if (reason) {
+            body.razon_rechazo = reason;
+          } else {
+            toast.error("El motivo del rechazo es obligatorio.");
+            return false;
+          }
+          break;
+
+        default:
+          console.error(`Acción no implementada: ${actionType}`);
+          return false;
+      }
+
+      try {
+        // Enviar el body solo si contiene datos (ej. si es 'reject')
+        await api.patch(url, Object.keys(body).length > 0 ? body : null);
+
+        toast.success(successMessage);
+        fetchRequirements();
+        return true;
+      } catch (err) {
+        console.error(`Error al ejecutar la acción ${actionType}:`, err);
+        const errorMessage =
+          err.response?.data?.message ||
+          `Error al procesar la acción ${actionType}.`;
+        toast.error(errorMessage);
+        return false;
+      }
+    },
+    [fetchRequirements]
+  );
+
   /**
    * @const {Array<object>} requirements
    * @description Deriva y memoriza la lista de requerimientos procesada (filtrada y ordenada) usando `useMemo`.
@@ -170,7 +237,28 @@ export function useDashboardRequirement() {
     [sortBy]
   );
 
-  const handleAction = (type, req = null) => setModal({ type, data: req });
+  const handleAction = (type, req = null) => {
+    const confirmationActions = [
+      "signRHPago",
+      "manageTIAsset",
+      "signRHEntrega",
+      "reject",
+    ];
+
+    if (confirmationActions.includes(type)) {
+      // Para las acciones que van al ConfirmationModalWrapper
+      setModal({
+        type: "confirmation", // El tipo de modal que se va a renderizar
+        data: {
+          req: req,
+          actionType: type, // El tipo de acción real a ejecutar
+        },
+      });
+    } else {
+      // Para los otros modales (details, createRequirement, signTIAnalysis)
+      setModal({ type, data: req });
+    }
+  };
 
   const closeModal = () => {
     setModal({ type: null, data: null });
@@ -202,5 +290,6 @@ export function useDashboardRequirement() {
     modal,
     closeModal,
     handleSortClick,
+    executeRequirementAction,
   };
 }

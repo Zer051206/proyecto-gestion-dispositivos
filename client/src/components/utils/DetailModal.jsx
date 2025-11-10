@@ -15,7 +15,7 @@ import React from "react";
  * @returns {*} El valor encontrado o "N/A".
  */
 const getNestedValue = (obj, path) => {
-  if (!obj || !path) return "N/A";
+  if (!obj || !path) return null;
   // Divide el path por '.' y recorre el objeto
   const value = path.split(".").reduce((acc, part) => {
     // Si acc (acumulador) es nulo o undefined, retorna nulo para evitar errores
@@ -25,7 +25,7 @@ const getNestedValue = (obj, path) => {
     return acc[part];
   }, obj);
 
-  return value !== null && value !== undefined ? value : "N/A";
+  return value !== null && value !== undefined ? value : null;
 };
 
 /**
@@ -36,11 +36,17 @@ const getNestedValue = (obj, path) => {
  * @param {string|number} props.value - Valor a mostrar.
  * @returns {JSX.Element}
  */
-const DetailRow = ({ label, value }) => (
-  <p className="text-base text-text-main">
-    <strong className="font-semibold text-text-main/70">{label}:</strong>{" "}
-    {value}
-  </p>
+const DetailRow = ({ label, value, multiline }) => (
+  <div className="text-base text-text-main">
+    <strong className="font-semibold text-text-main/70">{label}:</strong>
+    {multiline ? (
+      <p className="mt-1 p-2 bg-surface-light rounded-md whitespace-pre-wrap">
+        {value}
+      </p>
+    ) : (
+      <span className="ml-1">{value}</span>
+    )}
+  </div>
 );
 
 /**
@@ -62,18 +68,32 @@ export default function DetailModal({
   config,
   formatDate,
   themeColor = "primary", // Color por defecto
+  layoutType = "single",
 }) {
+  console.log("🚀 ~ DetailModal ~ item:", item);
   if (!item) return null;
 
-  // Clases dinámicas para el tema
   const titleColor = `text-${themeColor}`; // ej. text-primary
   const buttonClass = `bg-${themeColor} text-surface hover:bg-${themeColor}-hover`; // ej. bg-primary...
+
+  const idTwoColumns = layoutType === "two-column";
+
+  const contentContainerClasses = idTwoColumns
+    ? "overflow-x-auto max-h-[80vh] pt-2" // Scroll horizontal para 3 columnas
+    : "space-y-4 max-h-[80vh] overflow-y-auto pr-2"; // Stack vertical para un solo módulo
+
+  // Clases dinámicas para el contenedor del grid/stack
+  const gridClasses = idTwoColumns
+    ? "grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-y-4 w-max min-w-full"
+    : "space-y-4"; // Si no es 3 columnas, volvemos al stack vertical
+
+  // Ancho del modal
+  const modalWidth = idTwoColumns ? "max-w-6xl" : "max-w-md";
 
   return (
     <div className="fixed inset-0 bg-text-main/80 overflow-y-auto h-full w-full flex items-center justify-center z-50">
       <div
-        className="relative bg-background p-6 rounded-lg shadow-2xl w-full max-w-md mx-4 animate-fadeIn"
-        // Usa un ID del item si existe, o un string aleatorio como key
+        className={`relative bg-background p-1 md:p-3 rounded-lg shadow-2xl w-full ${modalWidth} animate-fadeIn`}
         key={item.id_visita || item.id_paquete || item.id_vehiculo || "modal"}
       >
         <h3
@@ -82,34 +102,76 @@ export default function DetailModal({
           {title}
         </h3>
 
-        {/* --- Contenido Dinámico del Modal --- */}
-        <div className="space-y-4 text-text-main">
-          {config.map((prop) => {
-            // 1. Obtener el valor (simple o anidado)
-            const value = getNestedValue(item, prop.key);
+        {/* --- Contenedor Principal para el SCROLL y Layout --- */}
+        <div className={contentContainerClasses}>
+          <div className={gridClasses}>
+            {config.map((prop, index) => {
+              // --- 1. Lógica de Divisores ---
+              if (prop.isDivider) {
+                // El divisor debe ocupar el ancho completo, independientemente del layout
+                const dividerClass = idTwoColumns ? "col-span-full" : "";
+                return (
+                  <h4
+                    key={`divider-${index}`}
+                    className={`text-lg font-bold text-text-main mt-4 mb-2 border-t border-b border-surface-light pt-2 ${dividerClass}`}
+                  >
+                    {prop.label}
+                  </h4>
+                );
+              }
 
-            // 2. Omitir si es condicional y el valor no existe
-            if (prop.conditional && (value === "N/A" || !value)) {
-              return null;
-            }
+              // --- 2. Lógica de Filas ---
+              const rawValue = getNestedValue(item, prop.key);
 
-            // 3. Formatear el valor si es necesario
-            let displayValue = value;
-            if (prop.format === "date" && formatDate) {
-              displayValue = formatDate(value) || "Pendiente";
-            } else if (value === "N/A" || !value) {
-              displayValue = "N/A"; // Valor por defecto si es nulo o undefined
-            }
+              // Omitir si es condicional y el valor es nulo/vacío
+              if (
+                prop.conditional &&
+                (rawValue === undefined || rawValue === null || rawValue === "")
+              ) {
+                return null;
+              }
 
-            // 4. Renderizar la fila
-            return (
-              <DetailRow
-                key={prop.key}
-                label={prop.label}
-                value={displayValue}
-              />
-            );
-          })}
+              // ... (Lógica de formateo: displayValue, se mantiene igual)
+              let displayValue;
+              if (typeof prop.format === "function") {
+                displayValue = prop.format(rawValue, item);
+              } else if (prop.format === "date" && formatDate) {
+                displayValue = formatDate(rawValue) || "N/A";
+              } else {
+                if (
+                  rawValue === undefined ||
+                  rawValue === null ||
+                  rawValue === ""
+                ) {
+                  displayValue = "N/A";
+                } else {
+                  displayValue = String(rawValue);
+                }
+              }
+
+              // 4. Renderizar la fila
+              if (displayValue === null || displayValue === undefined)
+                return null;
+
+              // Si es layout de 3 columnas, los elementos multilínea ocupan el ancho completo.
+              const itemClass =
+                idTwoColumns && prop.multiline ? "col-span-full" : "col-span-1";
+
+              return (
+                <div
+                  // Solo aplicamos la clase de grid si estamos en modo 3 columnas
+                  className={idTwoColumns ? itemClass : ""}
+                  key={prop.key}
+                >
+                  <DetailRow
+                    label={prop.label}
+                    value={displayValue}
+                    multiline={prop.multiline}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
         {/* --- Fin Contenido Dinámico --- */}
 

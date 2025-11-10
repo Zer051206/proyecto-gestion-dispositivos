@@ -58,7 +58,7 @@ const Header = ({ user, logout, toggleSidebar }) => {
         )}
       </div>
       {user?.rol === "Encargado" && !isSubPage && (
-        <div className="text-left font-semibold fixed top-0 left-0">
+        <div className="text-left font-semibold fixed top-3 left-0">
           <h2 className="text-primary">
             Bienvenido, {user?.nombre || "Usuario"}
           </h2>
@@ -67,7 +67,7 @@ const Header = ({ user, logout, toggleSidebar }) => {
       )}
 
       {user.rol === "Encargado" && isSubPage && (
-        <div className="text-left md:absolute md:top-0 hidden md:flex flex-col  justify-items-start font-semibold">
+        <div className="text-left md:absolute md:top-3 hidden md:flex flex-col  justify-items-start font-semibold">
           <h2 className="text-primary">Nombre: {user?.nombre || "Usuario"}</h2>
           <p className="text-neutral-taupe">Rol: {user?.rol}</p>
         </div>

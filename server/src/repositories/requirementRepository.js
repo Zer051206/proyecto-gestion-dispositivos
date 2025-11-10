@@ -2,7 +2,7 @@
  * @file requirementRepository.js
  * @module Repositories
  * @description Funciones de acceso a datos (CRUD y consultas) para el modelo Requirement (Requerimiento)
- * y sus modelos relacionados directos (RequirementAnalysis). Actúa como capa de abstracción
+ * y sus modelos relacionados directos (TechnicalAnalysis). Actúa como capa de abstracción
  * entre el servicio y el ORM (Sequelize).
  * @requires ../models/index.js
  */
@@ -18,7 +18,7 @@ import db from "../models/index.js";
 
 const {
   Requirement,
-  RequirementAnalysis,
+  TechnicalAnalysis,
   User,
   RequirementAsset,
   RequirementStatus,
@@ -56,8 +56,24 @@ export const findById = async (id, options = {}) => {
     include: [
       { model: RequirementStatus, as: "Status" },
       { model: User, as: "SignerCO" },
+      {
+        model: TechnicalAnalysis,
+        as: "TechnicalAnalysis",
+        include: [{ model: User, as: "AnalistaTI" }],
+      },
       { model: OperationCenter, as: "CenterOfOperation" },
-      // Se pueden agregar más inclusiones si son necesarias para la lectura/flujo
+      { model: User, as: "SignerRHPayment" },
+      { model: User, as: "SignerTIReady" },
+      { model: User, as: "SignerRHDelivery" },
+      { model: User, as: "SignerTIAnalysis" },
+      {
+        model: RequirementAsset,
+        as: "LinkedAssets",
+        include: [
+          { model: db.Device, as: "EquipoAsignado" },
+          { model: db.Peripheral, as: "PerifericoAsignado" },
+        ],
+      },
     ],
     ...options,
   });
@@ -74,9 +90,25 @@ export const findAll = async () => {
     include: [
       { model: RequirementStatus, as: "Status" },
       { model: User, as: "SignerCO" },
+      {
+        model: TechnicalAnalysis,
+        as: "TechnicalAnalysis",
+        include: [{ model: User, as: "AnalistaTI" }],
+      },
       { model: OperationCenter, as: "CenterOfOperation" },
+      { model: User, as: "SignerRHPayment" },
+      { model: User, as: "SignerTIReady" },
+      { model: User, as: "SignerRHDelivery" },
+      { model: User, as: "SignerTIAnalysis" },
+      {
+        model: RequirementAsset,
+        as: "LinkedAssets",
+        include: [
+          { model: db.Device, as: "EquipoAsignado" },
+          { model: db.Peripheral, as: "PerifericoAsignado" },
+        ],
+      },
     ],
-    order: [["fecha_solicitud", "DESC"]],
   });
 };
 
@@ -123,13 +155,24 @@ export const create = async (data, options = {}) => {
  * @returns {Promise<object>} El objeto del requerimiento actualizado.
  */
 export const update = async (id, data, options = {}) => {
-  const [rowsAffected, [updatedRequirement]] = await Requirement.update(data, {
+  // Corrección: Capturamos los elementos de forma simple
+  const [rowsAffected, updatedRequirements] = await Requirement.update(data, {
     where: { id_requerimiento: id },
     returning: true,
     ...options,
   });
-  // Retornamos el objeto actualizado o null si no se afectó ninguna fila
-  return rowsAffected > 0 ? updatedRequirement : null;
+
+  // Si rowsAffected > 0 y se devolvió una lista de objetos (updatedRequirements es un array)
+  if (
+    rowsAffected > 0 &&
+    Array.isArray(updatedRequirements) &&
+    updatedRequirements.length > 0
+  ) {
+    return updatedRequirements[0];
+  }
+
+  // Si no se afectó ninguna fila o no se devolvió el objeto actualizado
+  return null;
 };
 
 /**
@@ -141,7 +184,7 @@ export const update = async (id, data, options = {}) => {
  * @returns {Promise<object>} El objeto del análisis creado.
  */
 export const createAnalysis = async (data, options = {}) => {
-  return RequirementAnalysis.create(data, options);
+  return TechnicalAnalysis.create(data, options);
 };
 
 /**
