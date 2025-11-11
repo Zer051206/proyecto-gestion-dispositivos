@@ -55,7 +55,7 @@ export default function ActionButtons({ req, onAction }) {
         actionButton = {
           title: "Gestionar Alistamiento",
           icon: faTools,
-          actionType: "manageTIAsset",
+          actionType: "openAlistamientoModal",
           color: "text-warning",
         };
         break;
@@ -106,7 +106,6 @@ export default function ActionButtons({ req, onAction }) {
     <div className="flex space-x-2">
       {canShowRejectButton && (
         <button
-          // Nota: El actionType sigue siendo "reject". El backend y el wrapper
           // determinan si es CANCELADO o RECHAZADO_X basándose en el rol/estado.
           onClick={() => onAction("reject", req)}
           className="text-error hover:opacity-70 transition-colors"

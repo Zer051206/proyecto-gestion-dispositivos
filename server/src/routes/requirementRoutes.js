@@ -119,7 +119,7 @@ router.patch(
 );
 
 /**
- * @route   POST /api/requerimientos/:id/enlace-equipos
+ * @route   POST /api/requerimientos/:id/enlace-dispositivos
  * @description Crea un nuevo activo (equipo o periférico) y lo vincula al requerimiento,
  * consumiendo uno de los contadores definidos en el Análisis Técnico.
  * Solo puede ejecutarse cuando el requerimiento está en fase de Alistamiento (Estado 4).
@@ -130,7 +130,7 @@ router.patch(
  * @returns {Error} 400 - Si se excede el contador de equipos/periféricos del análisis.
  */
 router.post(
-  "/requerimientos/:id/enlace-equipos",
+  "/requerimientos/:id/enlace-dispositivos",
   validate(IDParamSchema, "params"),
   validate(CreateAndLinkAssetControlSchema, "body"),
   validateAssetDetails,

@@ -41,6 +41,8 @@ const DeviceSubForm = ({
   onRemove,
   centros,
   isLoadingCatalogs,
+  isRemoveDisabled,
+  isReqFlow,
 }) => {
   const device = formik.values.devices[index];
   const { user } = useAuthStore();
@@ -87,10 +89,11 @@ const DeviceSubForm = ({
     <div className="bg-background/50 p-6 rounded-lg shadow-inner relative border border-gray-200">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-bold text-primary">Equipo #{index + 1}</h3>
-        {formik.values.devices.length > 1 && (
+        {formik.values.devices.length > 1 && !isReqFlow && (
           <button
             type="button"
             onClick={() => onRemove(index)}
+            disabled={isRemoveDisabled}
             className="text-accent hover:text-error"
             title="Eliminar este equipo"
           >
@@ -118,9 +121,12 @@ const DeviceSubForm = ({
               Centro de Operación:
             </span>
             <select
-              className={inputClasses}
+              className={`${inputClasses} ${
+                isReqFlow ? "bg-gray-200 text-gray-500 cursor-not-allowed" : ""
+              }`}
               {...formik.getFieldProps(`devices[${index}].id_centro_operacion`)}
-              disabled={isLoadingCatalogs}
+              // Deshabilitar si se está cargando el catálogo O si estamos en flujo de requerimiento (ya se autoseleccionó)
+              disabled={isLoadingCatalogs || isReqFlow}
             >
               <option value="" hidden>
                 {isLoadingCatalogs ? "Cargando..." : "Selecciona..."}
@@ -137,6 +143,12 @@ const DeviceSubForm = ({
             {getError("id_centro_operacion") && (
               <div className="text-error text-sm mt-1">
                 {getError("id_centro_operacion")}
+              </div>
+            )}
+            {/* Mensaje de CO para el Admin en flujo de Requerimiento */}
+            {isReqFlow && (
+              <div className="text-sm mt-1 text-primary/80 font-medium">
+                Asignado automáticamente por requerimiento.
               </div>
             )}
           </label>
@@ -352,28 +364,59 @@ const DeviceSubForm = ({
  * @param {Function} props.onSuccess - Callback a ejecutar tras una creación exitosa.
  * @returns {JSX.Element}
  */
-export default function CreateDeviceForm({ onClose, onSuccess }) {
-  const formik = useCreateDevicesForm(onSuccess);
+export default function CreateDeviceForm({
+  onClose,
+  onSuccess,
+  idRequerimiento = null,
+  requiredQuantity = null,
+  setCompleted = () => {},
+}) {
+  const { formik, requiredCount, isLoadingCo } = useCreateDevicesForm(
+    onSuccess,
+    idRequerimiento // Pasar el ID del requerimiento al hook
+  );
+
+  const isReqFlow = idRequerimiento !== null;
 
   // Lógica para obtener catálogos
   const [centros, setCentros] = useState([]);
   const [isLoadingCatalogs, setIsLoadingCatalogs] = useState(true);
+
   useEffect(() => {
-    api
-      .get("/api/centros-operacion")
-      .then((res) => {
-        setCentros(res.data.operationCenters || []);
-        setIsLoadingCatalogs(false);
-      })
-      .catch((err) => {
-        console.error("Error al cargar centros de operación", err);
-        formik.setFieldError(
-          "apiError",
-          "No se pudieron cargar los centros de operación."
-        );
-        setIsLoadingCatalogs(false);
-      });
-  }, []);
+    // Solo cargamos los centros de operación si NO estamos en un flujo de requerimiento
+    // o si el Admin todavía debe seleccionar uno (en cuyo caso, idRequerimiento sería null).
+    if (!isReqFlow) {
+      api
+        .get("/api/centros-operacion")
+        .then((res) => {
+          setCentros(res.data.operationCenters || []);
+          setIsLoadingCatalogs(false);
+        })
+        .catch((err) => {
+          console.error("Error al cargar centros de operación", err);
+          formik.setFieldError(
+            "apiError",
+            "No se pudieron cargar los centros de operación."
+          );
+          setIsLoadingCatalogs(false);
+        });
+    } else {
+      // Si es flujo de requerimiento, el select de CO está deshabilitado y ya autoseleccionado,
+      // por lo que no es estrictamente necesario cargar el catálogo para el Admin, aunque puede ser útil para la UI.
+      setIsLoadingCatalogs(false);
+    }
+  }, [isReqFlow, formik.setFieldError]); // Dependencia en isReqFlow
+
+  // Lógica de deshabilitación y limitación de formularios
+  const currentCount = formik.values.devices.length;
+  // Botón Agregar: Deshabilitado si requiredCount es conocido y se alcanzó el límite.
+  const isAddDisabled = requiredCount !== null && currentCount >= requiredCount;
+  // Botón Eliminar: Deshabilitado si requiredCount es conocido y el conteo actual es igual al requerido (límite estricto).
+  const isRemoveDisabled =
+    requiredCount !== null && currentCount <= requiredCount;
+  // Carga general: Deshabilitar el formulario si se están cargando catálogos O si el hook está haciendo su fetch inicial.
+  const isFormDisabled =
+    formik.isSubmitting || isLoadingCatalogs || isLoadingCo;
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 pt-12 overflow-y-auto animate-fade-in">
@@ -381,7 +424,9 @@ export default function CreateDeviceForm({ onClose, onSuccess }) {
       <div className="bg-secondary rounded-lg shadow-xl w-full max-w-4xl flex flex-col my-8">
         <header className="p-4 flex justify-between items-center border-b border-gray-200 bg-secondary z-10">
           <h2 className="text-2xl font-bold text-primary">
-            Registrar Nuevos Equipos
+            {isReqFlow
+              ? `Registro para Requerimiento #${idRequerimiento}`
+              : "Registrar Nuevos Equipos"}
           </h2>
           <button onClick={onClose} className="text-text-main hover:opacity-70">
             <FontAwesomeIcon icon={faTimes} size="lg" />
@@ -392,6 +437,37 @@ export default function CreateDeviceForm({ onClose, onSuccess }) {
             <FieldArray name="devices">
               {({ push, remove }) => (
                 <div className="space-y-8">
+                  {/* Indicador de Límite (si aplica) */}
+                  {isReqFlow && isLoadingCo && (
+                    <div
+                      className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative"
+                      role="alert"
+                    >
+                      <strong className="font-bold">Cargando datos:</strong>
+                      <span className="block sm:inline ml-2">
+                        Obteniendo Centro de Operación y límite de equipos del
+                        Análisis Técnico...
+                      </span>
+                    </div>
+                  )}
+                  {requiredCount !== null &&
+                    requiredCount > 0 &&
+                    isReqFlow &&
+                    !isLoadingCo && (
+                      <div
+                        className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative"
+                        role="alert"
+                      >
+                        <strong className="font-bold">
+                          Límite Establecido:
+                        </strong>
+                        <span className="block sm:inline ml-2">
+                          Debe registrar exactamente **{requiredCount}**
+                          equipo(s).
+                        </span>
+                      </div>
+                    )}
+
                   {formik.values.devices.map((device, index) => (
                     <DeviceSubForm
                       key={index}
@@ -400,14 +476,27 @@ export default function CreateDeviceForm({ onClose, onSuccess }) {
                       onRemove={remove}
                       centros={centros}
                       isLoadingCatalogs={isLoadingCatalogs}
+                      isRemoveDisabled={isRemoveDisabled || isLoadingCo} // Pasar estado de deshabilitación
+                      isReqFlow={isReqFlow || isLoadingCo} // Indicar si estamos en flujo de requerimiento
                     />
                   ))}
+
+                  {/* Botón Añadir: Lógica de Límite */}
                   <button
                     type="button"
                     onClick={() => push(initialDeviceValues)}
-                    className="flex items-center gap-2 py-2 px-4 bg-accent-secondary text-text-light font-semibold rounded-lg hover:opacity-90 transition-opacity"
+                    disabled={isAddDisabled || isFormDisabled} // Usar el límite y el estado de carga
+                    className="flex items-center gap-2 py-2 px-4 bg-accent-secondary text-text-light font-semibold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={
+                      isAddDisabled
+                        ? `Límite alcanzado (${requiredCount})`
+                        : "Añadir otro equipo"
+                    }
                   >
-                    <FontAwesomeIcon icon={faPlus} /> Añadir otro equipo
+                    <FontAwesomeIcon icon={faPlus} />
+                    Añadir otro equipo
+                    {requiredCount !== null &&
+                      ` (${currentCount}/${requiredCount})`}
                   </button>
                 </div>
               )}
@@ -423,14 +512,17 @@ export default function CreateDeviceForm({ onClose, onSuccess }) {
               <button
                 type="button"
                 onClick={onClose}
-                disabled={formik.isSubmitting}
-                className="py-2 px-4 rounded-lg bg-gray-200 hover:bg-gray-300 text-text-main font-semibold"
+                disabled={isFormDisabled}
+                className="py-2 px-4 rounded-lg bg-gray-200 hover:bg-gray-300 text-text-main font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                disabled={formik.isSubmitting || isLoadingCatalogs}
+                disabled={
+                  isFormDisabled ||
+                  (requiredCount !== null && currentCount !== requiredCount)
+                } // Deshabilitar si no se cumple el límite estricto
                 className="py-2 px-4 rounded-lg bg-primary text-text-light font-bold hover:bg-primary-dark disabled:bg-primary/50 disabled:cursor-not-allowed"
               >
                 {formik.isSubmitting

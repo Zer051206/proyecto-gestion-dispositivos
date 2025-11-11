@@ -10,6 +10,7 @@
  * @requires ../../stores/authStore.js
  */
 import { useFormik } from "formik";
+import { useState, useEffect } from "react";
 import * as Yup from "yup";
 import api from "../../config/axios.js";
 import { useAuthStore } from "../../stores/authStore.js";
@@ -55,10 +56,14 @@ export const initialPeripheralValues = {
  * @param {Function} onSuccess - Una función callback que se ejecuta cuando la petición a la API es exitosa.
  * @returns {object} La instancia completa de Formik.
  */
-export const useCreatePeripheralsForm = (onSuccess) => {
+export const useCreatePeripheralsForm = (onSuccess, idRequerimiento = null) => {
   // Obtenemos el usuario logueado para aplicar validaciones condicionales.
   const { user } = useAuthStore();
   const isAdmin = user?.rol === "Admin";
+
+  const [coIdFromReq, setCoIdFromReq] = useState(null);
+  const [requiredCount, setRequiredCount] = useState(null);
+  const [isLoadingCo, setIsLoadingCo] = useState(idRequerimiento !== null);
 
   /**
    * @const {Yup.ObjectSchema} finalValidationSchema
@@ -73,54 +78,159 @@ export const useCreatePeripheralsForm = (onSuccess) => {
       : Yup.string().notRequired(), // Para Encargados, este campo no se valida en el frontend.
 
     has_cost_center: Yup.boolean(),
-    id_centro_costo: Yup.number().when("has_cost_center", {
-      is: true,
-      then: (schema) =>
-        schema
-          .positive("Debe seleccionar un centro.")
-          .required("El centro de costo es obligatorio."),
-      otherwise: (schema) => schema.nullable(),
-    }),
+    id_centro_operacion: Yup.number().when(
+      ["$idRequerimiento", "$coIdFromReq"],
+      {
+        // Solo se valida si NO estamos en el flujo de requerimiento (idRequerimiento es null)
+        is: (reqId) => reqId === null,
+        then: (schema) =>
+          isAdmin
+            ? schema
+                .positive("Debe seleccionar un centro de operación.")
+                .required("El centro de operación es obligatorio.")
+            : schema.notRequired(),
+        // Si es un requerimiento (reqId !== null), NUNCA se requiere validación manual.
+        otherwise: (schema) => schema.notRequired(),
+      }
+    ),
   });
+
+  let peripheralsArrayValidation = Yup.array()
+    .of(finalValidationSchema)
+    .min(1, "Debes agregar al menos un periférico.");
+
+  // Se aplica el límite estricto si se cargó desde el requerimiento
+  if (requiredCount !== null && idRequerimiento) {
+    peripheralsArrayValidation = peripheralsArrayValidation
+      .min(
+        requiredCount,
+        `Debes registrar exactamente ${requiredCount} periférico(s) según el análisis.`
+      )
+      .max(
+        requiredCount,
+        `Solo se permiten ${requiredCount} periférico(s) según el análisis.`
+      );
+  }
 
   /**
    * @const {object} formik
    * @description Instancia de Formik creada con `useFormik` que maneja todo el estado del formulario.
    */
   const formik = useFormik({
+    // Inicializa el array con el tamaño del límite, o con 1 si no hay límite
     initialValues: {
-      peripherals: [initialPeripheralValues],
+      peripherals: Array.from({ length: requiredCount || 1 }, () => ({
+        ...initialPeripheralValues,
+        id_centro_operacion:
+          !isAdmin && !idRequerimiento ? user.id_centro_operacion : "",
+      })),
     },
-    validationSchema: Yup.object({
-      peripherals: Yup.array()
-        .of(finalValidationSchema)
-        .min(1, "Debes agregar al menos un periférico."),
-    }),
-    /**
-     * @function onSubmit
-     * @description Función que se ejecuta al enviar el formulario si la validación es exitosa.
-     * @param {object} values - Los valores actuales del formulario.
-     * @param {object} formikHelpers - Objeto con helpers de Formik.
-     */
-    onSubmit: async (values, { setFieldError, setSubmitting }) => {
-      try {
-        // El backend se encarga de asignar el id_centro_operacion si el usuario es un Encargado.
-        await api.post("/api/perifericos", values.peripherals);
-        if (onSuccess) {
-          onSuccess(
-            `¡${values.peripherals.length} periférico(s) creado(s) exitosamente!`
-          );
-        }
-      } catch (err) {
-        const errorMessage =
-          err.response?.data?.message ||
-          "Ocurrió un error al crear los periféricos.";
-        setFieldError("apiError", errorMessage);
-      } finally {
-        setSubmitting(false);
-      }
+    validationContext: {
+      idRequerimiento: idRequerimiento,
+      coIdFromReq: coIdFromReq, // Pasar el valor al contexto de Yup
     },
+    validationSchema: Yup.object({ peripherals: peripheralsArrayValidation }), // <-- Usar la validación dinámica
+    onSubmit: () => {}, // placeholder, se define abajo
   });
 
-  return formik;
+  useEffect(() => {
+    if (idRequerimiento) {
+      const fetchReqData = async () => {
+        try {
+          const response = await api.get(
+            `/api/requerimientos/${idRequerimiento}`
+          );
+          const { id_centro_operacion, analisis_tecnico } = response.data;
+
+          // Nota: Asumo que tienes un campo similar para cantidad de periféricos
+          const requiredLimit = analisis_tecnico?.cantidad_perifericos || 0;
+
+          if (id_centro_operacion) {
+            setCoIdFromReq(id_centro_operacion);
+            setRequiredCount(requiredLimit); // Establecer el límite
+
+            // Ajustamos los valores y la cantidad del FieldArray
+            formik.setValues((currentValues) => {
+              const basePeripheral = {
+                ...initialPeripheralValues,
+                id_centro_operacion: id_centro_operacion,
+              };
+
+              // 2. Usar los valores existentes o llenar hasta el límite
+              const initialPeripherals = Array.from(
+                { length: requiredLimit },
+                (_, index) => {
+                  return index < currentValues.peripherals.length
+                    ? {
+                        ...currentValues.peripherals[index],
+                        id_centro_operacion: id_centro_operacion,
+                      }
+                    : basePeripheral;
+                }
+              );
+
+              return { peripherals: initialPeripherals };
+            }, false);
+          }
+        } catch (error) {
+          console.error(
+            "Error al obtener datos del requerimiento (CO y límite):",
+            error
+          );
+        } finally {
+          setIsLoadingCo(false);
+        }
+      };
+      fetchReqData();
+    }
+  }, [idRequerimiento, formik.setValues]);
+
+  /**
+   * @function onSubmit
+   * @description Función que se ejecuta al enviar el formulario si la validación es exitosa.
+   * @param {object} values - Los valores actuales del formulario.
+   * @param {object} formikHelpers - Objeto con helpers de Formik.
+   */
+  formik.onSubmit = async (values, { setFieldError, setSubmitting }) => {
+    if (isLoadingCo) {
+      setFieldError(
+        "apiError",
+        "Aún cargando datos del requerimiento, por favor espere."
+      );
+      setSubmitting(false);
+      return;
+    }
+
+    try {
+      let endpoint = "/api/perifericos";
+      let payload = values.peripherals;
+
+      if (idRequerimiento) {
+        endpoint = `/api/requerimientos/${idRequerimiento}/enlace-dispositivos`;
+
+        payload = payload.map((p) => ({
+          ...p,
+          id_centro_operacion: coIdFromReq,
+        }));
+      }
+
+      await api.post(endpoint, payload);
+
+      if (onSuccess) {
+        onSuccess(
+          `¡${values.peripherals.length} periférico(s) creado(s) exitosamente!`
+        );
+      }
+    } catch (err) {
+      const errorMessage =
+        err.response?.data?.message ||
+        "Ocurrió un error al crear los periféricos.";
+      setFieldError("apiError", errorMessage);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Devolvemos formik y los nuevos estados de control.
+  return { formik, requiredCount, isLoadingCo };
 };

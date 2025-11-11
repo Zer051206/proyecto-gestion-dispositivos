@@ -97,24 +97,24 @@ export function useDashboardRequirement() {
       // Mapeo de URL y mensaje de éxito
       switch (actionType) {
         case "signRHPago":
-          url = `/requerimientos/${id}/rh-pago`;
+          url = `/api/requerimientos/${id}/rh-pago`;
           successMessage =
             "¡Pago RH Aprobado! Requerimiento en Alistamiento TI.";
           break;
 
         case "manageTIAsset":
-          url = `/requerimientos/${id}/ti-alistamiento`;
+          url = `/api/requerimientos/${id}/ti-alistamiento`;
           successMessage = "¡Alistamiento TI Finalizado! Pasa a Entrega RH.";
           break;
 
         case "signRHEntrega":
-          url = `/requerimientos/${id}/rh-entrega`;
+          url = `/api/requerimientos/${id}/rh-entrega`;
           successMessage = "¡Entrega Final RH Firmada! Requerimiento cerrado.";
           break;
 
         case "reject":
           // Ruta para Cancelar/Rechazar
-          url = `/requerimientos/${id}/cancelar`;
+          url = `/api/requerimientos/${id}/cancelar`;
           successMessage = "Requerimiento Rechazado/Cancelado exitosamente.";
 
           if (reason) {
@@ -131,8 +131,7 @@ export function useDashboardRequirement() {
       }
 
       try {
-        // Enviar el body solo si contiene datos (ej. si es 'reject')
-        await api.patch(url, Object.keys(body).length > 0 ? body : null);
+        await api.patch(url, Object.keys(body).length > 0 ? body : undefined);
 
         toast.success(successMessage);
         fetchRequirements();

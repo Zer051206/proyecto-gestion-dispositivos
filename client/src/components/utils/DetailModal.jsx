@@ -84,7 +84,7 @@ export default function DetailModal({
 
   // Clases dinámicas para el contenedor del grid/stack
   const gridClasses = idTwoColumns
-    ? "grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-y-4 w-max min-w-full"
+    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-y-4 w-max min-w-full"
     : "space-y-4"; // Si no es 3 columnas, volvemos al stack vertical
 
   // Ancho del modal
@@ -93,11 +93,11 @@ export default function DetailModal({
   return (
     <div className="fixed inset-0 bg-text-main/80 overflow-y-auto h-full w-full flex items-center justify-center z-50">
       <div
-        className={`relative bg-background p-1 md:p-3 rounded-lg shadow-2xl w-full ${modalWidth} animate-fadeIn`}
+        className={`relative bg-background p-4 rounded-lg shadow-2xl w-screen mt-[100px] md:mt-[50px] mb-4 ${modalWidth} animate-fadeIn`}
         key={item.id_visita || item.id_paquete || item.id_vehiculo || "modal"}
       >
         <h3
-          className={`text-2xl font-bold ${titleColor} mb-6 text-center border-b pb-2`}
+          className={`text-2xl font-bold ${titleColor} mb-2 text-center border-b pb-2`}
         >
           {title}
         </h3>

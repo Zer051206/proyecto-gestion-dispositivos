@@ -12,12 +12,7 @@
 import React, { useState } from "react";
 import { useDashboardRequirement } from "../../hooks/requirements/useDashboardRequirement.js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faPlus,
-  faEye,
-  faEdit,
-  faSort,
-} from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faEye } from "@fortawesome/free-solid-svg-icons";
 import CreateRequirementForm from "./CreateRequirementForm.jsx";
 import { useAuthStore } from "../../stores/authStore.js";
 import ActionButtons from "../utils/ActionButtons.jsx";
@@ -26,6 +21,7 @@ import { getRequerimientoDetailConfig } from "../../hooks/utils/detailConfig.js"
 import { formatDate } from "../../utils/dateFormat.js";
 import TechnicalAnalysisModal from "./TechnicalAnalysisModal.jsx";
 import ConfirmationModal from "../utils/ConfirmationModal.jsx";
+import ModalLinkDevices from "./ModalLinkDevices.jsx";
 
 /**
  * @function RequirementTable
@@ -209,14 +205,6 @@ const ConfirmationModalWrapper = ({
       props.confirmColor = "bg-success";
       break;
 
-    case "manageTIAsset":
-      props.title = `Finalizar Alistamiento TI para ${reqCode}`;
-      props.message =
-        "Esta acción confirma que todos los activos del análisis técnico han sido vinculados y el requerimiento está listo para entrega administrativa de RH. (Asegúrese de haber vinculado todos los activos antes de confirmar).";
-      props.confirmText = "Finalizar Alistamiento";
-      props.confirmColor = "bg-warning";
-      break;
-
     case "signRHEntrega":
       props.title = `Firmar Entrega Final para ${reqCode}`;
       props.message =
@@ -362,6 +350,14 @@ export default function DashboardRequirement() {
         sortBy={sortBy}
         handleSortClick={handleSortClick}
       />
+
+      {modal.type === "openAlistamientoModal" && modal.data && (
+        <ModalLinkDevices
+          req={modal.data}
+          onClose={closeModal}
+          onFinishAlistamiento={handleSuccess}
+        />
+      )}
 
       {modal.type === "details" && modal.data && (
         <DetailModal

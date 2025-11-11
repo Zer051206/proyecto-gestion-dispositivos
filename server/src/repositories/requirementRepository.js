@@ -125,7 +125,24 @@ export const findByUser = async (id_usuario) => {
     include: [
       { model: RequirementStatus, as: "Status" },
       { model: User, as: "SignerCO" },
+      {
+        model: TechnicalAnalysis,
+        as: "TechnicalAnalysis",
+        include: [{ model: User, as: "AnalistaTI" }],
+      },
       { model: OperationCenter, as: "CenterOfOperation" },
+      { model: User, as: "SignerRHPayment" },
+      { model: User, as: "SignerTIReady" },
+      { model: User, as: "SignerRHDelivery" },
+      { model: User, as: "SignerTIAnalysis" },
+      {
+        model: RequirementAsset,
+        as: "LinkedAssets",
+        include: [
+          { model: db.Device, as: "EquipoAsignado" },
+          { model: db.Peripheral, as: "PerifericoAsignado" },
+        ],
+      },
     ],
     order: [["fecha_solicitud", "DESC"]],
   });
@@ -156,23 +173,12 @@ export const create = async (data, options = {}) => {
  */
 export const update = async (id, data, options = {}) => {
   // Corrección: Capturamos los elementos de forma simple
-  const [rowsAffected, updatedRequirements] = await Requirement.update(data, {
+  const [rowsAffected] = await Requirement.update(data, {
     where: { id_requerimiento: id },
-    returning: true,
     ...options,
   });
 
-  // Si rowsAffected > 0 y se devolvió una lista de objetos (updatedRequirements es un array)
-  if (
-    rowsAffected > 0 &&
-    Array.isArray(updatedRequirements) &&
-    updatedRequirements.length > 0
-  ) {
-    return updatedRequirements[0];
-  }
-
-  // Si no se afectó ninguna fila o no se devolvió el objeto actualizado
-  return null;
+  return rowsAffected > 0;
 };
 
 /**

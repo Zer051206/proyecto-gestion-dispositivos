@@ -66,6 +66,10 @@ export default (sequelize) => {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
       },
+      razon_rechazo: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
 
       // --- FKs de Relaciones y Estado ---
       id_estado_requerimiento: { type: DataTypes.INTEGER, allowNull: false },

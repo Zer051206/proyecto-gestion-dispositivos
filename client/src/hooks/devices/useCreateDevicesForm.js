@@ -10,6 +10,7 @@
  * @requires ../../stores/authStore.js
  */
 import { useFormik } from "formik";
+import { useState, useEffect } from "react";
 import * as Yup from "yup";
 import api from "../../config/axios.js";
 import { useAuthStore } from "../../stores/authStore.js";
@@ -43,10 +44,87 @@ export const initialDeviceValues = {
  * @returns {object} La instancia completa de Formik, que contiene el estado (`values`, `errors`, `isSubmitting`),
  * los manejadores de eventos (`handleSubmit`, `getFieldProps`) y otras utilidades.
  */
-export const useCreateDevicesForm = (onSuccess) => {
+export const useCreateDevicesForm = (onSuccess, idRequerimiento = null) => {
   // Obtenemos el usuario logueado para aplicar validaciones condicionales.
   const { user } = useAuthStore();
   const isAdmin = user?.rol === "Admin";
+
+  const [coIdFromReq, setCoIdFromReq] = useState(null);
+  const [requiredCount, setRequiredCount] = useState(null);
+  const [isLoadingCo, setIsLoadingCo] = useState(idRequerimiento !== null);
+
+  /**
+   * @const {object} formik
+   * @description Instancia de Formik creada con `useFormik`.
+   * Maneja el estado del formulario, la validación y la lógica de envío.
+   */
+  const formik = useFormik({
+    // Si requiredCount es 1, inicia con un formulario. Si es > 1, inicia con el array
+    initialValues: {
+      devices: Array.from({ length: requiredCount || 1 }, () => ({
+        ...initialDeviceValues,
+        id_centro_operacion:
+          !isAdmin && !idRequerimiento ? user.id_centro_operacion : "",
+      })),
+    },
+    validationContext: {
+      idRequerimiento: idRequerimiento,
+      coIdFromReq: coIdFromReq, // Pasar el valor al contexto de Yup
+    },
+    onSubmit: () => {}, // placeholder
+  });
+
+  useEffect(() => {
+    if (idRequerimiento) {
+      const fetchReqData = async () => {
+        try {
+          const response = await api.get(
+            `/api/requerimientos/${idRequerimiento}`
+          );
+          const { id_centro_operacion, analisis_tecnico } = response.data;
+
+          const requiredLimit = analisis_tecnico?.cantidad_equipos || 0;
+
+          if (id_centro_operacion) {
+            setCoIdFromReq(id_centro_operacion);
+            setRequiredCount(requiredLimit); // Establecer el límite
+
+            // Ajustamos los valores y la cantidad del FieldArray
+            formik.setValues((currentValues) => {
+              // 1. Crear el array con el tamaño exacto del límite (requiredLimit)
+              const baseDevice = {
+                ...initialDeviceValues,
+                id_centro_operacion: id_centro_operacion,
+              };
+
+              // 2. Usar los valores existentes si hay menos que el límite, o recortar
+              const initialDevices = Array.from(
+                { length: requiredLimit },
+                (_, index) => {
+                  return index < currentValues.devices.length
+                    ? {
+                        ...currentValues.devices[index],
+                        id_centro_operacion: id_centro_operacion,
+                      }
+                    : baseDevice;
+                }
+              );
+
+              return { devices: initialDevices };
+            }, false);
+          }
+        } catch (error) {
+          console.error(
+            "Error al obtener datos del requerimiento (CO y límite):",
+            error
+          );
+        } finally {
+          setIsLoadingCo(false);
+        }
+      };
+      fetchReqData();
+    }
+  }, [idRequerimiento, formik.setValues]);
 
   /**
    * @const {Yup.ObjectSchema} deviceValidationSchema
@@ -87,11 +165,20 @@ export const useCreateDevicesForm = (onSuccess) => {
     activo_fijo: Yup.boolean().required(),
     codigo_activo_fijo: Yup.string().trim().nullable(),
 
-    id_centro_operacion: isAdmin
-      ? Yup.number()
-          .positive("Debe seleccionar un centro de operación.")
-          .required("El centro de operación es obligatorio.")
-      : Yup.string().notRequired(), // Para Encargados, no se valida.
+    id_centro_operacion: Yup.number().when(
+      ["$idRequerimiento", "$coIdFromReq"],
+      {
+        // Solo se valida si NO estamos en el flujo de requerimiento (idRequerimiento es null)
+        is: (reqId, coId) => reqId === null,
+        then: (schema) =>
+          isAdmin
+            ? schema
+                .positive("Debe seleccionar un centro de operación.")
+                .required("El centro de operación es obligatorio.")
+            : schema.notRequired(), // Encargados (Stock) o Flujo de Requerimiento (Admin TI)
+        otherwise: (schema) => schema.notRequired(), // Si es un requerimiento, no se requiere la validación manual
+      }
+    ),
 
     has_cost_center: Yup.boolean(),
     id_centro_costo: Yup.number().when("has_cost_center", {
@@ -104,46 +191,84 @@ export const useCreateDevicesForm = (onSuccess) => {
     }),
   });
 
-  /**
-   * @const {object} formik
-   * @description Instancia de Formik creada con `useFormik`.
-   * Maneja el estado del formulario, la validación y la lógica de envío.
-   */
-  const formik = useFormik({
-    initialValues: {
-      devices: [initialDeviceValues],
-    },
-    validationSchema: Yup.object({
-      devices: Yup.array()
-        .of(deviceValidationSchema)
-        .min(1, "Debes agregar al menos un equipo."),
-    }),
-    /**
-     * @function onSubmit
-     * @description Función que se ejecuta al enviar el formulario, solo si la validación es exitosa.
-     * Envía los datos a la API y maneja las respuestas de éxito o error.
-     * @param {object} values - Los valores actuales del formulario.
-     * @param {object} formikHelpers - Objeto con helpers de Formik (ej. setFieldError).
-     */
-    onSubmit: async (values, { setFieldError, setSubmitting }) => {
-      try {
-        // El servicio del backend se encargará de asignar el id_centro_operacion si es un Encargado
-        await api.post("/api/dispositivos", values.devices);
-        if (onSuccess) {
-          onSuccess(
-            `¡${values.devices.length} equipo(s) creado(s) exitosamente!`
-          );
-        }
-      } catch (err) {
-        const errorMessage =
-          err.response?.data?.message ||
-          "Ocurrió un error al crear los equipos.";
-        setFieldError("apiError", errorMessage);
-      } finally {
-        setSubmitting(false);
-      }
-    },
-  });
+  let devicesArrayValidation = Yup.array()
+    .of(deviceValidationSchema)
+    .min(1, "Debes agregar al menos un equipo.");
 
-  return formik;
+  // Aplicar el límite estricto si se cargó un límite desde el requerimiento
+  if (requiredCount !== null && idRequerimiento) {
+    devicesArrayValidation = devicesArrayValidation
+      .min(
+        requiredCount,
+        `Debes registrar exactamente ${requiredCount} equipo(s) según el análisis.`
+      )
+      .max(
+        requiredCount,
+        `Solo se permiten ${requiredCount} equipo(s) según el análisis.`
+      );
+  }
+
+  formik.validationSchema = Yup.object({ devices: devicesArrayValidation });
+
+  /**
+   * @function onSubmit
+   * @description Función que se ejecuta al enviar el formulario, solo si la validación es exitosa.
+   * Envía los datos a la API y maneja las respuestas de éxito o error.
+   * @param {object} values - Los valores actuales del formulario.
+   * @param {object} formikHelpers - Objeto con helpers de Formik (ej. setFieldError).
+   */
+  formik.onSubmit = async (
+    values,
+    { setFieldError, setSubmitting, resetForm }
+  ) => {
+    if (isLoadingCo) {
+      setFieldError(
+        "apiError",
+        "Aún cargando datos del requerimiento, por favor espere."
+      );
+      setSubmitting(false);
+      return;
+    }
+
+    try {
+      let endpoint = "/api/dispositivos"; // Default para creación de stock
+      let payload = values.devices;
+
+      if (idRequerimiento) {
+        endpoint = `/api/requerimientos/${idRequerimiento}/enlace-dispositivos`;
+
+        // Seguridad: Aseguramos que el COID y el LÍMITE correcto se envíen
+        if (
+          payload.length !== requiredCount ||
+          payload.some((d) => d.id_centro_operacion !== coIdFromReq)
+        ) {
+          // Esto es un doble chequeo, la validación de Yup debería atrapar el límite
+          payload = payload.map((d) => ({
+            ...d,
+            id_centro_operacion: coIdFromReq,
+          }));
+        }
+      }
+
+      await api.post(endpoint, payload);
+
+      if (onSuccess) {
+        onSuccess(
+          `¡${values.devices.length} equipo(s) creado(s) exitosamente!`
+        );
+      }
+
+      resetForm({
+        values: { devices: values.devices.map(() => initialDeviceValues) },
+      });
+    } catch (err) {
+      const errorMessage =
+        err.response?.data?.message || "Ocurrió un error al crear los equipos.";
+      setFieldError("apiError", errorMessage);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return { formik, requiredCount, isLoadingCo };
 };

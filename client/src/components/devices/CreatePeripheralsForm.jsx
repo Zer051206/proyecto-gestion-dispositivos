@@ -40,9 +40,13 @@ const PeripheralSubForm = ({
   onRemove,
   catalogos,
   isLoadingCatalogs,
+  isRemoveDisabled,
+  isReqFlow,
 }) => {
   const peripheral = formik.values.peripherals[index];
+
   const { user } = useAuthStore();
+  const isAdmin = user?.rol === "Admin";
 
   const [costCenters, setCostCenters] = useState([]);
   const [isLoadingCostCenters, setIsLoadingCostCenters] = useState(false);
@@ -88,11 +92,12 @@ const PeripheralSubForm = ({
         <h3 className="text-lg font-bold text-primary">
           Periférico #{index + 1}
         </h3>
-        {formik.values.peripherals.length > 1 && (
+        {formik.values.peripherals.length > 1 && !isReqFlow && (
           <button
             type="button"
             onClick={() => onRemove(index)}
-            className="text-accent hover:text-error"
+            disabled={isRemoveDisabled}
+            className="text-accent hover:text-error disabled:opacity-50"
             title="Eliminar este periférico"
           >
             <FontAwesomeIcon icon={faTrash} />
@@ -158,17 +163,21 @@ const PeripheralSubForm = ({
           )}
         </label>
 
-        {user?.rol === "Admin" ? (
+        {isAdmin ? (
           <label className="block mt-6">
             <span className="text-text-main font-semibold">
               Centro de Operación:
             </span>
             <select
-              className={inputClasses}
+              // Clases condicionales para deshabilitar visualmente en flujo de requerimiento
+              className={`${inputClasses} ${
+                isReqFlow ? "bg-gray-200 text-gray-500 cursor-not-allowed" : ""
+              }`}
               {...formik.getFieldProps(
                 `peripherals[${index}].id_centro_operacion`
               )}
-              disabled={isLoadingCatalogs}
+              // Deshabilitado si se está cargando el catálogo O si es un flujo de requerimiento (auto-asignación)
+              disabled={isLoadingCatalogs || isReqFlow}
             >
               <option value="" hidden>
                 {isLoadingCatalogs ? "Cargando..." : "Selecciona..."}
@@ -187,8 +196,14 @@ const PeripheralSubForm = ({
                 {getError("id_centro_operacion")}
               </div>
             )}
+            {isReqFlow && (
+              <div className="text-sm mt-1 text-primary/80 font-medium">
+                Asignado automáticamente por requerimiento.
+              </div>
+            )}
           </label>
         ) : (
+          // --- Caso: Usuario NO es Admin (Encargado) ---
           <div className="block mt-6">
             <span className="text-text-main font-semibold">
               Centro de Operación:
@@ -250,7 +265,6 @@ const PeripheralSubForm = ({
             )}
           </label>
         )}
-        {/*------ CHECKBOXES ------*/}
         {selectedCenterId && (
           <label className="flex items-center justify-center space-x-2 py-2 mt-8">
             <input
@@ -289,8 +303,19 @@ const PeripheralSubForm = ({
  * @param {Function} props.onSuccess - Callback a ejecutar tras una creación exitosa.
  * @returns {JSX.Element}
  */
-export default function CreatePeripheralForm({ onClose, onSuccess }) {
-  const formik = useCreatePeripheralsForm(onSuccess);
+export default function CreatePeripheralForm({
+  onClose,
+  onSuccess,
+  idRequerimiento = null,
+  requiredQuantity = null,
+  setCompleted = () => {},
+}) {
+  const { formik, requiredCount, isLoadingCo } = useCreatePeripheralsForm(
+    onSuccess,
+    idRequerimiento
+  );
+
+  const isReqFlow = idRequerimiento !== null;
 
   // Lógica para obtener catálogos
   const [catalogos, setCatalogos] = useState({
@@ -321,14 +346,26 @@ export default function CreatePeripheralForm({ onClose, onSuccess }) {
       }
     };
     fetchCatalogs();
-  }, []); // El array vacío asegura que la llamada se haga solo una vez
+  }, []);
+
+  const currentCount = formik.values.peripherals.length;
+  // Botón Agregar: Deshabilitado si requiredCount es conocido y se alcanzó el límite.
+  const isAddDisabled = requiredCount !== null && currentCount >= requiredCount;
+  // Botón Eliminar: Deshabilitado si requiredCount es conocido y el conteo actual es igual al requerido (límite estricto).
+  const isRemoveDisabled =
+    requiredCount !== null && currentCount <= requiredCount;
+  // Carga general: Deshabilitar el formulario si se están cargando catálogos O si el hook está haciendo su fetch inicial.
+  const isFormDisabled =
+    formik.isSubmitting || isLoadingCatalogs || isLoadingCo;
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 pt-12 overflow-y-auto animate-fade-in">
       <div className="bg-secondary rounded-lg shadow-xl w-full max-w-4xl flex flex-col my-8">
         <header className="p-4 flex justify-between items-center border-b border-gray-200 bg-secondary">
           <h2 className="text-2xl font-bold text-primary">
-            Registrar Nuevos Periféricos
+            {isReqFlow
+              ? `Registro para Requerimiento #${idRequerimiento}`
+              : "Registrar Nuevos Periféricos"}
           </h2>
           <button onClick={onClose} className="text-text-main hover:opacity-70">
             <FontAwesomeIcon icon={faTimes} size="lg" />
@@ -339,6 +376,35 @@ export default function CreatePeripheralForm({ onClose, onSuccess }) {
             <FieldArray name="peripherals">
               {({ push, remove }) => (
                 <div className="space-y-8">
+                  {isReqFlow && isLoadingCo && (
+                    <div
+                      className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative"
+                      role="alert"
+                    >
+                      <strong className="font-bold">Cargando datos:</strong>
+                      <span className="block sm:inline ml-2">
+                        Obteniendo Centro de Operación y límite de periféricos
+                        del Análisis Técnico...
+                      </span>
+                    </div>
+                  )}
+                  {requiredCount !== null &&
+                    requiredCount > 0 &&
+                    isReqFlow &&
+                    !isLoadingCo && (
+                      <div
+                        className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative"
+                        role="alert"
+                      >
+                        <strong className="font-bold">
+                          Límite Establecido:
+                        </strong>
+                        <span className="block sm:inline ml-2">
+                          Debe registrar exactamente **{requiredCount}**
+                          periférico(s).
+                        </span>
+                      </div>
+                    )}
                   {formik.values.peripherals.map((peripheral, index) => (
                     <PeripheralSubForm
                       key={index}
@@ -347,14 +413,19 @@ export default function CreatePeripheralForm({ onClose, onSuccess }) {
                       onRemove={remove}
                       catalogos={catalogos}
                       isLoadingCatalogs={isLoadingCatalogs}
+                      isRemoveDisabled={isRemoveDisabled || isLoadingCo}
+                      isReqFlow={isReqFlow}
                     />
                   ))}
                   <button
                     type="button"
                     onClick={() => push(initialPeripheralValues)}
                     className="flex items-center gap-2 py-2 px-4 bg-accent-secondary text-text-light font-semibold rounded-lg hover:opacity-90 transition-opacity"
+                    disabled={isAddDisabled || isFormDisabled}
                   >
                     <FontAwesomeIcon icon={faPlus} /> Añadir otro periférico
+                    {requiredCount !== null &&
+                      ` (${currentCount}/${requiredCount})`}
                   </button>
                 </div>
               )}

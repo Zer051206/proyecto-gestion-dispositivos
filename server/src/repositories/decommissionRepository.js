@@ -53,13 +53,11 @@ export const findAllByCenterId = async (id_centro_operacion) => {
       { model: User, attributes: ["nombre", "apellido", "rol"] },
       {
         model: Peripheral,
-        attributes: ["serial_periferico"],
-        where: { id_centro_operacion: id_centro_operacion },
+        required: false,
       },
       {
         model: Device,
-        attributes: ["serial"],
-        where: { id_centro_operacion: id_centro_operacion },
+        required: false,
       },
     ],
     where: {
