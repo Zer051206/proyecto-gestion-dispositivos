@@ -127,10 +127,14 @@ export const CreateAndLinkAssetControlSchema = z.object({
     required_error:
       "Debe especificar si el activo es 'is_equipo' (true/false).",
   }),
-
   /**
-   * @property {object} asset_details - Objeto que contiene todos los campos de creación
-   * del Equipo o Periférico. La validación del *contenido* se hace en otro archivo.
+   * @property {Array<object>} asset_details - Array que contiene todos los campos de creación
+   * del Equipo o Periférico. Aquí solo validamos que sea un ARRAY de objetos.
+   * La validación del *contenido* se delega a `validateAssetDetails`.
    */
-  asset_details: z.object({}).passthrough(), // Usamos passthrough para aceptar cualquier campo aquí
+  asset_details: z
+    .array(z.object({}).passthrough(), {
+      required_error: "El campo 'asset_details' es obligatorio.",
+    })
+    .min(1, "Debe enviar al menos un activo en 'asset_details'."),
 });

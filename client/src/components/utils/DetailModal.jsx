@@ -93,7 +93,7 @@ export default function DetailModal({
   return (
     <div className="fixed inset-0 bg-text-main/80 overflow-y-auto h-full w-full flex items-center justify-center z-50">
       <div
-        className={`relative bg-background p-4 rounded-lg shadow-2xl w-screen mt-[100px] md:mt-[50px] mb-4 ${modalWidth} animate-fadeIn`}
+        className={`relative bg-background p-3 rounded-lg shadow-2xl w-screen mt-[100px] md:mt-[50px] mb-4 ${modalWidth} animate-fadeIn`}
         key={item.id_visita || item.id_paquete || item.id_vehiculo || "modal"}
       >
         <h3

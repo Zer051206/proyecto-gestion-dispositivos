@@ -34,7 +34,20 @@ export const peripheralObjectSchema = z.object({
     required_error: "Debe indicar si es un activo fijo.",
   }),
   codigo_activo_fijo: z.string().max(80).optional().nullable(),
-  id_centro_costo: z.coerce.string().optional().nullable(),
+  id_centro_costo: z.coerce
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => {
+      // Si coerce.string() devuelve una cadena vacía o null, devolvemos null.
+      // Si es un ID válido ("2"), Number(val) lo convertirá a 2 (número).
+      if (val === "" || val === null) {
+        return null;
+      }
+      // Intentamos forzar a número y si es NaN (ej: "abc") fallará la validación de Sequelize o Zod.
+      const num = Number(val);
+      return isNaN(num) ? val : num;
+    }),
 });
 
 /**

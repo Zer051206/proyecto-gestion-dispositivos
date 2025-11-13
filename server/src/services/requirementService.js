@@ -399,14 +399,13 @@ export const createAndLinkAsset = async (
       const dataToCreate = {
         ...assetData,
         id_usuario_creador: user.id_usuario,
-        id_centro_operacion: user.id_centro_operacion,
       };
       return creationFn(dataToCreate, { transaction: t });
     });
 
     const createdAssets = await Promise.all(assetPromises);
 
-    const idField = is_equipo ? "id_dispositivo" : "id_periferico";
+    const idField = is_equipo ? "id_equipo" : "id_periferico";
 
     const linkPromises = createdAssets.map((asset) => {
       const assetId = is_equipo ? asset.id_equipo : asset.id_periferico;

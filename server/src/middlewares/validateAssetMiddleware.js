@@ -9,8 +9,8 @@
  * @requires ../schemas/peripheralSchema.js
  */
 import { z } from "zod";
-import { createDeviceSchema } from "../schemas/deviceSchema.js";
-import { createPeripheralSchema } from "../schemas/peripheralSchema.js";
+import { deviceObjectSchema } from "../schemas/deviceSchema.js";
+import { peripheralObjectSchema } from "../schemas/peripheralSchema.js";
 
 /**
  * @function validateAssetDetails
@@ -38,9 +38,9 @@ export const validateAssetDetails = (req, res, next) => {
 
     // 1. Selección Dinámica del Schema (Define el esquema para UN activo)
     if (is_equipo === true) {
-      finalSchema = createDeviceSchema;
+      finalSchema = deviceObjectSchema;
     } else {
-      finalSchema = createPeripheralSchema;
+      finalSchema = peripheralObjectSchema;
     }
 
     // 2. Aplicar validación a CADA activo y sanear el array (Uso de Zod.array)
@@ -52,6 +52,7 @@ export const validateAssetDetails = (req, res, next) => {
     next();
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.log("🚀 ~ validateAssetDetails ~ error:", error);
       return res.status(400).json({
         status: "error",
         message:

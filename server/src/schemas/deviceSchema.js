@@ -41,8 +41,23 @@ export const deviceObjectSchema = z.object({
   activo_fijo: z.boolean({
     required_error: "Debe indicar si es un activo fijo.",
   }),
-  codigo_activo_fijo: z.string().max(80).optional().nullable(),
-  id_centro_costo: z.coerce.string().optional().nullable(),
+  codigo_activo_fijo: z
+    .string()
+    .max(80)
+    .optional()
+    .nullable()
+    .transform((val) => (val === "" ? null : val)),
+  id_centro_costo: z.coerce
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => {
+      return val === "" || val === null
+        ? null
+        : isNaN(Number(val))
+        ? val
+        : Number(val);
+    }),
 });
 
 /**

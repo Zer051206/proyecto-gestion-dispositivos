@@ -34,264 +34,281 @@ import { useAuthStore } from "../../stores/authStore.js";
  * @param {boolean} props.isLoadingCatalogs - Estado de carga de los catálogos.
  * @returns {JSX.Element}
  */
-const PeripheralSubForm = ({
-  formik,
-  index,
-  onRemove,
-  catalogos,
-  isLoadingCatalogs,
-  isRemoveDisabled,
-  isReqFlow,
-}) => {
-  const peripheral = formik.values.peripherals[index];
+const PeripheralSubForm = React.memo(
+  ({
+    formik,
+    index,
+    onRemove,
+    catalogos,
+    isLoadingCatalogs,
+    isRemoveDisabled,
+    isReqFlow,
+  }) => {
+    const peripheral = formik.values.peripherals[index];
 
-  const { user } = useAuthStore();
-  const isAdmin = user?.rol === "Admin";
+    const { user } = useAuthStore();
+    const isAdmin = user?.rol === "Admin";
 
-  const [costCenters, setCostCenters] = useState([]);
-  const [isLoadingCostCenters, setIsLoadingCostCenters] = useState(false);
-  const selectedCenterId =
-    peripheral.id_centro_operacion ||
-    (user.rol === "Encargado" ? user.id_centro_operacion : null);
+    const [costCenters, setCostCenters] = useState([]);
+    const [isLoadingCostCenters, setIsLoadingCostCenters] = useState(false);
+    const selectedCenterId =
+      peripheral.id_centro_operacion ||
+      (user.rol === "Encargado" ? user.id_centro_operacion : null);
 
-  useEffect(() => {
-    if (selectedCenterId) {
-      setIsLoadingCostCenters(true);
-      api
-        .get(`/api/centros-operacion/${selectedCenterId}/costos`)
-        .then((res) => {
-          return setCostCenters(res.data.centerCost || []);
-        })
-        .catch((err) =>
-          console.error("Error al cargar los centros de costo", err)
-        )
-        .finally(() => setIsLoadingCostCenters(false));
-    } else {
-      setCostCenters([]);
-    }
-  }, [selectedCenterId]);
+    useEffect(() => {
+      if (selectedCenterId) {
+        setIsLoadingCostCenters(true);
+        api
+          .get(`/api/centros-operacion/${selectedCenterId}/costos`)
+          .then((res) => {
+            return setCostCenters(res.data.centerCost || []);
+          })
+          .catch((err) =>
+            console.error("Error al cargar los centros de costo", err)
+          )
+          .finally(() => setIsLoadingCostCenters(false));
+      } else {
+        setCostCenters([]);
+      }
+    }, [selectedCenterId]);
 
-  /**
-   * @function getError
-   * @description Función auxiliar para obtener el mensaje de error de un campo anidado en Formik.
-   * @param {string} fieldName - El nombre del campo.
-   * @returns {string|null} El mensaje de error si el campo ha sido tocado y tiene un error, de lo contrario null.
-   */
-  const getError = (fieldName) => {
-    const error = getIn(formik.errors, `peripherals[${index}].${fieldName}`);
-    const touched = getIn(formik.touched, `peripherals[${index}].${fieldName}`);
-    return touched && error ? error : null;
-  };
+    /**
+     * @function getError
+     * @description Función auxiliar para obtener el mensaje de error de un campo anidado en Formik.
+     * @param {string} fieldName - El nombre del campo.
+     * @returns {string|null} El mensaje de error si el campo ha sido tocado y tiene un error, de lo contrario null.
+     */
+    const getError = (fieldName) => {
+      const error = getIn(formik.errors, `peripherals[${index}].${fieldName}`);
+      const touched = getIn(
+        formik.touched,
+        `peripherals[${index}].${fieldName}`
+      );
+      return touched && error ? error : null;
+    };
 
-  const inputClasses =
-    "mt-1 block w-full rounded-md font-semibold border-2 border-gray-300 p-2 outline-none bg-gray-50 focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200";
+    const inputClasses =
+      "mt-1 block w-full rounded-md font-semibold border-2 border-gray-300 p-2 outline-none bg-gray-50 focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200";
 
-  return (
-    <div className="bg-background/50 p-6 rounded-lg shadow-inner relative border border-gray-200">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-bold text-primary">
-          Periférico #{index + 1}
-        </h3>
-        {formik.values.peripherals.length > 1 && !isReqFlow && (
-          <button
-            type="button"
-            onClick={() => onRemove(index)}
-            disabled={isRemoveDisabled}
-            className="text-accent hover:text-error disabled:opacity-50"
-            title="Eliminar este periférico"
-          >
-            <FontAwesomeIcon icon={faTrash} />
-          </button>
-        )}
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
-        {/* --- CAMPOS PRINCIPALES --- */}
-        <label className="block">
-          <span className="text-text-main font-semibold">Serial:</span>
-          <input
-            type="text"
-            autoComplete="off"
-            className={inputClasses}
-            {...formik.getFieldProps(`peripherals[${index}].serial_periferico`)}
-          />
-          {getError("serial_periferico") && (
-            <div className="text-error text-sm mt-1">
-              {getError("serial_periferico")}
-            </div>
-          )}
-        </label>
-
-        <label className="block">
-          <span className="text-text-main font-semibold">Marca:</span>
-          <input
-            type="text"
-            autoComplete="off"
-            className={inputClasses}
-            {...formik.getFieldProps(`peripherals[${index}].marca_periferico`)}
-          />
-          {getError("marca_periferico") && (
-            <div className="text-error text-sm mt-1">
-              {getError("marca_periferico")}
-            </div>
-          )}
-        </label>
-
-        <label className="block">
-          <span className="text-text-main font-semibold">
-            Tipo de Periférico:
-          </span>
-          <select
-            className={inputClasses}
-            {...formik.getFieldProps(
-              `peripherals[${index}].id_tipo_periferico`
-            )}
-            disabled={isLoadingCatalogs}
-          >
-            <option value="" hidden>
-              {isLoadingCatalogs ? "Cargando..." : "Selecciona..."}
-            </option>
-            {catalogos.tiposPerifericos.map((t) => (
-              <option key={t.id_tipo_periferico} value={t.id_tipo_periferico}>
-                {t.tipo_periferico}
-              </option>
-            ))}
-          </select>
-          {getError("id_tipo_periferico") && (
-            <div className="text-error text-sm mt-1">
-              {getError("id_tipo_periferico")}
-            </div>
-          )}
-        </label>
-
-        {isAdmin ? (
-          <label className="block mt-6">
-            <span className="text-text-main font-semibold">
-              Centro de Operación:
-            </span>
-            <select
-              // Clases condicionales para deshabilitar visualmente en flujo de requerimiento
-              className={`${inputClasses} ${
-                isReqFlow ? "bg-gray-200 text-gray-500 cursor-not-allowed" : ""
-              }`}
-              {...formik.getFieldProps(
-                `peripherals[${index}].id_centro_operacion`
-              )}
-              // Deshabilitado si se está cargando el catálogo O si es un flujo de requerimiento (auto-asignación)
-              disabled={isLoadingCatalogs || isReqFlow}
+    return (
+      <div className="bg-background/50 p-6 rounded-lg shadow-inner relative border border-gray-200">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold text-primary">
+            Periférico #{index + 1}
+          </h3>
+          {formik.values.peripherals.length > 1 && !isReqFlow && (
+            <button
+              type="button"
+              onClick={() => onRemove(index)}
+              disabled={isRemoveDisabled}
+              className="text-accent hover:text-error disabled:opacity-50"
+              title="Eliminar este periférico"
             >
-              <option value="" hidden>
-                {isLoadingCatalogs ? "Cargando..." : "Selecciona..."}
-              </option>
-              {catalogos.centrosOperacion.map((c) => (
-                <option
-                  key={c.id_centro_operacion}
-                  value={c.id_centro_operacion}
-                >
-                  {c.codigo} - {c.direccion}
-                </option>
-              ))}
-            </select>
-            {getError("id_centro_operacion") && (
-              <div className="text-error text-sm mt-1">
-                {getError("id_centro_operacion")}
-              </div>
-            )}
-            {isReqFlow && (
-              <div className="text-sm mt-1 text-primary/80 font-medium">
-                Asignado automáticamente por requerimiento.
-              </div>
-            )}
-          </label>
-        ) : (
-          // --- Caso: Usuario NO es Admin (Encargado) ---
-          <div className="block mt-6">
-            <span className="text-text-main font-semibold">
-              Centro de Operación:
-            </span>
-            <p className={`${inputClasses} bg-gray-200 text-gray-500`}>
-              {"Asignado a tu centro"}
-            </p>
-          </div>
-        )}
-
-        {/* --- INPUTS CONDICIONALES --- */}
-        {peripheral.activo_fijo && (
-          <label className="block animate-fade-in">
-            <span className="text-text-main font-semibold">
-              Código de Activo Fijo (Ingresar si lo tiene):
-            </span>
+              <FontAwesomeIcon icon={faTrash} />
+            </button>
+          )}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+          {/* --- CAMPOS PRINCIPALES --- */}
+          <label className="block">
+            <span className="text-text-main font-semibold">Serial:</span>
             <input
               type="text"
               autoComplete="off"
               className={inputClasses}
               {...formik.getFieldProps(
-                `peripherals[${index}].codigo_activo_fijo`
+                `peripherals[${index}].serial_periferico`
               )}
             />
-            {getError("codigo_activo_fijo") && (
+            {getError("serial_periferico") && (
               <div className="text-error text-sm mt-1">
-                {getError("codigo_activo_fijo")}
+                {getError("serial_periferico")}
               </div>
             )}
           </label>
-        )}
-        {peripheral.has_cost_center && (
-          <label className="block animate-fade-in mt-6">
+
+          <label className="block">
+            <span className="text-text-main font-semibold">Marca:</span>
+            <input
+              type="text"
+              autoComplete="off"
+              className={inputClasses}
+              {...formik.getFieldProps(
+                `peripherals[${index}].marca_periferico`
+              )}
+            />
+            {getError("marca_periferico") && (
+              <div className="text-error text-sm mt-1">
+                {getError("marca_periferico")}
+              </div>
+            )}
+          </label>
+
+          <label className="block">
             <span className="text-text-main font-semibold">
-              Centro de Costo (Área):
+              Tipo de Periférico:
             </span>
             <select
               className={inputClasses}
-              {...formik.getFieldProps(`peripherals[${index}].id_centro_costo`)}
-              disabled={isLoadingCostCenters || costCenters.length === 0}
+              {...formik.getFieldProps(
+                `peripherals[${index}].id_tipo_periferico`
+              )}
+              disabled={isLoadingCatalogs}
             >
               <option value="" hidden>
-                {isLoadingCostCenters
-                  ? "Cargando áreas..."
-                  : costCenters.length === 0
-                  ? "No hay áreas para este centro"
-                  : "Selecciona..."}
+                {isLoadingCatalogs ? "Cargando..." : "Selecciona..."}
               </option>
-              {costCenters.map((cc) => (
-                <option key={cc.id_centro_costo} value={cc.id_centro_costo}>
-                  {cc.codigo_centro_costo} - {cc.centro_costo}
+              {catalogos.tiposPerifericos.map((t) => (
+                <option key={t.id_tipo_periferico} value={t.id_tipo_periferico}>
+                  {t.tipo_periferico}
                 </option>
-              ))}{" "}
+              ))}
             </select>
-            {getError("id_centro_costo") && (
+            {getError("id_tipo_periferico") && (
               <div className="text-error text-sm mt-1">
-                {getError("id_centro_costo")}
+                {getError("id_tipo_periferico")}
               </div>
             )}
           </label>
-        )}
-        {selectedCenterId && (
+
+          {isAdmin ? (
+            <label className="block mt-6">
+              <span className="text-text-main font-semibold">
+                Centro de Operación:
+              </span>
+              <select
+                // Clases condicionales para deshabilitar visualmente en flujo de requerimiento
+                className={`${inputClasses} ${
+                  isReqFlow
+                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                    : ""
+                }`}
+                {...formik.getFieldProps(
+                  `peripherals[${index}].id_centro_operacion`
+                )}
+                // Deshabilitado si se está cargando el catálogo O si es un flujo de requerimiento (auto-asignación)
+                disabled={isLoadingCatalogs || isReqFlow}
+              >
+                <option value="" hidden>
+                  {isLoadingCatalogs ? "Cargando..." : "Selecciona..."}
+                </option>
+                {catalogos.centrosOperacion.map((c) => (
+                  <option
+                    key={c.id_centro_operacion}
+                    value={c.id_centro_operacion}
+                  >
+                    {c.codigo} - {c.direccion}
+                  </option>
+                ))}
+              </select>
+              {getError("id_centro_operacion") && (
+                <div className="text-error text-sm mt-1">
+                  {getError("id_centro_operacion")}
+                </div>
+              )}
+              {isReqFlow && (
+                <div className="text-sm mt-1 text-primary/80 font-medium">
+                  Asignado automáticamente por requerimiento.
+                </div>
+              )}
+            </label>
+          ) : (
+            // --- Caso: Usuario NO es Admin (Encargado) ---
+            <div className="block mt-6">
+              <span className="text-text-main font-semibold">
+                Centro de Operación:
+              </span>
+              <p className={`${inputClasses} bg-gray-200 text-gray-500`}>
+                {"Asignado a tu centro"}
+              </p>
+            </div>
+          )}
+
+          {/* --- INPUTS CONDICIONALES --- */}
+          {peripheral.activo_fijo && (
+            <label className="block animate-fade-in">
+              <span className="text-text-main font-semibold">
+                Código de Activo Fijo (Ingresar si lo tiene):
+              </span>
+              <input
+                type="text"
+                autoComplete="off"
+                className={inputClasses}
+                {...formik.getFieldProps(
+                  `peripherals[${index}].codigo_activo_fijo`
+                )}
+              />
+              {getError("codigo_activo_fijo") && (
+                <div className="text-error text-sm mt-1">
+                  {getError("codigo_activo_fijo")}
+                </div>
+              )}
+            </label>
+          )}
+          {peripheral.has_cost_center && (
+            <label className="block animate-fade-in mt-6">
+              <span className="text-text-main font-semibold">
+                Centro de Costo (Área):
+              </span>
+              <select
+                className={inputClasses}
+                {...formik.getFieldProps(
+                  `peripherals[${index}].id_centro_costo`
+                )}
+                disabled={isLoadingCostCenters || costCenters.length === 0}
+              >
+                <option value="" hidden>
+                  {isLoadingCostCenters
+                    ? "Cargando áreas..."
+                    : costCenters.length === 0
+                    ? "No hay áreas para este centro"
+                    : "Selecciona..."}
+                </option>
+                {costCenters.map((cc) => (
+                  <option key={cc.id_centro_costo} value={cc.id_centro_costo}>
+                    {cc.codigo_centro_costo} - {cc.centro_costo}
+                  </option>
+                ))}{" "}
+              </select>
+              {getError("id_centro_costo") && (
+                <div className="text-error text-sm mt-1">
+                  {getError("id_centro_costo")}
+                </div>
+              )}
+            </label>
+          )}
+          {selectedCenterId && (
+            <label className="flex items-center justify-center space-x-2 py-2 mt-8">
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded"
+                {...formik.getFieldProps(
+                  `peripherals[${index}].has_cost_center`
+                )}
+                checked={peripheral.has_cost_center}
+              />
+              <span className="text-text-main font-semibold">
+                ¿Asignado a un Área?
+              </span>
+            </label>
+          )}
           <label className="flex items-center justify-center space-x-2 py-2 mt-8">
             <input
               type="checkbox"
+              autoComplete="off"
               className="h-4 w-4 rounded"
-              {...formik.getFieldProps(`peripherals[${index}].has_cost_center`)}
-              checked={peripheral.has_cost_center}
+              {...formik.getFieldProps(`peripherals[${index}].activo_fijo`)}
+              checked={peripheral.activo_fijo}
             />
             <span className="text-text-main font-semibold">
-              ¿Asignado a un Área?
+              ¿Es Activo Fijo?
             </span>
           </label>
-        )}
-        <label className="flex items-center justify-center space-x-2 py-2 mt-8">
-          <input
-            type="checkbox"
-            autoComplete="off"
-            className="h-4 w-4 rounded"
-            {...formik.getFieldProps(`peripherals[${index}].activo_fijo`)}
-            checked={peripheral.activo_fijo}
-          />
-          <span className="text-text-main font-semibold">¿Es Activo Fijo?</span>
-        </label>
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  }
+);
 
 /**
  * @function CreatePeripheralForm
@@ -309,6 +326,7 @@ export default function CreatePeripheralForm({
   idRequerimiento = null,
   requiredQuantity = null,
   setCompleted = () => {},
+  isNestedForm = false,
 }) {
   const { formik, requiredCount, isLoadingCo } = useCreatePeripheralsForm(
     onSuccess,
@@ -358,27 +376,63 @@ export default function CreatePeripheralForm({
   const isFormDisabled =
     formik.isSubmitting || isLoadingCatalogs || isLoadingCo;
 
+  const shouldShowAddButton =
+    !isReqFlow || // Siempre mostrar en flujo normal
+    (isReqFlow && requiredCount === null) || // Mostrar si es requerimiento pero el límite aún no carga
+    (isReqFlow && requiredCount !== null && currentCount < requiredCount);
+
+  const ModalFixedWrapper = isNestedForm
+    ? React.Fragment
+    : (props) => (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 pt-12 overflow-y-auto animate-fade-in">
+          {props.children}
+        </div>
+      );
+
+  // 2. Contenedor principal del modal (solo si NO está anidado)
+  const ModalContentWrapper = isNestedForm
+    ? React.Fragment
+    : (props) => (
+        <div className="bg-secondary rounded-lg shadow-xl w-full max-w-4xl flex flex-col my-8">
+          {props.children}
+        </div>
+      );
+
+  // 3. Encabezado del modal (solo si NO está anidado)
+  const ModalHeader = isNestedForm ? null : (
+    <header className="p-4 flex justify-between items-center border-b border-gray-200 bg-secondary z-10">
+      <h2 className="text-2xl font-bold text-primary">
+        {isReqFlow
+          ? `Registro para Requerimiento #${idRequerimiento}`
+          : "Registrar Nuevos Periféricos"}
+      </h2>
+      <button onClick={onClose} className="text-text-main hover:opacity-70">
+        <FontAwesomeIcon icon={faTimes} size="lg" />
+      </button>
+    </header>
+  );
+
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 pt-12 overflow-y-auto animate-fade-in">
-      <div className="bg-secondary rounded-lg shadow-xl w-full max-w-4xl flex flex-col my-8">
-        <header className="p-4 flex justify-between items-center border-b border-gray-200 bg-secondary">
-          <h2 className="text-2xl font-bold text-primary">
-            {isReqFlow
-              ? `Registro para Requerimiento #${idRequerimiento}`
-              : "Registrar Nuevos Periféricos"}
-          </h2>
-          <button onClick={onClose} className="text-text-main hover:opacity-70">
-            <FontAwesomeIcon icon={faTimes} size="lg" />
-          </button>
-        </header>
+    <ModalFixedWrapper>
+      <ModalContentWrapper>
+        {ModalHeader}{" "}
         <FormikProvider value={formik}>
-          <form onSubmit={formik.handleSubmit} noValidate className="p-6">
+          <form
+            onSubmit={formik.handleSubmit}
+            noValidate
+            className={isNestedForm ? "space-y-6" : "p-6"}
+          >
+            {isNestedForm && (
+              <h3 className="text-xl font-bold text-primary mb-6">
+                Registro de Periféricos para Requerimiento #{idRequerimiento}
+              </h3>
+            )}
             <FieldArray name="peripherals">
               {({ push, remove }) => (
                 <div className="space-y-8">
                   {isReqFlow && isLoadingCo && (
                     <div
-                      className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative"
+                      className="bg-gray-50 border tex-primary px-4 py-3 rounded relative"
                       role="alert"
                     >
                       <strong className="font-bold">Cargando datos:</strong>
@@ -400,7 +454,7 @@ export default function CreatePeripheralForm({
                           Límite Establecido:
                         </strong>
                         <span className="block sm:inline ml-2">
-                          Debe registrar exactamente **{requiredCount}**
+                          Debe registrar exactamente {requiredCount}{" "}
                           periférico(s).
                         </span>
                       </div>
@@ -417,16 +471,18 @@ export default function CreatePeripheralForm({
                       isReqFlow={isReqFlow}
                     />
                   ))}
-                  <button
-                    type="button"
-                    onClick={() => push(initialPeripheralValues)}
-                    className="flex items-center gap-2 py-2 px-4 bg-accent-secondary text-text-light font-semibold rounded-lg hover:opacity-90 transition-opacity"
-                    disabled={isAddDisabled || isFormDisabled}
-                  >
-                    <FontAwesomeIcon icon={faPlus} /> Añadir otro periférico
-                    {requiredCount !== null &&
-                      ` (${currentCount}/${requiredCount})`}
-                  </button>
+                  {shouldShowAddButton && (
+                    <button
+                      type="button"
+                      onClick={() => push(initialPeripheralValues)}
+                      className="flex items-center gap-2 py-2 px-4 bg-accent-secondary text-text-light font-semibold rounded-lg hover:opacity-90 transition-opacity"
+                      disabled={isAddDisabled || isFormDisabled}
+                    >
+                      <FontAwesomeIcon icon={faPlus} /> Añadir otro periférico
+                      {requiredCount !== null &&
+                        ` (${currentCount}/${requiredCount})`}
+                    </button>
+                  )}
                 </div>
               )}
             </FieldArray>
@@ -459,7 +515,7 @@ export default function CreatePeripheralForm({
             </footer>
           </form>
         </FormikProvider>
-      </div>
-    </div>
+      </ModalContentWrapper>
+    </ModalFixedWrapper>
   );
 }
