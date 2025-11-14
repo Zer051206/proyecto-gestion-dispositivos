@@ -236,6 +236,29 @@ export const useCreateDevicesForm = (onSuccess, idRequerimiento = null) => {
           if (id_centro_operacion) {
             setCoIdFromReq(id_centro_operacion);
             setRequiredCount(requiredLimit);
+
+            formik.setValues((currentValues) => {
+              // 1. Definir el objeto base del dispositivo con el CO ya asignado
+              const baseDevice = {
+                ...initialDeviceValues,
+                id_centro_operacion: id_centro_operacion,
+              }; // 2. Crear el nuevo array de dispositivos con el tamaño exacto del límite
+
+              const initialDevices = Array.from(
+                { length: requiredLimit },
+                (_, index) => {
+                  // Mantener los valores existentes si ya hay datos, si no, usar el baseDevice
+                  return index < currentValues.devices.length
+                    ? {
+                        ...currentValues.devices[index],
+                        id_centro_operacion: id_centro_operacion,
+                      }
+                    : baseDevice;
+                }
+              );
+
+              return { devices: initialDevices };
+            }, false);
           }
         } catch (error) {
           console.error(

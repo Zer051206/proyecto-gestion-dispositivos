@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: routes/requirementRoutes.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: routes/requirementRoutes.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file requirementRoutes.js
+ * @module Routes
+ * @description Define las rutas específicas para la gestión y el flujo de trabajo de Requerimientos.
+ * Estas rutas cubren la creación, visualización y las 4 etapas de firma/aprobación (CO, TI, RH).
+ * Asumimos que la autenticación (JWT) y la verificación básica de roles se aplican en un middleware externo.
+ * @requires express
+ * @requires ../controllers/requirementController.js
+ */
+
+import { Router } from "express";
+import * as requirementController from "../controllers/requirementController.js";
+import { validateAssetDetails } from "../middlewares/validateAssetMiddleware.js";
+import { validate } from "../middlewares/validateMiddleware.js";
+import {
+  CreateRequirementSchema,
+  SignTIAnalysisSchema,
+  CreateAndLinkAssetControlSchema,
+} from "../schemas/requirementSchema.js";
+import { IDParamSchema } from "../schemas/globalSchema.js";
+
+const router = Router();
+
+/**
+ * @route   POST /api/requerimientos
+ * @description Crea un nuevo requerimiento de activos, iniciando el flujo de trabajo.
+ * Esta acción automáticamente registra la firma del Encargado del Centro de Operación (CO).
+ * @access Private (Encargado)
+ * @param {object} req.body - Contiene el `asunto` y `detalle_necesidad`.
+ * @returns {object} 201 - El objeto del nuevo requerimiento creado (Estado 2: Pendiente Análisis TI).
+ */
+router.post(
+  "/requerimientos",
+  validate(CreateRequirementSchema, "body"),
+  requirementController.createRequirement
+);
+
+/**
+ * @route   GET /api/requerimientos
+ * @description Obtiene una lista paginada y filtrada de todos los requerimientos.
+ * @access Private (Admin &amp; Encargado)
+ * @returns {Array&lt;object>} 200 - Un array con los requerimientos.
+ */
+router.get("/requerimientos", requirementController.getRequirements);
+
+/**
+ * @route   GET /api/requerimientos/:id
+ * @description Obtiene los datos de un requerimiento específico por su ID.
+ * @access Private (Admin &amp; Encargado)
+ * @param {string} req.params.id - El ID del requerimiento a buscar.
+ * @returns {object} 200 - Un objeto con los datos del requerimiento, incluyendo análisis y firmas.
+ * @returns {Error} 404 - Si el requerimiento no se encuentra.
+ */
+router.get(
+  "/requerimientos/:id",
+  validate(IDParamSchema, "params"),
+  requirementController.getRequirementById
+);
+
+// --- RUTAS DE FLUJO DE FIRMAS (PATCH) ---
+
+/**
+ * @route   PATCH /api/requerimientos/:id/ti-analisis
+ * @description Registra la firma de TI y el Análisis Técnico.
+ * Pasa el requerimiento a la fase de aprobación de Pago de RH (Estado 3).
+ * @access Private (Admin/TI)
+ * @param {string} req.params.id - El ID del requerimiento.
+ * @param {object} req.body - Datos del análisis (`presupuesto_final`, `cantidad_equipos`, etc.).
+ * @returns {object} 200 - Confirmación de la firma.
+ */
+router.patch(
+  "/requerimientos/:id/ti-analysis",
+  validate(IDParamSchema, "params"),
+  validate(SignTIAnalysisSchema, "body"),
+  requirementController.singTIAnalysis
+);
+
+/**
+ * @route   PATCH /api/requerimientos/:id/rh-pago
+ * @description Registra la firma de Recursos Humanos para la aprobación del Pago/Gasto.
+ * Pasa el requerimiento a la fase de Alistamiento de TI (Estado 4).
+ * @access Private (Admin/RH)
+ * @param {string} req.params.id - El ID del requerimiento.
+ * @returns {object} 200 - Confirmación de la firma.
+ */
+router.patch(
+  "/requerimientos/:id/rh-pago",
+  validate(IDParamSchema, "params"),
+  requirementController.singRHPayment
+);
+
+/**
+ * @route   PATCH /api/requerimientos/:id/ti-alistamiento
+ * @description Registra la firma de TI confirmando que todos los activos requeridos están listos.
+ * Pasa el requerimiento a la fase de Entrega Administrativa de RH (Estado 5).
+ * @access Private (Admin/TI)
+ * @param {string} req.params.id - El ID del requerimiento.
+ * @returns {object} 200 - Confirmación de la firma.
+ * @returns {Error} 400 - Si no se han vinculado todos los activos requeridos por el análisis técnico.
+ */
+router.patch(
+  "/requerimientos/:id/ti-alistamiento",
+  validate(IDParamSchema, "params"),
+  requirementController.singTIReady
+);
+
+/**
+ * @route   PATCH /api/requerimientos/:id/rh-entrega
+ * @description Registra la firma de RH confirmando la entrega administrativa.
+ * Finaliza y Cierra el requerimiento (Estado 6: Cerrado).
+ * @access Private (Admin/RH)
+ * @param {string} req.params.id - El ID del requerimiento.
+ * @returns {object} 200 - Confirmación de la firma.
+ */
+router.patch(
+  "/requerimientos/:id/rh-entrega",
+  validate(IDParamSchema, "params"),
+  requirementController.singRHDelivery
+);
+
+/**
+ * @route   POST /api/requerimientos/:id/enlace-dispositivos
+ * @description Crea un nuevo activo (equipo o periférico) y lo vincula al requerimiento,
+ * consumiendo uno de los contadores definidos en el Análisis Técnico.
+ * Solo puede ejecutarse cuando el requerimiento está en fase de Alistamiento (Estado 4).
+ * @access Private (Admin/TI)
+ * @param {string} req.params.id - El ID del requerimiento.
+ * @param {object} req.body - Datos del activo a crear y vincular (serial, centro_costo, is_equipo, etc.).
+ * @returns {object} 201 - El activo recién creado y vinculado.
+ * @returns {Error} 400 - Si se excede el contador de equipos/periféricos del análisis.
+ */
+router.post(
+  "/requerimientos/:id/enlace-dispositivos",
+  validate(IDParamSchema, "params"),
+  validate(CreateAndLinkAssetControlSchema, "body"),
+  validateAssetDetails,
+  requirementController.createAndLinkAsset
+);
+
+/**
+ * @route   PATCH /api/requerimientos/:id/cancelar
+ * @description Realiza el borrado lógico del requerimiento, cambiando su estado a "Cancelado" (Estado 7).
+ * @access Private (Admin)
+ * @param {string} req.params.id - El ID del requerimiento.
+ * @returns {object} 200 - Confirmación de la cancelación.
+ * @returns {Error} 400 - Si se intenta cancelar un requerimiento ya cerrado o cancelado.
+ */
+router.patch(
+  "/requerimientos/:id/cancelar",
+  validate(IDParamSchema, "params"),
+  requirementController.rejectRequirement
+);
+
+export default router;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Config.html">Config</a></li><li><a href="module-Constants.html">Constants</a></li><li><a href="module-Controllers.html">Controllers</a></li><li><a href="module-Middleware.html">Middleware</a></li><li><a href="module-Middlewares.html">Middlewares</a></li><li><a href="module-Models.html">Models</a></li><li><a href="module-Models_Catalogues.html">Models/Catalogues</a></li><li><a href="module-Repositories.html">Repositories</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Schemas.html">Schemas</a></li><li><a href="module-Services.html">Services</a></li><li><a href="module-Utils_Errors.html">Utils/Errors</a></li><li><a href="module-Utils_Tokens.html">Utils/Tokens</a></li></ul><h3>Classes</h3><ul><li><a href="module-Models_Catalogues-City.html">City</a></li><li><a href="module-Models_Catalogues-IdentificationType.html">IdentificationType</a></li><li><a href="module-Models_Catalogues-PeripheralType.html">PeripheralType</a></li><li><a href="module-Models-CostCenter.html">CostCenter</a></li><li><a href="module-Models-Decommission.html">Decommission</a></li><li><a href="module-Models-Device.html">Device</a></li><li><a href="module-Models-Log.html">Log</a></li><li><a href="module-Models-OperationCenter.html">OperationCenter</a></li><li><a href="module-Models-Peripheral.html">Peripheral</a></li><li><a href="module-Models-Permission.html">Permission</a></li><li><a href="module-Models-RefreshToken.html">RefreshToken</a></li><li><a href="module-Models-Requirement.html">Requirement</a></li><li><a href="module-Models-RequirementAsset.html">RequirementAsset</a></li><li><a href="module-Models-RequirementStatus.html">RequirementStatus</a></li><li><a href="module-Models-TechnicalAnalysis.html">TechnicalAnalysis</a></li><li><a href="module-Models-User.html">User</a></li><li><a href="module-Utils_Errors.AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AccountDisabledError.html">AccountDisabledError</a></li><li><a href="module-Utils_Errors-AlreadyDesactivated.html">AlreadyDesactivated</a></li><li><a href="module-Utils_Errors-AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AuthError.html">AuthError</a></li><li><a href="module-Utils_Errors-ConfigurationError.html">ConfigurationError</a></li><li><a href="module-Utils_Errors-DatabaseConnectionError.html">DatabaseConnectionError</a></li><li><a href="module-Utils_Errors-DuplicateError.html">DuplicateError</a></li><li><a href="module-Utils_Errors-ForbiddenError.html">ForbiddenError</a></li><li><a href="module-Utils_Errors-InvalidTokenError.html">InvalidTokenError</a></li><li><a href="module-Utils_Errors-NotFoundError.html">NotFoundError</a></li><li><a href="module-Utils_Errors-UserAlreadyExistsError.html">UserAlreadyExistsError</a></li><li><a href="module-Utils_Errors-UserNotFoundOrInvalidPasswordError.html">UserNotFoundOrInvalidPasswordError</a></li></ul><h3>Global</h3><ul><li><a href="global.html#generateRequirementCode">generateRequirementCode</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Nov 14 2025 15:41:16 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

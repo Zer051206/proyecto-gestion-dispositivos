@@ -23,6 +23,98 @@ import TechnicalAnalysisModal from "./TechnicalAnalysisModal.jsx";
 import ConfirmationModal from "../utils/ConfirmationModal.jsx";
 import ModalLinkDevices from "./ModalLinkDevices.jsx";
 
+const RequirementTableSkeleton = () => {
+  const numRows = 8;
+  const skeletonRows = Array.from({ length: numRows }, (_, index) => (
+    <tr key={index} className="border-t border-gray-200">
+      {/* 1. CÓDIGO */}
+      <td className="p-4 whitespace-nowrap">
+        <div className="h-4 bg-gray-200 rounded w-16 animate-pulse"></div>
+      </td>
+      {/* 2. FECHA SOLICITUD */}
+      <td className="p-4 whitespace-nowrap">
+        <div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
+      </td>
+      {/* 3. ESTADO */}
+      <td className="p-4 whitespace-nowrap">
+        <div className="h-4 bg-gray-200 rounded w-24 animate-pulse"></div>
+      </td>
+      {/* 4. ASUNTO */}
+      <td className="p-4 hidden sm:table-cell max-w-xs truncate">
+        <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
+      </td>
+      {/* 5. CENTRO OP. */}
+      <td className="p-4 hidden md:table-cell">
+        <div className="h-4 bg-gray-200 rounded w-12 animate-pulse"></div>
+      </td>
+      {/* 6. ACCIONES */}
+      <td className="p-4 whitespace-nowrap text-center space-x-4">
+        <div className="flex justify-center space-x-2">
+          <div className="h-5 w-5 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-5 w-5 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-5 w-5 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+      </td>
+    </tr>
+  ));
+
+  return (
+    <div className="overflow-auto bg-secondary rounded-lg shadow-md max-h-[70vh] animate-pulse">
+      <table className="w-full text-left text-text-main">
+        <thead className="bg-gray-100/80 sticky top-0">
+          <tr>
+            <th className="p-4 whitespace-nowrap font-semibold">Código</th>
+            <th className="p-4 whitespace-nowrap font-semibold">
+              Fecha Solicitud
+            </th>
+            <th className="p-4 whitespace-nowrap font-semibold">Estado</th>
+            <th className="p-4 whitespace-nowrap font-semibold hidden sm:table-cell">
+              Asunto
+            </th>
+            <th className="p-4 whitespace-nowrap font-semibold hidden md:table-cell">
+              Centro Op.
+            </th>
+            <th className="p-4 whitespace-nowrap font-semibold text-center">
+              Acciones
+            </th>
+          </tr>
+        </thead>
+        <tbody>{skeletonRows}</tbody>
+      </table>
+    </div>
+  );
+};
+
+/**
+ * @function DashboardRequirementSkeleton
+ * @description Renderiza el esqueleto completo de la página de requerimientos (encabezado, filtros y tabla).
+ * @returns {JSX.Element}
+ */
+const DashboardRequirementSkeleton = () => (
+  <div className="w-full mb-10 animate-pulse">
+    {/* --- ESQUELETO DEL ENCABEZADO --- */}
+    <header className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+      {/* Título */}
+      <div className="h-10 bg-gray-200 rounded w-64"></div>
+      {/* Botón Nuevo Requerimiento */}
+      <div className="h-10 bg-gray-200 rounded w-48"></div>
+    </header>
+
+    {/* --- ESQUELETO DE FILTROS Y BÚSQUEDA --- */}
+    <div className="flex flex-col md:flex-row gap-4 mb-6">
+      {/* Input de Búsqueda */}
+      <div className="w-full md:flex-1 h-10 bg-gray-200 rounded-lg"></div>
+      {/* Filtro por Estado */}
+      <div className="w-full md:w-52 h-10 bg-gray-200 rounded-lg"></div>
+      {/* Ordenamiento */}
+      <div className="w-full md:w-auto h-10 bg-gray-200 rounded-lg"></div>
+    </div>
+
+    {/* --- ESQUELETO DE LA TABLA --- */}
+    <RequirementTableSkeleton />
+  </div>
+);
+
 /**
  * @function RequirementTable
  * @description Componente que renderiza la tabla de Requerimientos con celdas explícitas.
@@ -276,6 +368,8 @@ export default function DashboardRequirement() {
   } = useDashboardRequirement();
 
   const { user } = useAuthStore();
+
+  if (isLoading) return <DashboardRequirementSkeleton />;
 
   if (error)
     return (

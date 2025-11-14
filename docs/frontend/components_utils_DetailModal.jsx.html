@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/utils/DetailModal.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/utils/DetailModal.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file DetailModal.jsx
+ * @module Components/UI
+ * @description Componente de modal dinámico y reutilizable.
+ * Renderiza una lista de propiedades de un objeto 'item' basado en un 'config' array.
+ * @requires react
+ */
+import React from "react";
+
+/**
+ * @function getNestedValue
+ * @description Auxiliar para obtener un valor de un objeto usando un path de string (ej. "Area.nombre_area").
+ * @param {object} obj - El objeto del cual extraer el valor.
+ * @param {string} path - La ruta de la propiedad (ej. "propiedad" o "prop.anidada").
+ * @returns {*} El valor encontrado o "N/A".
+ */
+const getNestedValue = (obj, path) => {
+  if (!obj || !path) return null;
+  // Divide el path por '.' y recorre el objeto
+  const value = path.split(".").reduce((acc, part) => {
+    // Si acc (acumulador) es nulo o undefined, retorna nulo para evitar errores
+    if (acc === null || acc === undefined) {
+      return null;
+    }
+    return acc[part];
+  }, obj);
+
+  return value !== null &amp;&amp; value !== undefined ? value : null;
+};
+
+/**
+ * @function DetailRow
+ * @description Subcomponente para renderizar una fila de label/valor.
+ * @param {object} props
+ * @param {string} props.label - Etiqueta para la fila.
+ * @param {string|number} props.value - Valor a mostrar.
+ * @returns {JSX.Element}
+ */
+const DetailRow = ({ label, value, multiline }) => (
+  &lt;div className="text-base text-text-main">
+    &lt;strong className="font-semibold text-text-main/70">{label}:&lt;/strong>
+    {multiline ? (
+      &lt;p className="mt-1 p-2 bg-surface-light rounded-md whitespace-pre-wrap">
+        {value}
+      &lt;/p>
+    ) : (
+      &lt;span className="ml-1">{value}&lt;/span>
+    )}
+  &lt;/div>
+);
+
+/**
+ * @function DetailModal
+ * @description Modal dinámico que renderiza detalles de un item.
+ * @param {object} props
+ * @param {object} props.item - El objeto con los datos (visita, paquete, vehiculo).
+ * @param {Function} props.onClose - Función para cerrar el modal.
+ * @param {string} props.title - Título del modal.
+ * @param {Array&lt;object>} props.config - Array de configuración para las filas.
+ * @param {Function} [props.formatDate] - Función opcional para formatear fechas.
+ * @param {string} [props.themeColor="primary"] - Color del tema (ej. 'primary' o 'secondary').
+ * @returns {JSX.Element|null}
+ */
+export default function DetailModal({
+  item,
+  onClose,
+  title,
+  config,
+  formatDate,
+  themeColor = "primary", // Color por defecto
+  layoutType = "single",
+}) {
+  console.log("🚀 ~ DetailModal ~ item:", item);
+  if (!item) return null;
+
+  const titleColor = `text-${themeColor}`; // ej. text-primary
+  const buttonClass = `bg-${themeColor} text-surface hover:bg-${themeColor}-hover`; // ej. bg-primary...
+
+  const idTwoColumns = layoutType === "two-column";
+
+  const contentContainerClasses = idTwoColumns
+    ? "overflow-x-auto max-h-[80vh] pt-2" // Scroll horizontal para 3 columnas
+    : "space-y-4 max-h-[80vh] overflow-y-auto pr-2"; // Stack vertical para un solo módulo
+
+  // Clases dinámicas para el contenedor del grid/stack
+  const gridClasses = idTwoColumns
+    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-y-4 w-max min-w-full"
+    : "space-y-4"; // Si no es 3 columnas, volvemos al stack vertical
+
+  // Ancho del modal
+  const modalWidth = idTwoColumns ? "max-w-6xl" : "max-w-md";
+
+  return (
+    &lt;div className="fixed inset-0 bg-text-main/80 overflow-y-auto h-full w-full flex items-center justify-center z-50">
+      &lt;div
+        className={`relative bg-background p-3 rounded-lg shadow-2xl w-screen mt-[100px] md:mt-[50px] mb-4 ${modalWidth} animate-fadeIn`}
+        key={item.id_visita || item.id_paquete || item.id_vehiculo || "modal"}
+      >
+        &lt;h3
+          className={`text-2xl font-bold ${titleColor} mb-2 text-center border-b pb-2`}
+        >
+          {title}
+        &lt;/h3>
+
+        {/* --- Contenedor Principal para el SCROLL y Layout --- */}
+        &lt;div className={contentContainerClasses}>
+          &lt;div className={gridClasses}>
+            {config.map((prop, index) => {
+              // --- 1. Lógica de Divisores ---
+              if (prop.isDivider) {
+                // El divisor debe ocupar el ancho completo, independientemente del layout
+                const dividerClass = idTwoColumns ? "col-span-full" : "";
+                return (
+                  &lt;h4
+                    key={`divider-${index}`}
+                    className={`text-lg font-bold text-text-main mt-4 mb-2 border-t border-b border-surface-light pt-2 ${dividerClass}`}
+                  >
+                    {prop.label}
+                  &lt;/h4>
+                );
+              }
+
+              // --- 2. Lógica de Filas ---
+              const rawValue = getNestedValue(item, prop.key);
+
+              // Omitir si es condicional y el valor es nulo/vacío
+              if (
+                prop.conditional &amp;&amp;
+                (rawValue === undefined || rawValue === null || rawValue === "")
+              ) {
+                return null;
+              }
+
+              // ... (Lógica de formateo: displayValue, se mantiene igual)
+              let displayValue;
+              if (typeof prop.format === "function") {
+                displayValue = prop.format(rawValue, item);
+              } else if (prop.format === "date" &amp;&amp; formatDate) {
+                displayValue = formatDate(rawValue) || "N/A";
+              } else {
+                if (
+                  rawValue === undefined ||
+                  rawValue === null ||
+                  rawValue === ""
+                ) {
+                  displayValue = "N/A";
+                } else {
+                  displayValue = String(rawValue);
+                }
+              }
+
+              // 4. Renderizar la fila
+              if (displayValue === null || displayValue === undefined)
+                return null;
+
+              // Si es layout de 3 columnas, los elementos multilínea ocupan el ancho completo.
+              const itemClass =
+                idTwoColumns &amp;&amp; prop.multiline ? "col-span-full" : "col-span-1";
+
+              return (
+                &lt;div
+                  // Solo aplicamos la clase de grid si estamos en modo 3 columnas
+                  className={idTwoColumns ? itemClass : ""}
+                  key={prop.key}
+                >
+                  &lt;DetailRow
+                    label={prop.label}
+                    value={displayValue}
+                    multiline={prop.multiline}
+                  />
+                &lt;/div>
+              );
+            })}
+          &lt;/div>
+        &lt;/div>
+        {/* --- Fin Contenido Dinámico --- */}
+
+        {/* --- Botón de Cierre --- */}
+        &lt;div className="mt-6 flex justify-end">
+          &lt;button
+            onClick={onClose}
+            className={`px-6 py-2 font-semibold rounded-md shadow-md transition-colors ${buttonClass}`}
+          >
+            Cerrar
+          &lt;/button>
+        &lt;/div>
+      &lt;/div>
+    &lt;/div>
+  );
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Components.html">Components</a></li><li><a href="module-Components_Auth.html">Components/Auth</a></li><li><a href="module-Components_Devices.html">Components/Devices</a></li><li><a href="module-Components_History.html">Components/History</a></li><li><a href="module-Components_OperationCenters.html">Components/OperationCenters</a></li><li><a href="module-Components_Peripherals.html">Components/Peripherals</a></li><li><a href="module-Components_Requerimientos.html">Components/Requerimientos</a></li><li><a href="module-Components_Requirements.html">Components/Requirements</a></li><li><a href="module-Components_UI.html">Components/UI</a></li><li><a href="module-Components_Users.html">Components/Users</a></li><li><a href="module-Config.html">Config</a></li><li><a href="module-DateUtils.html">DateUtils</a></li><li><a href="module-Hooks.html">Hooks</a></li><li><a href="module-Hooks_Auth.html">Hooks/Auth</a></li><li><a href="module-Hooks_Catalogue.html">Hooks/Catalogue</a></li><li><a href="module-Hooks_Devices.html">Hooks/Devices</a></li><li><a href="module-Hooks_History.html">Hooks/History</a></li><li><a href="module-Hooks_OperationCenters.html">Hooks/OperationCenters</a></li><li><a href="module-Hooks_Requerimientos.html">Hooks/Requerimientos</a></li><li><a href="module-Hooks_Users.html">Hooks/Users</a></li><li><a href="module-InputHandlers.html">InputHandlers</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Routes_Admin.html">Routes/Admin</a></li><li><a href="module-Stores_Auth.html">Stores/Auth</a></li><li><a href="module-Utils.html">Utils</a></li><li><a href="module-hooks_requirements.html">hooks/requirements</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ActionButtons">ActionButtons</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#ConfirmationModal">ConfirmationModal</a></li><li><a href="global.html#LoginFormSkeleton">LoginFormSkeleton</a></li><li><a href="global.html#bajaConfig">bajaConfig</a></li><li><a href="global.html#centroOperacionConfig">centroOperacionConfig</a></li><li><a href="global.html#deviceConfig">deviceConfig</a></li><li><a href="global.html#formatActiveStatus">formatActiveStatus</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDeviceType">formatDeviceType</a></li><li><a href="global.html#formatStatus">formatStatus</a></li><li><a href="global.html#formatStatusRequirement">formatStatusRequirement</a></li><li><a href="global.html#formatUser">formatUser</a></li><li><a href="global.html#getRequerimientoDetailConfig">getRequerimientoDetailConfig</a></li><li><a href="global.html#logConfig">logConfig</a></li><li><a href="global.html#peripheralConfig">peripheralConfig</a></li><li><a href="global.html#userConfig">userConfig</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Nov 14 2025 15:41:19 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: services/peripheralService.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: services/peripheralService.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file peripheralService.js
+ * @module Services
+ * @description Capa de servicio que contiene toda la lógica de negocio para la gestión de periféricos (CRUD).
+ * Este módulo actúa como intermediario entre los controladores y los repositorios, aplicando las reglas de negocio,
+ * manejando la lógica de creación masiva, y registrando eventos de auditoría.
+ * @requires ../models/index.js
+ * @requires ../repositories/peripheralRepository.js
+ * @requires ../repositories/logRepository.js
+ * @requires ../repositories/decommissionRepository.js
+ * @requires ../utils/customErrors.js
+ * @requires ../config/logger.js
+ */
+import db from "../models/index.js";
+import * as peripheralRepository from "../repositories/peripheralRepository.js";
+import * as logRepository from "../repositories/logRepository.js";
+import * as decomissionRepository from "../repositories/decommissionRepository.js";
+import { AlreadyDesactivated, NotFoundError } from "../utils/customErrors.js";
+import logger from "../config/logger.js";
+
+/**
+ * @async
+ * @function fetchAllPeripherals
+ * @description Obtiene una lista de todos los periféricos.
+ * @returns {Promise&lt;Array&lt;object>>} Un array con los objetos de periférico.
+ */
+export const fetchAllPeripherals = async () => {
+  const allPeripherals = await peripheralRepository.findAll();
+  return allPeripherals;
+};
+
+/**
+ * @async
+ * @function getPeripheralById
+ * @description Obtiene un periférico específico por su ID.
+ * @param {number} id_periferico - El ID del periférico a buscar.
+ * @returns {Promise&lt;object>} El objeto del periférico encontrado.
+ * @throws {NotFoundError} Si el periférico no se encuentra.
+ */
+export const getPeripheralById = async (id_periferico) => {
+  const peripheral = await peripheralRepository.findById(id_periferico);
+  if (!peripheral) {
+    throw new NotFoundError(
+      `Periferico con el ID ${id_periferico} no fue encontrado`
+    );
+  }
+  return peripheral;
+};
+
+/**
+ * @async
+ * @function createPeripheral
+ * @description Crea uno o más periféricos nuevos en una transacción, aplicando la lógica de rol.
+ * @param {Array&lt;object>} peripheralsData - Array de objetos con los datos de los periféricos a crear.
+ * @param {object} user - El objeto del usuario autenticado que realiza la creación.
+ * @param {string} ip_usuario - La dirección IP del usuario.
+ * @returns {Promise&lt;Array&lt;object>>} Un array con los nuevos periféricos creados.
+ */
+export const createPeripheral = async (peripheralsData, ip_usuario, user) => {
+  return db.sequelize.transaction(async (t) => {
+    const creationPromises = peripheralsData.map(async (peripheralData) => {
+      if (peripheralData.id_centro_costo === "") {
+        peripheralData.id_centro_costo = null;
+      }
+
+      let peripheralForDb = {
+        ...peripheralData,
+        id_usuario_creador: user.id_usuario,
+      };
+
+      if (user.rol === "Encargado") {
+        peripheralForDb.id_centro_operacion = user.id_centro_operacion;
+      }
+
+      const newPeripheral = await peripheralRepository.create(peripheralForDb, {
+        transaction: t,
+      });
+
+      await logRepository.create(
+        {
+          accion: "CREAR_PERIFERICO",
+          ip_usuario: ip_usuario,
+          descripcion: `Se creó el periferico con serial '${newPeripheral.serial_periferico}' (ID: ${newPeripheral.id_periferico}).`,
+          id_usuario: user.id_usuario,
+        },
+        { transaction: t }
+      );
+
+      return newPeripheral;
+    });
+
+    const createdPeripherals = await Promise.all(creationPromises);
+
+    logger.info(
+      { userId: user.id_usuario, count: createdPeripherals.length },
+      "Periférico(s) creado(s) exitosamente."
+    );
+
+    return createdPeripherals;
+  });
+};
+
+/**
+ * @async
+ * @function updatePeripheral
+ * @description Actualiza los datos de un periférico existente.
+ * @param {number} id_periferico - El ID del periférico a actualizar.
+ * @param {object} updateData - Los datos a modificar.
+ * @returns {Promise&lt;object>} El objeto del periférico actualizado.
+ * @throws {NotFoundError} Si el periférico no se encuentra.
+ */
+export const updatePeripheral = async (updateValidateData, id_periferico) => {
+  const updatedPeripheral = await peripheralRepository.update(
+    id_periferico,
+    updateValidateData
+  );
+  return updatedPeripheral;
+};
+
+/**
+ * @async
+ * @function statePeripheral
+ * @description Cambia el estado (activo/inactivo) de un periférico y crea los registros de auditoría correspondientes.
+ * @param {number} id_periferico - El ID del periférico a modificar.
+ * @param {object} updateData - El objeto con el nuevo estado (ej. { estado_periferico: false }).
+ * @param {number} id_usuario - El ID del usuario que realiza la acción.
+ * @param {string} ip_usuario - La IP del usuario.
+ * @returns {Promise&lt;object>} El objeto del periférico actualizado.
+ * @throws {NotFoundError} Si el periférico no se encuentra.
+ * @throws {AppError} Si se intenta aplicar un estado que el periférico ya tiene.
+ */
+export const statePeripheral = async (
+  id_periferico,
+  updateData,
+  id_usuario,
+  ip_usuario
+) => {
+  return db.sequelize.transaction(async (t) => {
+    const peripheralDb = await peripheralRepository.findById(id_periferico, {
+      transaction: t,
+    });
+
+    if (peripheralDb.estado_periferico !== undefined) {
+      if (updateData.estado_periferico === peripheralDb.estado_periferico) {
+        const message = peripheralDb.estado_periferico
+          ? "El periferico ya se encuentra activo"
+          : "El periferico ya está dado de baja";
+        throw new AlreadyDesactivated(message);
+      }
+    }
+
+    const updatedPeripheral = await peripheralRepository.update(
+      id_periferico,
+      { estado_periferico: updateData.estado_periferico },
+      { transaction: t }
+    );
+
+    if (updateData.estado_periferico === false) {
+      await decomissionRepository.create(
+        {
+          id_periferico: id_periferico,
+          id_usuario: id_usuario,
+        },
+        { transaction: t }
+      );
+
+      await logRepository.create(
+        {
+          accion: "DAR_DE_BAJAR_PERIFERICO",
+          id_usuario: id_usuario,
+          descripcion: `Se dio de baja al periferico con serial '${peripheralDb.serial_periferico}' (ID: ${id_periferico}).`,
+          ip_usuario: ip_usuario,
+        },
+        { transaction: t }
+      );
+      logger.info(
+        { userId: id_usuario, peripheralId: id_periferico },
+        "Periférico dado de baja exitosamente."
+      );
+    } else {
+      await logRepository.create(
+        {
+          accion: "REACTIVAR_PERIFERICO",
+          id_usuario: id_usuario,
+          descripcion: `Se reactivó el periférico con serial '${peripheralDb.serial_periferico}' (ID: ${id_periferico}).`,
+          ip_usuario: ip_usuario,
+        },
+        { transaction: t }
+      );
+      logger.info(
+        { userId: id_usuario, peripheralId: id_periferico },
+        "Periférico reactivado exitosamente."
+      );
+    }
+
+    return updatedPeripheral;
+  });
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Config.html">Config</a></li><li><a href="module-Constants.html">Constants</a></li><li><a href="module-Controllers.html">Controllers</a></li><li><a href="module-Middleware.html">Middleware</a></li><li><a href="module-Middlewares.html">Middlewares</a></li><li><a href="module-Models.html">Models</a></li><li><a href="module-Models_Catalogues.html">Models/Catalogues</a></li><li><a href="module-Repositories.html">Repositories</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Schemas.html">Schemas</a></li><li><a href="module-Services.html">Services</a></li><li><a href="module-Utils_Errors.html">Utils/Errors</a></li><li><a href="module-Utils_Tokens.html">Utils/Tokens</a></li></ul><h3>Classes</h3><ul><li><a href="module-Models_Catalogues-City.html">City</a></li><li><a href="module-Models_Catalogues-IdentificationType.html">IdentificationType</a></li><li><a href="module-Models_Catalogues-PeripheralType.html">PeripheralType</a></li><li><a href="module-Models-CostCenter.html">CostCenter</a></li><li><a href="module-Models-Decommission.html">Decommission</a></li><li><a href="module-Models-Device.html">Device</a></li><li><a href="module-Models-Log.html">Log</a></li><li><a href="module-Models-OperationCenter.html">OperationCenter</a></li><li><a href="module-Models-Peripheral.html">Peripheral</a></li><li><a href="module-Models-Permission.html">Permission</a></li><li><a href="module-Models-RefreshToken.html">RefreshToken</a></li><li><a href="module-Models-Requirement.html">Requirement</a></li><li><a href="module-Models-RequirementAsset.html">RequirementAsset</a></li><li><a href="module-Models-RequirementStatus.html">RequirementStatus</a></li><li><a href="module-Models-TechnicalAnalysis.html">TechnicalAnalysis</a></li><li><a href="module-Models-User.html">User</a></li><li><a href="module-Utils_Errors.AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AccountDisabledError.html">AccountDisabledError</a></li><li><a href="module-Utils_Errors-AlreadyDesactivated.html">AlreadyDesactivated</a></li><li><a href="module-Utils_Errors-AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AuthError.html">AuthError</a></li><li><a href="module-Utils_Errors-ConfigurationError.html">ConfigurationError</a></li><li><a href="module-Utils_Errors-DatabaseConnectionError.html">DatabaseConnectionError</a></li><li><a href="module-Utils_Errors-DuplicateError.html">DuplicateError</a></li><li><a href="module-Utils_Errors-ForbiddenError.html">ForbiddenError</a></li><li><a href="module-Utils_Errors-InvalidTokenError.html">InvalidTokenError</a></li><li><a href="module-Utils_Errors-NotFoundError.html">NotFoundError</a></li><li><a href="module-Utils_Errors-UserAlreadyExistsError.html">UserAlreadyExistsError</a></li><li><a href="module-Utils_Errors-UserNotFoundOrInvalidPasswordError.html">UserNotFoundOrInvalidPasswordError</a></li></ul><h3>Global</h3><ul><li><a href="global.html#generateRequirementCode">generateRequirementCode</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Nov 14 2025 15:41:16 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

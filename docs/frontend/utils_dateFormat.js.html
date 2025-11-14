@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: utils/dateFormat.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: utils/dateFormat.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file dateFormat.js
+ * @module DateUtils
+ * @description Módulo de utilidad para formatear cadenas de fecha y hora a la zona horaria local de Colombia (UTC-5).
+ * Esta implementación utiliza el objeto `Date` nativo de JavaScript para realizar la conversión de zona horaria manualmente.
+ */
+
+/**
+ * @function formatDate
+ * @description Formatea una cadena de fecha (que se asume UTC) a un formato local de Colombia.
+ * @param {string | Date | null | undefined} dateInput - La cadena de fecha UTC (ej: "2023-10-27T19:30:00.000Z").
+ * @returns {string} La fecha y hora formateada, o "N/A" si la entrada es inválida.
+ */
+export const formatDate = (dateInput) => {
+  if (!dateInput) {
+    return "N/A";
+  }
+
+  try {
+    const date = new Date(dateInput);
+    if (isNaN(date)) {
+      return "Fecha inválida";
+    }
+
+    // 1. Obtenemos los componentes de la fecha en UTC.
+    const year = date.getUTCFullYear();
+    const month = date.getUTCMonth(); // 0-11
+    const day = date.getUTCDate();
+    const hours = date.getUTCHours();
+    const minutes = date.getUTCMinutes();
+    const seconds = date.getUTCSeconds();
+
+    // 2. Creamos una nueva fecha aplicando el desfase de Colombia (UTC-5).
+    // El constructor de Date maneja correctamente los desbordamientos (ej. si la hora es 2 AM UTC, al restarle 5 se convierte en 9 PM del día anterior).
+    const colombiaDate = new Date(
+      Date.UTC(year, month, day, hours - 5, minutes, seconds)
+    );
+
+    // 3. Extraemos los componentes de la nueva fecha ajustada.
+    const finalDay = String(colombiaDate.getDate()).padStart(2, "0");
+    const finalMonth = String(colombiaDate.getMonth() + 1).padStart(2, "0"); // Se suma 1 porque los meses van de 0 a 11.
+    const finalYear = colombiaDate.getFullYear();
+    let finalHours = colombiaDate.getHours();
+    const finalMinutes = String(colombiaDate.getMinutes()).padStart(2, "0");
+    const finalSeconds = String(colombiaDate.getSeconds()).padStart(2, "0");
+
+    // 4. Convertimos a formato 12h (AM/PM).
+    const ampm = finalHours >= 12 ? "p. m." : "a. m.";
+    finalHours = finalHours % 12;
+    finalHours = finalHours ? finalHours : 12; // La hora 0 debe ser 12.
+
+    // 5. Ensamblamos la cadena de texto final.
+    return `${finalDay}/${finalMonth}/${finalYear}, ${finalHours}:${finalMinutes}:${finalSeconds} ${ampm}`;
+  } catch (error) {
+    console.error("Error al formatear la fecha:", error);
+    return "Fecha inválida";
+  }
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Components.html">Components</a></li><li><a href="module-Components_Auth.html">Components/Auth</a></li><li><a href="module-Components_Devices.html">Components/Devices</a></li><li><a href="module-Components_History.html">Components/History</a></li><li><a href="module-Components_OperationCenters.html">Components/OperationCenters</a></li><li><a href="module-Components_Peripherals.html">Components/Peripherals</a></li><li><a href="module-Components_Requerimientos.html">Components/Requerimientos</a></li><li><a href="module-Components_Requirements.html">Components/Requirements</a></li><li><a href="module-Components_UI.html">Components/UI</a></li><li><a href="module-Components_Users.html">Components/Users</a></li><li><a href="module-Config.html">Config</a></li><li><a href="module-DateUtils.html">DateUtils</a></li><li><a href="module-Hooks.html">Hooks</a></li><li><a href="module-Hooks_Auth.html">Hooks/Auth</a></li><li><a href="module-Hooks_Catalogue.html">Hooks/Catalogue</a></li><li><a href="module-Hooks_Devices.html">Hooks/Devices</a></li><li><a href="module-Hooks_History.html">Hooks/History</a></li><li><a href="module-Hooks_OperationCenters.html">Hooks/OperationCenters</a></li><li><a href="module-Hooks_Requerimientos.html">Hooks/Requerimientos</a></li><li><a href="module-Hooks_Users.html">Hooks/Users</a></li><li><a href="module-InputHandlers.html">InputHandlers</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Routes_Admin.html">Routes/Admin</a></li><li><a href="module-Stores_Auth.html">Stores/Auth</a></li><li><a href="module-Utils.html">Utils</a></li><li><a href="module-hooks_requirements.html">hooks/requirements</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ActionButtons">ActionButtons</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#ConfirmationModal">ConfirmationModal</a></li><li><a href="global.html#LoginFormSkeleton">LoginFormSkeleton</a></li><li><a href="global.html#bajaConfig">bajaConfig</a></li><li><a href="global.html#centroOperacionConfig">centroOperacionConfig</a></li><li><a href="global.html#deviceConfig">deviceConfig</a></li><li><a href="global.html#formatActiveStatus">formatActiveStatus</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDeviceType">formatDeviceType</a></li><li><a href="global.html#formatStatus">formatStatus</a></li><li><a href="global.html#formatStatusRequirement">formatStatusRequirement</a></li><li><a href="global.html#formatUser">formatUser</a></li><li><a href="global.html#getRequerimientoDetailConfig">getRequerimientoDetailConfig</a></li><li><a href="global.html#logConfig">logConfig</a></li><li><a href="global.html#peripheralConfig">peripheralConfig</a></li><li><a href="global.html#userConfig">userConfig</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Nov 14 2025 15:41:19 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: schemas/requirementSchema.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: schemas/requirementSchema.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file requirementSchema.js
+ * @module Schemas
+ * @description Define los esquemas de validación de datos para el flujo de 'Requerimientos'
+ * (creación, análisis técnico y vinculación de activos) utilizando Zod.
+ * @requires zod
+ */
+import { z } from "zod";
+
+// ==========================================================
+// 1. REQUERIMIENTO (CREACIÓN) - Tabla 'requerimientos'
+// ==========================================================
+
+/**
+ * @const {z.ZodObject} CreateRequirementSchema
+ * @description Esquema para validar los datos necesarios al crear un nuevo Requerimiento.
+ * Utilizado en la ruta `POST /requerimientos`.
+ */
+export const CreateRequirementSchema = z.object({
+  /**
+   * @property {string} asunto - Breve descripción de la necesidad. Obligatorio, 5-255 caracteres.
+   */
+  asunto: z
+    .string({
+      required_error: "El 'asunto' es obligatorio.",
+    })
+    .min(5, "El asunto debe tener al menos 5 caracteres.")
+    .max(255, "Máximo 255 caracteres."),
+
+  /**
+   * @property {string} detalle_necesidad - Solicitud detallada del Centro de Operación (CO). Obligatorio, mínimo 10 caracteres.
+   */
+  detalle_necesidad: z
+    .string({
+      required_error: "El 'detalle_necesidad' es obligatorio.",
+    })
+    .min(
+      10,
+      "El detalle de la necesidad debe ser descriptivo (mínimo 10 caracteres)."
+    ),
+
+  /**
+   * @property {number|null} presupuesto_estimado - Presupuesto inicial opcional. Debe ser positivo.
+   */
+  presupuesto_estimado: z.number().positive().nullable().optional(),
+});
+
+/**
+ * @const {z.ZodObject} UpdateRequirementSchema
+ * @description Esquema para la actualización parcial de los campos del Requerimiento.
+ * Es la versión `.partial()` del `CreateRequirementSchema`.
+ * Esto permite que cualquier campo se envíe de forma opcional en un PATCH.
+ */
+export const UpdateRequirementSchema = CreateRequirementSchema.partial();
+
+// ==========================================================
+// 2. ANÁLISIS TÉCNICO (FIRMA TI) - Tabla 'analisis_tecnico'
+// ==========================================================
+
+/**
+ * @const {z.ZodObject} SignTIAnalysisSchema
+ * @description Esquema para validar los datos que componen el Análisis Técnico de TI.
+ * Utilizado en la ruta `PATCH /requerimientos/:id/analisis-ti`.
+ */
+export const SignTIAnalysisSchema = z.object({
+  /**
+   * @property {string} descripcion_solucion - Descripción detallada de la solución técnica propuesta. Obligatoria, mínimo 20 caracteres.
+   */
+  descripcion_solucion: z
+    .string({
+      required_error: "La descripción de la solución es obligatoria.",
+    })
+    .min(
+      20,
+      "La descripción de la solución debe ser detallada (mínimo 20 caracteres)."
+    ),
+
+  /**
+   * @property {number} cantidad_equipos - Número de equipos (laptops/desktops) requeridos. Entero no negativo.
+   */
+  cantidad_equipos: z
+    .number({
+      required_error: "La cantidad de equipos es obligatoria.",
+    })
+    .int("Debe ser un número entero.")
+    .min(0, "No puede ser un valor negativo."),
+
+  /**
+   * @property {number} cantidad_perifericos - Número de periféricos requeridos. Entero no negativo.
+   */
+  cantidad_perifericos: z
+    .number({
+      required_error: "La cantidad de periféricos es obligatoria.",
+    })
+    .int("Debe ser un número entero.")
+    .min(0, "No puede ser un valor negativo."),
+
+  /**
+   * @property {number} presupuesto_final - El costo total final del análisis. Obligatorio, positivo.
+   * El `.transform` asegura el formato DECIMAL(10, 2).
+   */
+  presupuesto_final: z
+    .number({
+      required_error: "El presupuesto final es obligatorio.",
+    })
+    .positive("El presupuesto debe ser un valor positivo (mayor que cero).")
+    .transform((val) => parseFloat(val.toFixed(2))),
+});
+
+// ==========================================================
+// 3. VINCULACIÓN DE ACTIVO - TABLA 'requerimiento_activos'
+// ==========================================================
+
+/**
+ * @const {z.ZodObject} CreateAndLinkAssetControlSchema
+ * @description Esquema simplificado. Valida solo los campos de control (`is_equipo`)
+ * y acepta `asset_details` como un objeto genérico, Su contenido
+ * será validado por los schemas de `Equipo` o `Periferico` existentes en el Service Layer.
+ * Utilizado en la ruta `POST /requerimientos/:id/enlace-equipos`.
+ */
+export const CreateAndLinkAssetControlSchema = z.object({
+  /**
+   * @property {boolean} is_equipo - Indicador de tipo de activo a crear (true=Equipo, false=Periférico).
+   * Es crucial para que el Service Layer sepa qué modelo usar.
+   */
+  is_equipo: z.boolean({
+    required_error:
+      "Debe especificar si el activo es 'is_equipo' (true/false).",
+  }),
+  /**
+   * @property {Array&lt;object>} asset_details - Array que contiene todos los campos de creación
+   * del Equipo o Periférico. Aquí solo validamos que sea un ARRAY de objetos.
+   * La validación del *contenido* se delega a `validateAssetDetails`.
+   */
+  asset_details: z
+    .array(z.object({}).passthrough(), {
+      required_error: "El campo 'asset_details' es obligatorio.",
+    })
+    .min(1, "Debe enviar al menos un activo en 'asset_details'."),
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Config.html">Config</a></li><li><a href="module-Constants.html">Constants</a></li><li><a href="module-Controllers.html">Controllers</a></li><li><a href="module-Middleware.html">Middleware</a></li><li><a href="module-Middlewares.html">Middlewares</a></li><li><a href="module-Models.html">Models</a></li><li><a href="module-Models_Catalogues.html">Models/Catalogues</a></li><li><a href="module-Repositories.html">Repositories</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Schemas.html">Schemas</a></li><li><a href="module-Services.html">Services</a></li><li><a href="module-Utils_Errors.html">Utils/Errors</a></li><li><a href="module-Utils_Tokens.html">Utils/Tokens</a></li></ul><h3>Classes</h3><ul><li><a href="module-Models_Catalogues-City.html">City</a></li><li><a href="module-Models_Catalogues-IdentificationType.html">IdentificationType</a></li><li><a href="module-Models_Catalogues-PeripheralType.html">PeripheralType</a></li><li><a href="module-Models-CostCenter.html">CostCenter</a></li><li><a href="module-Models-Decommission.html">Decommission</a></li><li><a href="module-Models-Device.html">Device</a></li><li><a href="module-Models-Log.html">Log</a></li><li><a href="module-Models-OperationCenter.html">OperationCenter</a></li><li><a href="module-Models-Peripheral.html">Peripheral</a></li><li><a href="module-Models-Permission.html">Permission</a></li><li><a href="module-Models-RefreshToken.html">RefreshToken</a></li><li><a href="module-Models-Requirement.html">Requirement</a></li><li><a href="module-Models-RequirementAsset.html">RequirementAsset</a></li><li><a href="module-Models-RequirementStatus.html">RequirementStatus</a></li><li><a href="module-Models-TechnicalAnalysis.html">TechnicalAnalysis</a></li><li><a href="module-Models-User.html">User</a></li><li><a href="module-Utils_Errors.AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AccountDisabledError.html">AccountDisabledError</a></li><li><a href="module-Utils_Errors-AlreadyDesactivated.html">AlreadyDesactivated</a></li><li><a href="module-Utils_Errors-AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AuthError.html">AuthError</a></li><li><a href="module-Utils_Errors-ConfigurationError.html">ConfigurationError</a></li><li><a href="module-Utils_Errors-DatabaseConnectionError.html">DatabaseConnectionError</a></li><li><a href="module-Utils_Errors-DuplicateError.html">DuplicateError</a></li><li><a href="module-Utils_Errors-ForbiddenError.html">ForbiddenError</a></li><li><a href="module-Utils_Errors-InvalidTokenError.html">InvalidTokenError</a></li><li><a href="module-Utils_Errors-NotFoundError.html">NotFoundError</a></li><li><a href="module-Utils_Errors-UserAlreadyExistsError.html">UserAlreadyExistsError</a></li><li><a href="module-Utils_Errors-UserNotFoundOrInvalidPasswordError.html">UserNotFoundOrInvalidPasswordError</a></li></ul><h3>Global</h3><ul><li><a href="global.html#generateRequirementCode">generateRequirementCode</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Nov 14 2025 15:41:16 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

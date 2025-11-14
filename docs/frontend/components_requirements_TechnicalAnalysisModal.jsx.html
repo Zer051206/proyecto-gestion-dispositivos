@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/requirements/TechnicalAnalysisModal.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/requirements/TechnicalAnalysisModal.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file TechnicalAnalysisModal.jsx
+ * @module Components/Requirements
+ * @description Modal para que el equipo de TI documente el análisis técnico, incluyendo
+ * la solución propuesta, la cantidad de activos necesarios y el presupuesto.
+ */
+import React from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faTimes,
+  faLaptop,
+  faMouse,
+  faDollarSign,
+  faWrench,
+} from "@fortawesome/free-solid-svg-icons";
+import { useTechnicalAnalysisForm } from "../../hooks/requirements/useTechnicalAnalysisForm.js";
+import { handleKeyNumberDown } from "../../utils/inputUtilities.js";
+
+/**
+ * @function TechnicalAnalysisModal
+ * @description Componente modal para la gestión del Análisis Técnico.
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.requerimiento - El objeto completo del requerimiento a analizar.
+ * @param {Function} props.onClose - Callback para cerrar el modal.
+ * @param {Function} props.onSuccess - Callback a ejecutar tras un envío exitoso.
+ * @returns {JSX.Element}
+ */
+export default function TechnicalAnalysisModal({
+  requerimiento,
+  onClose,
+  onSuccess,
+}) {
+  const formik = useTechnicalAnalysisForm(requerimiento, onClose, onSuccess);
+  const isEditing = requerimiento.TechnicalAnalysis; // Determina si es edición o primer análisis
+
+  const inputClasses =
+    "mt-1 block w-full rounded-md font-semibold border-2 border-gray-300 p-2 outline-none bg-gray-50 focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200";
+
+  const renderError = (field) => {
+    return formik.touched[field] &amp;&amp; formik.errors[field] ? (
+      &lt;div className="text-error text-sm mt-1">{formik.errors[field]}&lt;/div>
+    ) : null;
+  };
+
+  return (
+    &lt;div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 overflow-y-auto animate-fade-in">
+      {/* Contenedor principal del modal */}
+      &lt;div className="bg-secondary rounded-lg shadow-xl w-full max-w-3xl flex flex-col my-2">
+        {/* HEADER */}
+        &lt;header className="p-4 flex justify-between items-center border-b border-gray-200 bg-secondary z-10">
+          &lt;h2 className="text-2xl font-bold text-primary">
+            Análisis Técnico: {requerimiento.codigo_requerimiento}
+          &lt;/h2>
+          &lt;button
+            onClick={onClose}
+            className="text-text-main hover:opacity-70"
+            title="Cerrar"
+          >
+            &lt;FontAwesomeIcon icon={faTimes} size="lg" />
+          &lt;/button>
+        &lt;/header>
+
+        {/* BODY (Formulario) */}
+        &lt;form
+          onSubmit={formik.handleSubmit}
+          noValidate
+          className="p-6 space-y-6"
+        >
+          &lt;div className="bg-info/10 border-l-4 border-info text-info-dark p-3 rounded-md">
+            &lt;p className="font-semibold">
+              Documenta la solución técnica propuesta y define los recursos
+              (Equipos/Periféricos) y el presupuesto.
+            &lt;/p>
+          &lt;/div>
+
+          {/* Campo: Descripción de la Solución Técnica */}
+          &lt;label className="block">
+            &lt;span className="text-text-main font-semibold flex items-center gap-2">
+              &lt;FontAwesomeIcon icon={faWrench} className="text-primary" />{" "}
+              Descripción de la Solución Técnica *
+            &lt;/span>
+            &lt;textarea
+              rows="4"
+              placeholder="Detalle la solución propuesta, especificaciones mínimas y justificación."
+              className={inputClasses}
+              {...formik.getFieldProps("descripcion_solucion")}
+            >&lt;/textarea>
+            {renderError("descripcion_solucion")}
+          &lt;/label>
+
+          {/* Agrupación de Recursos y Presupuesto */}
+          &lt;div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 border-t border-gray-200">
+            {/* Campo: Cantidad de Equipos */}
+            &lt;label className="block">
+              &lt;span className="text-text-main font-semibold flex items-center gap-2 my-4">
+                &lt;FontAwesomeIcon
+                  icon={faLaptop}
+                  className="text-neutral-dark"
+                />{" "}
+                Cantidad de Equipos *
+              &lt;/span>
+              &lt;input
+                type="number"
+                min="0"
+                autoComplete="off"
+                onKeyDown={handleKeyNumberDown}
+                className={inputClasses}
+                {...formik.getFieldProps("cantidad_equipos")}
+              />
+              {renderError("cantidad_equipos")}
+            &lt;/label>
+
+            {/* Campo: Cantidad de Periféricos */}
+            &lt;label className="block">
+              &lt;span className="text-text-main font-semibold flex items-center gap-2 my-4">
+                &lt;FontAwesomeIcon icon={faMouse} className="text-neutral-dark" />{" "}
+                Cantidad de Periféricos *
+              &lt;/span>
+              &lt;input
+                type="number"
+                min="0"
+                autoComplete="off"
+                onKeyDown={handleKeyNumberDown}
+                className={inputClasses}
+                {...formik.getFieldProps("cantidad_perifericos")}
+              />
+              {renderError("cantidad_perifericos")}
+            &lt;/label>
+
+            {/* Campo: Presupuesto Final Estimado */}
+            &lt;label className="block">
+              &lt;span className="text-text-main font-semibold flex items-center gap-2 my-1">
+                &lt;FontAwesomeIcon icon={faDollarSign} className="text-success" />{" "}
+                Presupuesto Final Estimado (COP) *
+              &lt;/span>
+              &lt;input
+                type="number"
+                min="100"
+                autoComplete="off"
+                onKeyDown={handleKeyNumberDown}
+                className={inputClasses}
+                {...formik.getFieldProps("presupuesto_final")}
+              />
+              {renderError("presupuesto_final")}
+              &lt;p className="text-xs text-gray-500 mt-1">
+                Valor actual: $
+                {formik.values.presupuesto_final.toLocaleString("es-CO")}
+              &lt;/p>
+            &lt;/label>
+          &lt;/div>
+
+          {/* FOOTER - Botones de acción */}
+          &lt;footer className="flex justify-end items-center gap-4 pt-4 border-t border-gray-200">
+            {formik.errors.apiError &amp;&amp; (
+              &lt;div className="text-error text-sm mr-auto font-semibold">
+                {formik.errors.apiError}
+              &lt;/div>
+            )}
+            &lt;button
+              type="button"
+              onClick={onClose}
+              disabled={formik.isSubmitting}
+              className="py-2 px-4 rounded-lg bg-gray-200 hover:bg-gray-300 text-text-main font-semibold"
+            >
+              Cancelar
+            &lt;/button>
+            &lt;button
+              type="submit"
+              disabled={formik.isSubmitting}
+              className="py-2 px-4 rounded-lg bg-primary text-text-light font-bold hover:bg-primary-dark disabled:bg-primary/50 disabled:cursor-not-allowed"
+            >
+              {formik.isSubmitting
+                ? "Guardando..."
+                : isEditing
+                ? "Actualizar Análisis"
+                : "Avanzar Requerimiento"}
+            &lt;/button>
+          &lt;/footer>
+        &lt;/form>
+      &lt;/div>
+    &lt;/div>
+  );
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Components.html">Components</a></li><li><a href="module-Components_Auth.html">Components/Auth</a></li><li><a href="module-Components_Devices.html">Components/Devices</a></li><li><a href="module-Components_History.html">Components/History</a></li><li><a href="module-Components_OperationCenters.html">Components/OperationCenters</a></li><li><a href="module-Components_Peripherals.html">Components/Peripherals</a></li><li><a href="module-Components_Requerimientos.html">Components/Requerimientos</a></li><li><a href="module-Components_Requirements.html">Components/Requirements</a></li><li><a href="module-Components_UI.html">Components/UI</a></li><li><a href="module-Components_Users.html">Components/Users</a></li><li><a href="module-Config.html">Config</a></li><li><a href="module-DateUtils.html">DateUtils</a></li><li><a href="module-Hooks.html">Hooks</a></li><li><a href="module-Hooks_Auth.html">Hooks/Auth</a></li><li><a href="module-Hooks_Catalogue.html">Hooks/Catalogue</a></li><li><a href="module-Hooks_Devices.html">Hooks/Devices</a></li><li><a href="module-Hooks_History.html">Hooks/History</a></li><li><a href="module-Hooks_OperationCenters.html">Hooks/OperationCenters</a></li><li><a href="module-Hooks_Requerimientos.html">Hooks/Requerimientos</a></li><li><a href="module-Hooks_Users.html">Hooks/Users</a></li><li><a href="module-InputHandlers.html">InputHandlers</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Routes_Admin.html">Routes/Admin</a></li><li><a href="module-Stores_Auth.html">Stores/Auth</a></li><li><a href="module-Utils.html">Utils</a></li><li><a href="module-hooks_requirements.html">hooks/requirements</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ActionButtons">ActionButtons</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#ConfirmationModal">ConfirmationModal</a></li><li><a href="global.html#LoginFormSkeleton">LoginFormSkeleton</a></li><li><a href="global.html#bajaConfig">bajaConfig</a></li><li><a href="global.html#centroOperacionConfig">centroOperacionConfig</a></li><li><a href="global.html#deviceConfig">deviceConfig</a></li><li><a href="global.html#formatActiveStatus">formatActiveStatus</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDeviceType">formatDeviceType</a></li><li><a href="global.html#formatStatus">formatStatus</a></li><li><a href="global.html#formatStatusRequirement">formatStatusRequirement</a></li><li><a href="global.html#formatUser">formatUser</a></li><li><a href="global.html#getRequerimientoDetailConfig">getRequerimientoDetailConfig</a></li><li><a href="global.html#logConfig">logConfig</a></li><li><a href="global.html#peripheralConfig">peripheralConfig</a></li><li><a href="global.html#userConfig">userConfig</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Nov 14 2025 15:41:19 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

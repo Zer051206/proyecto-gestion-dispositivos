@@ -23,6 +23,18 @@ import { faPlus, faTrash, faTimes } from "@fortawesome/free-solid-svg-icons";
 import api from "../../config/axios.js";
 import { useAuthStore } from "../../stores/authStore.js";
 
+const FixedWrapper = (props) => (
+  <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 pt-12 overflow-y-auto animate-fade-in">
+    {props.children}
+  </div>
+);
+
+const ContentWrapper = (props) => (
+  <div className="bg-secondary rounded-lg shadow-xl w-full max-w-4xl flex flex-col my-8">
+    {props.children}
+  </div>
+);
+
 /**
  * @function PeripheralSubForm
  * @description Subcomponente que renderiza un conjunto de campos para un único Periférico dentro del FieldArray.
@@ -381,25 +393,13 @@ export default function CreatePeripheralForm({
     (isReqFlow && requiredCount === null) || // Mostrar si es requerimiento pero el límite aún no carga
     (isReqFlow && requiredCount !== null && currentCount < requiredCount);
 
-  const ModalFixedWrapper = isNestedForm
-    ? React.Fragment
-    : (props) => (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 pt-12 overflow-y-auto animate-fade-in">
-          {props.children}
-        </div>
-      );
+  const SelectedFixedWrapper = isNestedForm ? React.Fragment : FixedWrapper;
 
-  // 2. Contenedor principal del modal (solo si NO está anidado)
-  const ModalContentWrapper = isNestedForm
-    ? React.Fragment
-    : (props) => (
-        <div className="bg-secondary rounded-lg shadow-xl w-full max-w-4xl flex flex-col my-8">
-          {props.children}
-        </div>
-      );
+  // 2. Seleccionamos el Wrapper de Contenido Condicionalmente
+  const SelectedContentWrapper = isNestedForm ? React.Fragment : ContentWrapper;
 
-  // 3. Encabezado del modal (solo si NO está anidado)
-  const ModalHeader = isNestedForm ? null : (
+  // 3. Definición Condicional del Header
+  const RenderedModalHeader = isNestedForm ? null : (
     <header className="p-4 flex justify-between items-center border-b border-gray-200 bg-secondary z-10">
       <h2 className="text-2xl font-bold text-primary">
         {isReqFlow
@@ -413,9 +413,9 @@ export default function CreatePeripheralForm({
   );
 
   return (
-    <ModalFixedWrapper>
-      <ModalContentWrapper>
-        {ModalHeader}{" "}
+    <SelectedFixedWrapper>
+      <SelectedContentWrapper>
+        {RenderedModalHeader}{" "}
         <FormikProvider value={formik}>
           <form
             onSubmit={formik.handleSubmit}
@@ -477,6 +477,13 @@ export default function CreatePeripheralForm({
                       onClick={() => push(initialPeripheralValues)}
                       className="flex items-center gap-2 py-2 px-4 bg-accent-secondary text-text-light font-semibold rounded-lg hover:opacity-90 transition-opacity"
                       disabled={isAddDisabled || isFormDisabled}
+                      title={
+                        isReqFlow &&
+                        requiredCount !== null &&
+                        currentCount >= requiredCount
+                          ? `Límite alcanzado (${requiredCount})`
+                          : "Añadir otro periférico"
+                      }
                     >
                       <FontAwesomeIcon icon={faPlus} /> Añadir otro periférico
                       {requiredCount !== null &&
@@ -515,7 +522,7 @@ export default function CreatePeripheralForm({
             </footer>
           </form>
         </FormikProvider>
-      </ModalContentWrapper>
-    </ModalFixedWrapper>
+      </SelectedContentWrapper>
+    </SelectedFixedWrapper>
   );
 }

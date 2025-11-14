@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/requirements/CreateRequirementForm.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/requirements/CreateRequirementForm.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file CreateRequirementForm.jsx
+ * @module Components/Requirements
+ * @description Formulario inicial para la creación de un nuevo requerimiento. Permite al usuario
+ * (Encargado) ingresar un asunto y la descripción detallada de la necesidad.
+ * @requires ../../hooks/requirements/useCreateRequirementForm.js
+ */
+import React from "react";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimes, faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+import useCreateRequirementForm from "../../hooks/requirements/useCreateRequirementForm.js";
+
+/**
+ * @function CreateRequirementForm
+ * @description Muestra el formulario inicial para que un Encargado describa un requerimiento.
+ * Este componente está diseñado para ser renderizado dentro de un modal o contenedor.
+ * @param {object} props - Propiedades del componente.
+ * @param {Function} props.onClose - Función para cerrar el contenedor (modal).
+ * @param {Function} props.onSuccess - Función a ejecutar tras la creación exitosa.
+ * @returns {JSX.Element}
+ */
+export default function CreateRequirementForm({ onClose, onSuccess }) {
+  const { handleSubmit, isSubmitting, initialValues, validationSchema } =
+    useCreateRequirementForm(onSuccess);
+
+  return (
+    &lt;div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-fade-in"
+      onClick={onClose}
+    >
+      &lt;div
+        className="bg-secondary rounded-lg shadow-xl w-full max-w-xl text-left"
+        onClick={(e) => e.stopPropagation()}
+      >
+        &lt;header className="p-4 flex justify-between items-center border-b border-gray-200">
+          &lt;h3 className="text-xl font-bold text-primary">
+            Iniciar Nuevo Requerimiento
+          &lt;/h3>
+          &lt;button onClick={onClose} className="text-text-main hover:opacity-70">
+            &lt;FontAwesomeIcon icon={faTimes} />
+          &lt;/button>
+        &lt;/header>
+
+        &lt;Formik
+          initialValues={initialValues}
+          validationSchema={validationSchema}
+          onSubmit={handleSubmit}
+        >
+          {({ errors, touched }) => (
+            &lt;Form className="p-6">
+              {/* Campo Asunto */}
+              &lt;div className="mb-4">
+                &lt;label
+                  htmlFor="asunto"
+                  className="block text-text-main font-semibold mb-1"
+                >
+                  Asunto (Resumen Corto):
+                &lt;/label>
+                &lt;Field
+                  id="asunto"
+                  name="asunto"
+                  type="text"
+                  autoComplete="off"
+                  className={`w-full p-2 border rounded-lg focus:ring-1 outline-none ${
+                    errors.asunto &amp;&amp; touched.asunto
+                      ? "border-error focus:ring-error"
+                      : "border-gray-300 focus:ring-primary"
+                  }`}
+                  placeholder="Ej. Solicitud de 5 equipos para nuevo personal."
+                />
+                &lt;ErrorMessage
+                  name="asunto"
+                  component="div"
+                  className="text-error text-sm mt-1"
+                />
+              &lt;/div>
+
+              {/* Campo Descripción */}
+              &lt;div className="mb-6">
+                &lt;label
+                  htmlFor="detalle_necesidad"
+                  className="block text-text-main font-semibold mb-1"
+                >
+                  Descripción detallada de la necesidad:
+                &lt;/label>
+                &lt;Field
+                  id="detalle_necesidad"
+                  name="detalle_necesidad"
+                  as="textarea"
+                  rows="5"
+                  className={`w-full p-2 border rounded-lg focus:ring-1 outline-none resize-y ${
+                    errors.detalle_necesidad &amp;&amp; touched.detalle_necesidad
+                      ? "border-error focus:ring-error"
+                      : "border-gray-300 focus:ring-primary"
+                  }`}
+                  placeholder="Detalla qué se necesita, por qué y para qué."
+                />
+                &lt;ErrorMessage
+                  name="detalle_necesidad"
+                  component="div"
+                  className="text-error text-sm mt-1"
+                />
+              &lt;/div>
+
+              {/* Botón de Envío */}
+              &lt;div className="flex justify-end">
+                &lt;button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className={`py-2 px-6 rounded-lg text-white font-bold flex items-center gap-2 transition-colors ${
+                    isSubmitting
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-primary hover:bg-primary-dark"
+                  }`}
+                >
+                  &lt;FontAwesomeIcon icon={faPaperPlane} />
+                  {isSubmitting ? "Enviando..." : "Enviar a Análisis TI"}
+                &lt;/button>
+              &lt;/div>
+            &lt;/Form>
+          )}
+        &lt;/Formik>
+      &lt;/div>
+    &lt;/div>
+  );
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Components.html">Components</a></li><li><a href="module-Components_Auth.html">Components/Auth</a></li><li><a href="module-Components_Devices.html">Components/Devices</a></li><li><a href="module-Components_History.html">Components/History</a></li><li><a href="module-Components_OperationCenters.html">Components/OperationCenters</a></li><li><a href="module-Components_Peripherals.html">Components/Peripherals</a></li><li><a href="module-Components_Requerimientos.html">Components/Requerimientos</a></li><li><a href="module-Components_Requirements.html">Components/Requirements</a></li><li><a href="module-Components_UI.html">Components/UI</a></li><li><a href="module-Components_Users.html">Components/Users</a></li><li><a href="module-Config.html">Config</a></li><li><a href="module-DateUtils.html">DateUtils</a></li><li><a href="module-Hooks.html">Hooks</a></li><li><a href="module-Hooks_Auth.html">Hooks/Auth</a></li><li><a href="module-Hooks_Catalogue.html">Hooks/Catalogue</a></li><li><a href="module-Hooks_Devices.html">Hooks/Devices</a></li><li><a href="module-Hooks_History.html">Hooks/History</a></li><li><a href="module-Hooks_OperationCenters.html">Hooks/OperationCenters</a></li><li><a href="module-Hooks_Requerimientos.html">Hooks/Requerimientos</a></li><li><a href="module-Hooks_Users.html">Hooks/Users</a></li><li><a href="module-InputHandlers.html">InputHandlers</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Routes_Admin.html">Routes/Admin</a></li><li><a href="module-Stores_Auth.html">Stores/Auth</a></li><li><a href="module-Utils.html">Utils</a></li><li><a href="module-hooks_requirements.html">hooks/requirements</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ActionButtons">ActionButtons</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#ConfirmationModal">ConfirmationModal</a></li><li><a href="global.html#LoginFormSkeleton">LoginFormSkeleton</a></li><li><a href="global.html#bajaConfig">bajaConfig</a></li><li><a href="global.html#centroOperacionConfig">centroOperacionConfig</a></li><li><a href="global.html#deviceConfig">deviceConfig</a></li><li><a href="global.html#formatActiveStatus">formatActiveStatus</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDeviceType">formatDeviceType</a></li><li><a href="global.html#formatStatus">formatStatus</a></li><li><a href="global.html#formatStatusRequirement">formatStatusRequirement</a></li><li><a href="global.html#formatUser">formatUser</a></li><li><a href="global.html#getRequerimientoDetailConfig">getRequerimientoDetailConfig</a></li><li><a href="global.html#logConfig">logConfig</a></li><li><a href="global.html#peripheralConfig">peripheralConfig</a></li><li><a href="global.html#userConfig">userConfig</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Nov 14 2025 15:41:19 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

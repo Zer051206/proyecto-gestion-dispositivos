@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: repositories/catalogueRepository.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: repositories/catalogueRepository.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file catalogueRepository.js
+ * @module Repositories
+ * @description Capa de acceso a datos para las diversas tablas de "catálogo".
+ * Este módulo encapsula todas las consultas a la base de datos para obtener listas
+ * de datos maestros que se utilizan en los formularios, como ciudades, tipos de identificación, etc.
+ * @requires ../models/index.js
+ */
+import db from "../models/index.js";
+const City = db.City;
+const IdentificationType = db.IdentificationType;
+const PeripheralType = db.PeripheralType;
+const RequirementStatus = db.RequirementStatus;
+
+/**
+ * @async
+ * @function findAllCities
+ * @description Busca y devuelve todas las ciudades de la base de datos, ordenadas alfabéticamente.
+ * @returns {Promise&lt;Array&lt;City>>} Un array de todos los objetos de ciudad.
+ */
+export const findAllCities = async () => {
+  return City.findAll({
+    order: [["nombre_ciudad", "ASC"]],
+  });
+};
+
+/**
+ * @async
+ * @function findAllIdTypes
+ * @description Busca y devuelve todos los tipos de identificación de la base de datos, ordenados alfabéticamente.
+ * @returns {Promise&lt;Array&lt;IdentificationType>>} Un array de todos los objetos de tipo de identificación.
+ */
+export const findAllIdTypes = async () => {
+  return IdentificationType.findAll({
+    order: [["tipo_identificacion", "ASC"]],
+  });
+};
+
+/**
+ * @async
+ * @function findAllPeripheralTypes
+ * @description Busca y devuelve todos los tipos de periféricos de la base de datos, ordenados alfabéticamente.
+ * @returns {Promise&lt;Array&lt;PeripheralType>>} Un array de todos los objetos de tipo de periférico.
+ */
+export const findAllPeripheralTypes = async () => {
+  return PeripheralType.findAll({
+    order: [["tipo_periferico", "ASC"]],
+  });
+};
+/**
+ * @async
+ * @function findAllRequirementStatus
+ * @description Busca y devuelve todos los estados posibles de requerimiento (catálogo) de la base de datos.
+ * @returns {Promise&lt;Array&lt;RequirementStatus>>} Un array de todos los objetos de estado de requerimiento.
+ */
+export const findAllRequirementStatus = async () => {
+  return RequirementStatus.findAll();
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Config.html">Config</a></li><li><a href="module-Constants.html">Constants</a></li><li><a href="module-Controllers.html">Controllers</a></li><li><a href="module-Middleware.html">Middleware</a></li><li><a href="module-Middlewares.html">Middlewares</a></li><li><a href="module-Models.html">Models</a></li><li><a href="module-Models_Catalogues.html">Models/Catalogues</a></li><li><a href="module-Repositories.html">Repositories</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Schemas.html">Schemas</a></li><li><a href="module-Services.html">Services</a></li><li><a href="module-Utils_Errors.html">Utils/Errors</a></li><li><a href="module-Utils_Tokens.html">Utils/Tokens</a></li></ul><h3>Classes</h3><ul><li><a href="module-Models_Catalogues-City.html">City</a></li><li><a href="module-Models_Catalogues-IdentificationType.html">IdentificationType</a></li><li><a href="module-Models_Catalogues-PeripheralType.html">PeripheralType</a></li><li><a href="module-Models-CostCenter.html">CostCenter</a></li><li><a href="module-Models-Decommission.html">Decommission</a></li><li><a href="module-Models-Device.html">Device</a></li><li><a href="module-Models-Log.html">Log</a></li><li><a href="module-Models-OperationCenter.html">OperationCenter</a></li><li><a href="module-Models-Peripheral.html">Peripheral</a></li><li><a href="module-Models-Permission.html">Permission</a></li><li><a href="module-Models-RefreshToken.html">RefreshToken</a></li><li><a href="module-Models-Requirement.html">Requirement</a></li><li><a href="module-Models-RequirementAsset.html">RequirementAsset</a></li><li><a href="module-Models-RequirementStatus.html">RequirementStatus</a></li><li><a href="module-Models-TechnicalAnalysis.html">TechnicalAnalysis</a></li><li><a href="module-Models-User.html">User</a></li><li><a href="module-Utils_Errors.AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AccountDisabledError.html">AccountDisabledError</a></li><li><a href="module-Utils_Errors-AlreadyDesactivated.html">AlreadyDesactivated</a></li><li><a href="module-Utils_Errors-AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AuthError.html">AuthError</a></li><li><a href="module-Utils_Errors-ConfigurationError.html">ConfigurationError</a></li><li><a href="module-Utils_Errors-DatabaseConnectionError.html">DatabaseConnectionError</a></li><li><a href="module-Utils_Errors-DuplicateError.html">DuplicateError</a></li><li><a href="module-Utils_Errors-ForbiddenError.html">ForbiddenError</a></li><li><a href="module-Utils_Errors-InvalidTokenError.html">InvalidTokenError</a></li><li><a href="module-Utils_Errors-NotFoundError.html">NotFoundError</a></li><li><a href="module-Utils_Errors-UserAlreadyExistsError.html">UserAlreadyExistsError</a></li><li><a href="module-Utils_Errors-UserNotFoundOrInvalidPasswordError.html">UserNotFoundOrInvalidPasswordError</a></li></ul><h3>Global</h3><ul><li><a href="global.html#generateRequirementCode">generateRequirementCode</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Nov 14 2025 15:41:16 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

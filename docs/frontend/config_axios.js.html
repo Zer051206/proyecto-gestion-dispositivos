@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: config/axios.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: config/axios.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file axios.js
+ * @module Config
+ * @description Configuración centralizada de la instancia de Axios para la aplicación.
+ * Este módulo crea una instancia de Axios con interceptores preconfigurados para manejar
+ * automáticamente la autenticación (añadiendo el token JWT a las cabeceras) y la renovación
+ * de tokens de acceso expirados sin interrumpir la experiencia del usuario.
+ * @requires axios
+ */
+import axios from "axios";
+
+/**
+ * @type {Array&lt;object>}
+ * @description Una cola para almacenar temporalmente las peticiones que fallaron con un error 401
+ * mientras se está intentando renovar el accessToken. Cada elemento en la cola es una Promesa
+ * con sus funciones `resolve` y `reject`.
+ */
+let failedQueue = [];
+
+/**
+ * @type {boolean}
+ * @description Una bandera para prevenir múltiples llamadas simultáneas al endpoint de refresh.
+ * Si ya se está refrescando el token, las nuevas peticiones fallidas se encolan en lugar de iniciar un nuevo proceso de refresh.
+ */
+let isRefreshing = false;
+
+/**
+ * @function processQueue
+ * @description Procesa todas las peticiones encoladas. Si la renovación del token fue exitosa,
+ * reintenta cada petición con el nuevo token. Si falló, rechaza todas las peticiones encoladas.
+ * @param {Error|null} error - El error ocurrido durante la renovación del token, o null si fue exitosa.
+ * @param {string|null} token - El nuevo accessToken, o null si la renovación falló.
+ */
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+/**
+ * @const {AxiosInstance} api
+ * @description Instancia de Axios preconfigurada para ser utilizada en toda la aplicación.
+ */
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000",
+  withCredentials: true,
+  timeout: 10000,
+  headers: { "Content-Type": "application/json" },
+});
+
+/**
+ * @description Interceptor de Petición (Request).
+ * Se ejecuta ANTES de que cada petición sea enviada. Su principal misión es leer el
+ * `accessToken` del `localStorage` y adjuntarlo a la cabecera `Authorization` como un Bearer Token.
+ */
+api.interceptors.request.use(
+  (config) => {
+    const accessToken = localStorage.getItem("accessToken");
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+    // La lógica de CSRF puede seguir aquí si la necesitas, aunque con tokens en Authorization es menos común.
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+/**
+ * @description Interceptor de Respuesta (Response).
+ * Se ejecuta DESPUÉS de recibir una respuesta de la API. Su principal misión es interceptar
+ * los errores `401 Unauthorized` (que usualmente indican un token de acceso expirado) y manejar
+ * el flujo de renovación de token de forma transparente para el usuario.
+ */
+api.interceptors.response.use(
+  (response) => response, // Si la respuesta es exitosa (2xx), no hace nada.
+  async (error) => {
+    const originalRequest = error.config;
+    const status = error.response?.status;
+
+    // Solo actúa si el error es 401 y no es una petición que ya se está reintentando.
+    if (status === 401 &amp;&amp; !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      if (!isRefreshing) {
+        isRefreshing = true;
+
+        try {
+          const refreshToken = localStorage.getItem("refreshToken");
+          if (!refreshToken) return Promise.reject(error);
+
+          // Llamamos al endpoint de refresh con el refreshToken
+          const response = await api.post("/auth/refresh", { refreshToken });
+          const { accessToken: newAccessToken } = response.data;
+
+          // Guardamos el nuevo accessToken
+          localStorage.setItem("accessToken", newAccessToken);
+
+          // Aplicamos el nuevo token a la cabecera de la petición original
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+          // Procesamos la cola de peticiones que estaban esperando
+          processQueue(null, newAccessToken);
+
+          // Reintentamos la petición original
+          return api(originalRequest);
+        } catch (refreshError) {
+          processQueue(refreshError, null);
+          // Si el refresh falla, es un error de autenticación definitivo.
+          // Limpiamos todo y redirigimos.
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          localStorage.removeItem("user"); // También limpiar el usuario
+          window.location.href = "/auth-denegado"; // Redirige al usuario
+          return Promise.reject(refreshError);
+        } finally {
+          isRefreshing = false;
+        }
+      }
+
+      // Si ya se está refrescando, ponemos la petición en cola
+      return new Promise((resolve, reject) => {
+        failedQueue.push({
+          resolve: (token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            resolve(api(originalRequest));
+          },
+          reject: (err) => {
+            reject(err);
+          },
+        });
+      });
+    }
+
+    // Para cualquier otro error (404, 500, etc.), simplemente lo propaga.
+    return Promise.reject(error);
+  }
+);
+
+export default api;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Components.html">Components</a></li><li><a href="module-Components_Auth.html">Components/Auth</a></li><li><a href="module-Components_Devices.html">Components/Devices</a></li><li><a href="module-Components_History.html">Components/History</a></li><li><a href="module-Components_OperationCenters.html">Components/OperationCenters</a></li><li><a href="module-Components_Peripherals.html">Components/Peripherals</a></li><li><a href="module-Components_Requerimientos.html">Components/Requerimientos</a></li><li><a href="module-Components_Requirements.html">Components/Requirements</a></li><li><a href="module-Components_UI.html">Components/UI</a></li><li><a href="module-Components_Users.html">Components/Users</a></li><li><a href="module-Config.html">Config</a></li><li><a href="module-DateUtils.html">DateUtils</a></li><li><a href="module-Hooks.html">Hooks</a></li><li><a href="module-Hooks_Auth.html">Hooks/Auth</a></li><li><a href="module-Hooks_Catalogue.html">Hooks/Catalogue</a></li><li><a href="module-Hooks_Devices.html">Hooks/Devices</a></li><li><a href="module-Hooks_History.html">Hooks/History</a></li><li><a href="module-Hooks_OperationCenters.html">Hooks/OperationCenters</a></li><li><a href="module-Hooks_Requerimientos.html">Hooks/Requerimientos</a></li><li><a href="module-Hooks_Users.html">Hooks/Users</a></li><li><a href="module-InputHandlers.html">InputHandlers</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Routes_Admin.html">Routes/Admin</a></li><li><a href="module-Stores_Auth.html">Stores/Auth</a></li><li><a href="module-Utils.html">Utils</a></li><li><a href="module-hooks_requirements.html">hooks/requirements</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ActionButtons">ActionButtons</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#ConfirmationModal">ConfirmationModal</a></li><li><a href="global.html#LoginFormSkeleton">LoginFormSkeleton</a></li><li><a href="global.html#bajaConfig">bajaConfig</a></li><li><a href="global.html#centroOperacionConfig">centroOperacionConfig</a></li><li><a href="global.html#deviceConfig">deviceConfig</a></li><li><a href="global.html#formatActiveStatus">formatActiveStatus</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDeviceType">formatDeviceType</a></li><li><a href="global.html#formatStatus">formatStatus</a></li><li><a href="global.html#formatStatusRequirement">formatStatusRequirement</a></li><li><a href="global.html#formatUser">formatUser</a></li><li><a href="global.html#getRequerimientoDetailConfig">getRequerimientoDetailConfig</a></li><li><a href="global.html#logConfig">logConfig</a></li><li><a href="global.html#peripheralConfig">peripheralConfig</a></li><li><a href="global.html#userConfig">userConfig</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Nov 14 2025 15:41:19 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

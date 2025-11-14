@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: routes/apiRoutes.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: routes/apiRoutes.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file apiRoutes.js
+ * @module Routes
+ * @description Define las rutas principales para la obtención de recursos de la API.
+ * Este enrutador agrupa los endpoints de tipo GET que son accedidos por diferentes roles
+ * y que son la base para los dashboards de la aplicación.
+ * Todas las rutas definidas aquí están protegidas por el `authMiddleware` en `server.js`.
+ * @requires express
+ * @requires ../controllers/apiController.js
+ * @requires ../config/logger.js
+ */
+import { Router } from "express";
+import * as apiController from "../controllers/apiController.js";
+
+const router = Router();
+
+// --- DEFINICIÓN DE RUTAS ---
+
+/**
+ * @route   GET /api/activos
+ * @description Obtiene una lista combinada de todos los activos (equipos y periféricos).
+ * La respuesta es filtrada por el servicio (`apiService`) según el rol del usuario (Admin ve todo, Encargado ve solo los de su centro).
+ * @access Private
+ */
+router.get("/activos", apiController.getAssets);
+
+/**
+ * @route   GET /api/centros-operacion
+ * @description Obtiene la lista de centros de operación.
+ * La respuesta se filtra por rol en el servicio.
+ * @access Private
+ */
+router.get("/centros-operacion", apiController.getOperationCenters);
+
+/**
+ * @route   GET /api/centros-operacion/:id/costos
+ * @description Obtiene los centros de costo asociados a un centro de operación específico por su ID.
+ * @access Private
+ */
+router.get(
+  "/centros-operacion/:id/costos",
+  apiController.getCenterCostByCenterOperation
+);
+
+/**
+ * @route   GET /api/usuarios
+ * @description Obtiene la lista completa de todos los usuarios del sistema.
+ * @access Private
+ */
+router.get("/usuarios", apiController.getUsers);
+
+/**
+ * @route   GET /api/logs
+ * @description Obtiene el historial de logs (acciones).
+ * La respuesta se filtra por rol en el servicio.
+ * @access Private
+ */
+router.get("/logs", apiController.getLogs);
+
+/**
+ * @route   GET /api/bajas
+ * @description Obtiene el historial de bajas de activos.
+ * La respuesta se filtra por rol en el servicio.
+ * @access Private
+ */
+router.get("/bajas", apiController.getDecomissions);
+
+export default router;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Config.html">Config</a></li><li><a href="module-Constants.html">Constants</a></li><li><a href="module-Controllers.html">Controllers</a></li><li><a href="module-Middleware.html">Middleware</a></li><li><a href="module-Middlewares.html">Middlewares</a></li><li><a href="module-Models.html">Models</a></li><li><a href="module-Models_Catalogues.html">Models/Catalogues</a></li><li><a href="module-Repositories.html">Repositories</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Schemas.html">Schemas</a></li><li><a href="module-Services.html">Services</a></li><li><a href="module-Utils_Errors.html">Utils/Errors</a></li><li><a href="module-Utils_Tokens.html">Utils/Tokens</a></li></ul><h3>Classes</h3><ul><li><a href="module-Models_Catalogues-City.html">City</a></li><li><a href="module-Models_Catalogues-IdentificationType.html">IdentificationType</a></li><li><a href="module-Models_Catalogues-PeripheralType.html">PeripheralType</a></li><li><a href="module-Models-CostCenter.html">CostCenter</a></li><li><a href="module-Models-Decommission.html">Decommission</a></li><li><a href="module-Models-Device.html">Device</a></li><li><a href="module-Models-Log.html">Log</a></li><li><a href="module-Models-OperationCenter.html">OperationCenter</a></li><li><a href="module-Models-Peripheral.html">Peripheral</a></li><li><a href="module-Models-Permission.html">Permission</a></li><li><a href="module-Models-RefreshToken.html">RefreshToken</a></li><li><a href="module-Models-Requirement.html">Requirement</a></li><li><a href="module-Models-RequirementAsset.html">RequirementAsset</a></li><li><a href="module-Models-RequirementStatus.html">RequirementStatus</a></li><li><a href="module-Models-TechnicalAnalysis.html">TechnicalAnalysis</a></li><li><a href="module-Models-User.html">User</a></li><li><a href="module-Utils_Errors.AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AccountDisabledError.html">AccountDisabledError</a></li><li><a href="module-Utils_Errors-AlreadyDesactivated.html">AlreadyDesactivated</a></li><li><a href="module-Utils_Errors-AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AuthError.html">AuthError</a></li><li><a href="module-Utils_Errors-ConfigurationError.html">ConfigurationError</a></li><li><a href="module-Utils_Errors-DatabaseConnectionError.html">DatabaseConnectionError</a></li><li><a href="module-Utils_Errors-DuplicateError.html">DuplicateError</a></li><li><a href="module-Utils_Errors-ForbiddenError.html">ForbiddenError</a></li><li><a href="module-Utils_Errors-InvalidTokenError.html">InvalidTokenError</a></li><li><a href="module-Utils_Errors-NotFoundError.html">NotFoundError</a></li><li><a href="module-Utils_Errors-UserAlreadyExistsError.html">UserAlreadyExistsError</a></li><li><a href="module-Utils_Errors-UserNotFoundOrInvalidPasswordError.html">UserNotFoundOrInvalidPasswordError</a></li></ul><h3>Global</h3><ul><li><a href="global.html#generateRequirementCode">generateRequirementCode</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Nov 14 2025 15:41:16 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

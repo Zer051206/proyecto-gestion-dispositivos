@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/utils/ActionButtons.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/utils/ActionButtons.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file ActionactionButtons.jsx
+ * @description Componente para renderizar el botón de acción condicional en la tabla de requerimientos.
+ */
+import React from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faFileSignature,
+  faMoneyBillWave,
+  faTruckMoving,
+  faTools,
+  faBan,
+} from "@fortawesome/free-solid-svg-icons";
+import { useAuthStore } from "../../stores/authStore.js";
+
+/**
+ * @function ActionButtons
+ * @description Renderiza el botón de la siguiente acción según el estado del requerimiento y el rol del usuario.
+ * @param {object} props
+ * @param {object} props.req - Objeto del requerimiento.
+ * @param {Function} props.onAction - Handler para abrir el modal de acción.
+ * @returns {JSX.Element | null}
+ */
+export default function ActionButtons({ req, onAction }) {
+  const { user } = useAuthStore();
+
+  const status = req.Status?.nombre_estado;
+  const userRole = user?.rol;
+  let actionButton = null;
+
+  // --- Lógica de Renderizado Condicional de Botones ---
+
+  if (userRole === "Admin") {
+    switch (status) {
+      case "PENDIENTE_TI_ANALISIS":
+        // Solo Admin/TI puede firmar el análisis
+        actionButton = {
+          title: "Firmar Análisis TI",
+          icon: faFileSignature,
+          actionType: "signTIAnalysis",
+          color: "text-accent",
+        };
+        break;
+      case "PENDIENTE_RH_PAGO":
+        // Solo Admin/RH puede aprobar el pago
+        actionButton = {
+          title: "Aprobar Pago RH",
+          icon: faMoneyBillWave,
+          actionType: "signRHPago",
+          color: "text-success",
+        };
+        break;
+      case "PENDIENTE_TI_ALISTAMIENTO":
+        // Solo Admin/TI gestiona el alistamiento/vinculación
+        actionButton = {
+          title: "Gestionar Alistamiento",
+          icon: faTools,
+          actionType: "openAlistamientoModal",
+          color: "text-warning",
+        };
+        break;
+      case "PENDIENTE_RH_ENTREGA":
+        // Solo Admin/RH gestiona la entrega final
+        actionButton = {
+          title: "Firmar Entrega Final",
+          icon: faTruckMoving,
+          actionType: "signRHEntrega",
+          color: "text-success",
+        };
+        break;
+      default:
+        // Si el estado no requiere acción (Ej: Entregado, Cancelado, Rechazado)
+        return null;
+    }
+  } else if (userRole === "Encargado") {
+    return null;
+  } else {
+    return null;
+  }
+
+  const isFinalState =
+    status === "ENTREGADO" ||
+    status === "CANCELADO" ||
+    status === "RECHAZADO_TI" ||
+    status === "RECHAZADO_RH";
+
+  const canShowRejectButton = (() => {
+    // 1. Si está en un estado final (Entregado, Cancelado, Rechazado), NO se muestra.
+    if (isFinalState) return false;
+
+    // 2. Lógica para el Encargado: Solo en el estado inicial PENDIENTE_TI_ANALISIS
+    if (userRole === "Encargado") {
+      return status === "PENDIENTE_TI_ANALISIS";
+    }
+
+    // 3. Lógica para el Administrador: En cualquier estado no final
+    if (userRole === "Admin") {
+      return true;
+    }
+
+    return false;
+  })();
+
+  // Renderiza el botón si se definió
+  return (
+    &lt;div className="flex space-x-2">
+      {canShowRejectButton &amp;&amp; (
+        &lt;button
+          // determinan si es CANCELADO o RECHAZADO_X basándose en el rol/estado.
+          onClick={() => onAction("reject", req)}
+          className="text-error hover:opacity-70 transition-colors"
+          // Adaptar el title según el rol para mejorar la UX
+          title={
+            userRole === "Encargado"
+              ? "Cancelar Requerimiento"
+              : "Rechazar/Cancelar Requerimiento"
+          }
+        >
+          &lt;FontAwesomeIcon icon={faBan} />
+        &lt;/button>
+      )}
+      {/* Botón de Avance de Estado */}
+      {actionButton &amp;&amp; (
+        &lt;button
+          onClick={() => onAction(actionButton.actionType, req)}
+          className={`${actionButton.color} hover:opacity-70 transition-colors`}
+          title={actionButton.title}
+        >
+          &lt;FontAwesomeIcon icon={actionButton.icon} />
+        &lt;/button>
+      )}
+    &lt;/div>
+  );
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Components.html">Components</a></li><li><a href="module-Components_Auth.html">Components/Auth</a></li><li><a href="module-Components_Devices.html">Components/Devices</a></li><li><a href="module-Components_History.html">Components/History</a></li><li><a href="module-Components_OperationCenters.html">Components/OperationCenters</a></li><li><a href="module-Components_Peripherals.html">Components/Peripherals</a></li><li><a href="module-Components_Requerimientos.html">Components/Requerimientos</a></li><li><a href="module-Components_Requirements.html">Components/Requirements</a></li><li><a href="module-Components_UI.html">Components/UI</a></li><li><a href="module-Components_Users.html">Components/Users</a></li><li><a href="module-Config.html">Config</a></li><li><a href="module-DateUtils.html">DateUtils</a></li><li><a href="module-Hooks.html">Hooks</a></li><li><a href="module-Hooks_Auth.html">Hooks/Auth</a></li><li><a href="module-Hooks_Catalogue.html">Hooks/Catalogue</a></li><li><a href="module-Hooks_Devices.html">Hooks/Devices</a></li><li><a href="module-Hooks_History.html">Hooks/History</a></li><li><a href="module-Hooks_OperationCenters.html">Hooks/OperationCenters</a></li><li><a href="module-Hooks_Requerimientos.html">Hooks/Requerimientos</a></li><li><a href="module-Hooks_Users.html">Hooks/Users</a></li><li><a href="module-InputHandlers.html">InputHandlers</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Routes_Admin.html">Routes/Admin</a></li><li><a href="module-Stores_Auth.html">Stores/Auth</a></li><li><a href="module-Utils.html">Utils</a></li><li><a href="module-hooks_requirements.html">hooks/requirements</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ActionButtons">ActionButtons</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#ConfirmationModal">ConfirmationModal</a></li><li><a href="global.html#LoginFormSkeleton">LoginFormSkeleton</a></li><li><a href="global.html#bajaConfig">bajaConfig</a></li><li><a href="global.html#centroOperacionConfig">centroOperacionConfig</a></li><li><a href="global.html#deviceConfig">deviceConfig</a></li><li><a href="global.html#formatActiveStatus">formatActiveStatus</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDeviceType">formatDeviceType</a></li><li><a href="global.html#formatStatus">formatStatus</a></li><li><a href="global.html#formatStatusRequirement">formatStatusRequirement</a></li><li><a href="global.html#formatUser">formatUser</a></li><li><a href="global.html#getRequerimientoDetailConfig">getRequerimientoDetailConfig</a></li><li><a href="global.html#logConfig">logConfig</a></li><li><a href="global.html#peripheralConfig">peripheralConfig</a></li><li><a href="global.html#userConfig">userConfig</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Nov 14 2025 15:41:19 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

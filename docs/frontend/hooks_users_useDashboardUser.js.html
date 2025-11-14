@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: hooks/users/useDashboardUser.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: hooks/users/useDashboardUser.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file useDashboardUser.js
+ * @module Hooks/Users
+ * @description Hook de React para gestionar toda la lógica de datos de la página de gestión de usuarios.
+ * Se encarga de obtener la lista de usuarios desde la API, manejar los estados de carga y error,
+ * y aplicar la lógica de filtrado por búsqueda y ordenación en el lado del cliente.
+ * @requires react
+ * @requires ../../config/axios.js
+ */
+import { useState, useEffect, useMemo, useCallback } from "react";
+import api from "../../config/axios.js";
+
+/**
+ * @function useDashboardUser
+ * @description Hook personalizado que encapsula la lógica para el dashboard de usuarios.
+ * @returns {object} Un objeto que contiene:
+ * - `users` {Array&lt;object>}: La lista de usuarios ya filtrada y ordenada.
+ * - `isLoading` {boolean}: Verdadero si los datos se están cargando.
+ * - `error` {string|null}: Un mensaje de error si la petición a la API falla.
+ * - `refetch` {Function}: Una función para volver a ejecutar la carga de datos.
+ * - `setSearchTerm` {Function}: Función para actualizar el término de búsqueda.
+ * - `setSortBy` {Function}: Función para actualizar el criterio de ordenación.
+ */
+export const useDashboardUser = () => {
+  /**
+   * @const {Array&lt;object>} users
+   * @description Estado que almacena la lista original de usuarios obtenida de la API.
+   */
+  const [users, setUsers] = useState([]);
+
+  /**
+   * @const {boolean} isLoading
+   * @description Estado para controlar la visualización de indicadores de carga.
+   */
+  const [isLoading, setIsLoading] = useState(true);
+
+  /**
+   * @const {string|null} error
+   * @description Estado para almacenar mensajes de error de la API.
+   */
+  const [error, setError] = useState(null);
+
+  // Estados para los filtros y la ordenación
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("nombre_asc"); // Valor de ordenación por defecto
+
+  /**
+   * @function fetchUsers
+   * @description Función asíncrona para obtener la lista de usuarios desde el endpoint `/api/usuarios`.
+   * Se envuelve en `useCallback` para memorizarla y evitar recreaciones en cada renderizado,
+   * optimizando el rendimiento.
+   */
+  const fetchUsers = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await api.get("/api/usuarios");
+      // Se asegura de que 'users' siempre sea un array, incluso si la API no devuelve nada.
+      setUsers(response.data.users || []);
+    } catch (err) {
+      setError(
+        "Error al cargar los usuarios. Por favor, intenta recargar la página."
+      );
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Efecto para ejecutar la carga de datos inicial cuando el componente se monta por primera vez.
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  /**
+   * @const {Array&lt;object>} processedUsers
+   * @description Deriva y memoriza la lista de usuarios procesada (filtrada y ordenada) usando `useMemo`.
+   * Esta lógica solo se re-ejecuta si la lista original de `users`, el `searchTerm` o el `sortBy` cambian,
+   * evitando cálculos innecesarios en cada renderizado.
+   */
+  const processedUsers = useMemo(() => {
+    return [...users]
+      .filter((user) => {
+        // Lógica de filtrado por término de búsqueda en varios campos.
+        const term = searchTerm.toLowerCase();
+        if (!term) return true; // Si no hay búsqueda, devuelve todos
+
+        const nombreCompleto = `${user.nombre} ${
+          user.apellido || ""
+        }`.toLowerCase();
+        const identificacion = (user.identificacion || "").toLowerCase();
+        const correo = (user.correo || "").toLowerCase();
+
+        return (
+          nombreCompleto.includes(term) ||
+          identificacion.includes(term) ||
+          correo.includes(term)
+        );
+      })
+      .sort((a, b) => {
+        // Lógica de ordenación basada en el valor de 'sortBy'.
+        const [field, order] = sortBy.split("_");
+
+        let valA, valB;
+
+        // Lógica especial para ordenar por centro de operación
+        if (field === "centro") {
+          valA = a.OperationCenter?.codigo || 0;
+          valB = b.OperationCenter?.codigo || 0;
+        } else {
+          valA = a[field] || "";
+          valB = b[field] || "";
+        }
+
+        if (typeof valA === "string") valA = valA.toLowerCase();
+        if (typeof valB === "string") valB = valB.toLowerCase();
+
+        if (valA &lt; valB) return order === "asc" ? -1 : 1;
+        if (valA > valB) return order === "asc" ? 1 : -1;
+        return 0;
+      });
+  }, [users, searchTerm, sortBy]);
+
+  // Devuelve el estado y las funciones que el componente de la vista necesitará.
+  return {
+    users: processedUsers,
+    isLoading,
+    error,
+    refetch: fetchUsers, // Para recargar los datos manualmente si es necesario
+    setSearchTerm,
+    setSortBy,
+  };
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Components.html">Components</a></li><li><a href="module-Components_Auth.html">Components/Auth</a></li><li><a href="module-Components_Devices.html">Components/Devices</a></li><li><a href="module-Components_History.html">Components/History</a></li><li><a href="module-Components_OperationCenters.html">Components/OperationCenters</a></li><li><a href="module-Components_Peripherals.html">Components/Peripherals</a></li><li><a href="module-Components_Requerimientos.html">Components/Requerimientos</a></li><li><a href="module-Components_Requirements.html">Components/Requirements</a></li><li><a href="module-Components_UI.html">Components/UI</a></li><li><a href="module-Components_Users.html">Components/Users</a></li><li><a href="module-Config.html">Config</a></li><li><a href="module-DateUtils.html">DateUtils</a></li><li><a href="module-Hooks.html">Hooks</a></li><li><a href="module-Hooks_Auth.html">Hooks/Auth</a></li><li><a href="module-Hooks_Catalogue.html">Hooks/Catalogue</a></li><li><a href="module-Hooks_Devices.html">Hooks/Devices</a></li><li><a href="module-Hooks_History.html">Hooks/History</a></li><li><a href="module-Hooks_OperationCenters.html">Hooks/OperationCenters</a></li><li><a href="module-Hooks_Requerimientos.html">Hooks/Requerimientos</a></li><li><a href="module-Hooks_Users.html">Hooks/Users</a></li><li><a href="module-InputHandlers.html">InputHandlers</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Routes_Admin.html">Routes/Admin</a></li><li><a href="module-Stores_Auth.html">Stores/Auth</a></li><li><a href="module-Utils.html">Utils</a></li><li><a href="module-hooks_requirements.html">hooks/requirements</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ActionButtons">ActionButtons</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#ConfirmationModal">ConfirmationModal</a></li><li><a href="global.html#LoginFormSkeleton">LoginFormSkeleton</a></li><li><a href="global.html#bajaConfig">bajaConfig</a></li><li><a href="global.html#centroOperacionConfig">centroOperacionConfig</a></li><li><a href="global.html#deviceConfig">deviceConfig</a></li><li><a href="global.html#formatActiveStatus">formatActiveStatus</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDeviceType">formatDeviceType</a></li><li><a href="global.html#formatStatus">formatStatus</a></li><li><a href="global.html#formatStatusRequirement">formatStatusRequirement</a></li><li><a href="global.html#formatUser">formatUser</a></li><li><a href="global.html#getRequerimientoDetailConfig">getRequerimientoDetailConfig</a></li><li><a href="global.html#logConfig">logConfig</a></li><li><a href="global.html#peripheralConfig">peripheralConfig</a></li><li><a href="global.html#userConfig">userConfig</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Nov 14 2025 15:41:19 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

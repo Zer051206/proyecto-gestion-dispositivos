@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: middlewares/errorMiddleware.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: middlewares/errorMiddleware.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file errorMiddleware.js
+ * @module Middlewares
+ * @description Middleware de manejo de errores centralizado para Express.
+ * Su función es interceptar cualquier error que ocurra en la aplicación,
+ * registrar el error para auditoría y depuración, y enviar una respuesta JSON
+ * estandarizada y segura al cliente.
+ * @requires ../utils/customErrors.js
+ * @requires zod
+ * @requires jsonwebtoken
+ * @requires sequelize
+ * @requires ../config/logger.js
+ */
+import logger from "../config/logger.js";
+import { AppError } from "../utils/customErrors.js";
+import { ZodError } from "zod";
+import pkg from "jsonwebtoken";
+import {
+  ValidationError as SequelizeValidationError,
+  UniqueConstraintError,
+  ForeignKeyConstraintError,
+  DatabaseError,
+} from "sequelize";
+
+const { JsonWebTokenError, TokenExpiredError } = pkg;
+
+/**
+ * @function errorHandler
+ * @description Middleware de Express que maneja todos los errores de la aplicación.
+ * Identifica el tipo de error (AppError, ZodError, JWT, Sequelize, etc.) y establece
+ * el código de estado y el mensaje de respuesta apropiados.
+ * @param {Error} err - El objeto de error capturado.
+ * @param {object} req - El objeto de solicitud de Express.
+ * @param {object} res - El objeto de respuesta de Express.
+ * @param {Function} _next - La función `next` de Express (no utilizada aquí, por convención se nombra `_next`).
+ */
+const errorHandler = (err, req, res, _next) => {
+  // REGISTRO DEL ERROR
+  // Usamos Pino para registrar el error. Pino maneja objetos de error de forma nativa,
+  // incluyendo el stack trace, lo que es mucho más potente que console.error.
+  logger.error("❌ Error capturado:", err.name, err.message);
+  if (process.env.NODE_ENV !== "production" &amp;&amp; err.stack) {
+    logger.error(err.stack);
+  }
+
+  // DETERMINACIÓN DEL CÓDIGO DE ESTADO Y MENSAJE
+  let statusCode = 500;
+  let message = "Ha ocurrido un error inesperado en el servidor.";
+  let errors = null;
+
+  //Manejar TODOS nuestros errores personalizados con una sola comprobación
+  if (err instanceof AppError) {
+    statusCode = err.status;
+    message = err.message;
+  }
+  // Manejar errores de validación de Zod
+  else if (err instanceof ZodError) {
+    statusCode = 400;
+    message = "Error de validación en los datos de la solicitud.";
+    errors = err.issues.map((e) => ({
+      path: e.path.join("."),
+      message: e.message,
+    }));
+  }
+  // Manejar errores de JWT (Autenticación)
+  else if (
+    err instanceof JsonWebTokenError ||
+    err instanceof TokenExpiredError
+  ) {
+    statusCode = 401;
+    message = "Token inválido o expirado. Acceso no autorizado.";
+  }
+  // Manejar errores específicos de Sequelize (DB)
+  else if (err instanceof UniqueConstraintError) {
+    statusCode = 409;
+    message = "El registro ya existe. El valor proporcionado ya está en uso.";
+    errors = err.errors.map((e) => ({
+      path: e.path,
+      message: `El campo '${e.path}' debe ser único.`,
+    }));
+  } else if (err instanceof ForeignKeyConstraintError) {
+    statusCode = 409;
+    message = "No se puede realizar la operación debido a registros asociados.";
+  } else if (err instanceof SequelizeValidationError) {
+    statusCode = 400;
+    message = "Error de validación en los datos.";
+    errors = err.errors.map((e) => ({
+      path: e.path,
+      message: e.message,
+    }));
+  } else if (err instanceof DatabaseError) {
+    statusCode = 500;
+    // Por seguridad, no exponemos detalles del error de la base de datos al cliente.
+    message = "Error interno de la base de datos.";
+  }
+
+  // Si es un error genérico 500 y estamos en desarrollo, mostramos un mensaje más detallado.
+  // En producción, se mantendrá el mensaje genérico para no exponer detalles de implementación.
+  if (process.env.NODE_ENV !== "production" &amp;&amp; statusCode === 500 &amp;&amp; !errors) {
+    message = err.message || message;
+  }
+
+  // ENVÍO DE LA RESPUESTA JSON ESTANDARIZADA
+  res.status(statusCode).json({
+    success: false,
+    message: message,
+    ...(errors &amp;&amp; { errors }), // Añade el array de errores solo si existe
+  });
+};
+
+export default errorHandler;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Config.html">Config</a></li><li><a href="module-Constants.html">Constants</a></li><li><a href="module-Controllers.html">Controllers</a></li><li><a href="module-Middleware.html">Middleware</a></li><li><a href="module-Middlewares.html">Middlewares</a></li><li><a href="module-Models.html">Models</a></li><li><a href="module-Models_Catalogues.html">Models/Catalogues</a></li><li><a href="module-Repositories.html">Repositories</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Schemas.html">Schemas</a></li><li><a href="module-Services.html">Services</a></li><li><a href="module-Utils_Errors.html">Utils/Errors</a></li><li><a href="module-Utils_Tokens.html">Utils/Tokens</a></li></ul><h3>Classes</h3><ul><li><a href="module-Models_Catalogues-City.html">City</a></li><li><a href="module-Models_Catalogues-IdentificationType.html">IdentificationType</a></li><li><a href="module-Models_Catalogues-PeripheralType.html">PeripheralType</a></li><li><a href="module-Models-CostCenter.html">CostCenter</a></li><li><a href="module-Models-Decommission.html">Decommission</a></li><li><a href="module-Models-Device.html">Device</a></li><li><a href="module-Models-Log.html">Log</a></li><li><a href="module-Models-OperationCenter.html">OperationCenter</a></li><li><a href="module-Models-Peripheral.html">Peripheral</a></li><li><a href="module-Models-Permission.html">Permission</a></li><li><a href="module-Models-RefreshToken.html">RefreshToken</a></li><li><a href="module-Models-Requirement.html">Requirement</a></li><li><a href="module-Models-RequirementAsset.html">RequirementAsset</a></li><li><a href="module-Models-RequirementStatus.html">RequirementStatus</a></li><li><a href="module-Models-TechnicalAnalysis.html">TechnicalAnalysis</a></li><li><a href="module-Models-User.html">User</a></li><li><a href="module-Utils_Errors.AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AccountDisabledError.html">AccountDisabledError</a></li><li><a href="module-Utils_Errors-AlreadyDesactivated.html">AlreadyDesactivated</a></li><li><a href="module-Utils_Errors-AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AuthError.html">AuthError</a></li><li><a href="module-Utils_Errors-ConfigurationError.html">ConfigurationError</a></li><li><a href="module-Utils_Errors-DatabaseConnectionError.html">DatabaseConnectionError</a></li><li><a href="module-Utils_Errors-DuplicateError.html">DuplicateError</a></li><li><a href="module-Utils_Errors-ForbiddenError.html">ForbiddenError</a></li><li><a href="module-Utils_Errors-InvalidTokenError.html">InvalidTokenError</a></li><li><a href="module-Utils_Errors-NotFoundError.html">NotFoundError</a></li><li><a href="module-Utils_Errors-UserAlreadyExistsError.html">UserAlreadyExistsError</a></li><li><a href="module-Utils_Errors-UserNotFoundOrInvalidPasswordError.html">UserNotFoundOrInvalidPasswordError</a></li></ul><h3>Global</h3><ul><li><a href="global.html#generateRequirementCode">generateRequirementCode</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Nov 14 2025 15:41:16 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

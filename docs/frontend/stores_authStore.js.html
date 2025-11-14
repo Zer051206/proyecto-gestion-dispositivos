@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: stores/authStore.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: stores/authStore.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { create } from "zustand";
+import api from "../config/axios.js";
+
+/**
+ * @file authStore.js
+ * @module Stores/Auth
+ * @description Contiene el store global de Zustand para la gestión del estado de autenticación en toda la aplicación.
+ * Implementa un patrón de sesión persistente con localStorage para una carga rápida y revalidación en segundo plano.
+ */
+
+/**
+ * @function getInitialState
+ * @private
+ * @description Lee el estado de sesión inicial desde `localStorage` al cargar la aplicación.
+ * Esto permite una experiencia de usuario optimista, cargando la UI autenticada instantáneamente si existe una sesión guardada.
+ * @returns {object} El estado inicial para el store de autenticación.
+ */
+const getInitialState = () => {
+  try {
+    const user = localStorage.getItem("user");
+    if (user) {
+      return {
+        isAuthenticated: true,
+        user: JSON.parse(user),
+        isLoading: false, // La UI puede renderizarse, la revalidación se hará en segundo plano.
+      };
+    }
+  } catch (error) {
+    // Si localStorage está corrupto, lo limpiamos para evitar errores.
+    localStorage.clear();
+  }
+  // Estado por defecto si no hay sesión guardada o si hubo un error.
+  return { isAuthenticated: false, user: null, isLoading: true };
+};
+
+/**
+ * @constant useAuthStore
+ * @description Store de Zustand que expone el estado y las acciones de autenticación.
+ * @property {boolean} isAuthenticated - `true` si el usuario está considerado como autenticado.
+ * @property {object|null} user - Objeto con los datos del usuario autenticado.
+ * @property {boolean} isLoading - `true` solo durante la verificación inicial de la sesión al cargar la app.
+ * @property {Function} login - Acción para iniciar sesión.
+ * @property {Function} logout - Acción para cerrar sesión.
+ * @property {Function} checkAuthStatus - Acción para revalidar la sesión con el backend.
+ */
+export const useAuthStore = create((set, get) => ({
+  // --- ESTADO (STATE) ---
+  ...getInitialState(),
+
+  // --- ACCIONES (ACTIONS) ---
+
+  /**
+   * @function login
+   * @description Establece el estado de autenticación y guarda la sesión (datos de usuario y tokens) en localStorage.
+   * @param {object} userData - El objeto de usuario recibido de la API.
+   * @param {string} accessToken - El token de acceso JWT.
+   * @param {string} refreshToken - El token de refresco.
+   * @returns {void}
+   */
+  login: (userData, accessToken, refreshToken) => {
+    set({ isAuthenticated: true, user: userData, isLoading: false });
+    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
+  },
+
+  /**
+   * @function logout
+   * @description Cierra la sesión del usuario. Llama a la API para invalidar el refresh token,
+   * limpia el localStorage y resetea el estado del store.
+   * @returns {void}
+   */
+  logout: async () => {
+    try {
+      // CORREGIDO: Typo de 'refresToken' a 'refreshToken'
+      const refreshToken = localStorage.getItem("refreshToken");
+      if (refreshToken) {
+        await api.post("/auth/logout", { refreshToken });
+      }
+    } catch (error) {
+      console.error("Error al invalidar el token en el backend:", error);
+    } finally {
+      // Esta limpieza se ejecuta siempre, asegurando que la sesión se cierre en el frontend.
+      localStorage.removeItem("user");
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      set({ isAuthenticated: false, user: null, isLoading: false });
+    }
+  },
+
+  /**
+   * @function checkAuthStatus
+   * @description Revalida la sesión actual en segundo plano llamando al endpoint `/auth/me`.
+   * Se utiliza al cargar la aplicación para sincronizar el estado del frontend con el del backend.
+   * Si la revalidación falla, se encarga de limpiar la sesión local.
+   * @returns {void}
+   */
+  checkAuthStatus: async () => {
+    if (!localStorage.getItem("accessToken")) {
+      return set({ isAuthenticated: false, user: null, isLoading: false });
+    }
+
+    try {
+      const response = await api.get("/auth/me");
+      const user = response.data.user; // La respuesta del backend ahora es { authenticated, user }
+
+      set({
+        isAuthenticated: true,
+        user: user,
+        isLoading: false,
+      });
+      // Sincroniza localStorage con cualquier dato actualizado del usuario (ej. si cambió su nombre)
+      localStorage.setItem("user", JSON.stringify(user));
+    } catch (error) {
+      console.error(
+        "Fallo en la verificación de sesión, cerrando sesión localmente."
+      );
+      // Si el token ya no es válido, llamamos a logout() para una limpieza completa y segura.
+      get().logout();
+    }
+  },
+}));
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Components.html">Components</a></li><li><a href="module-Components_Auth.html">Components/Auth</a></li><li><a href="module-Components_Devices.html">Components/Devices</a></li><li><a href="module-Components_History.html">Components/History</a></li><li><a href="module-Components_OperationCenters.html">Components/OperationCenters</a></li><li><a href="module-Components_Peripherals.html">Components/Peripherals</a></li><li><a href="module-Components_Requerimientos.html">Components/Requerimientos</a></li><li><a href="module-Components_Requirements.html">Components/Requirements</a></li><li><a href="module-Components_UI.html">Components/UI</a></li><li><a href="module-Components_Users.html">Components/Users</a></li><li><a href="module-Config.html">Config</a></li><li><a href="module-DateUtils.html">DateUtils</a></li><li><a href="module-Hooks.html">Hooks</a></li><li><a href="module-Hooks_Auth.html">Hooks/Auth</a></li><li><a href="module-Hooks_Catalogue.html">Hooks/Catalogue</a></li><li><a href="module-Hooks_Devices.html">Hooks/Devices</a></li><li><a href="module-Hooks_History.html">Hooks/History</a></li><li><a href="module-Hooks_OperationCenters.html">Hooks/OperationCenters</a></li><li><a href="module-Hooks_Requerimientos.html">Hooks/Requerimientos</a></li><li><a href="module-Hooks_Users.html">Hooks/Users</a></li><li><a href="module-InputHandlers.html">InputHandlers</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Routes_Admin.html">Routes/Admin</a></li><li><a href="module-Stores_Auth.html">Stores/Auth</a></li><li><a href="module-Utils.html">Utils</a></li><li><a href="module-hooks_requirements.html">hooks/requirements</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ActionButtons">ActionButtons</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#ConfirmationModal">ConfirmationModal</a></li><li><a href="global.html#LoginFormSkeleton">LoginFormSkeleton</a></li><li><a href="global.html#bajaConfig">bajaConfig</a></li><li><a href="global.html#centroOperacionConfig">centroOperacionConfig</a></li><li><a href="global.html#deviceConfig">deviceConfig</a></li><li><a href="global.html#formatActiveStatus">formatActiveStatus</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDeviceType">formatDeviceType</a></li><li><a href="global.html#formatStatus">formatStatus</a></li><li><a href="global.html#formatStatusRequirement">formatStatusRequirement</a></li><li><a href="global.html#formatUser">formatUser</a></li><li><a href="global.html#getRequerimientoDetailConfig">getRequerimientoDetailConfig</a></li><li><a href="global.html#logConfig">logConfig</a></li><li><a href="global.html#peripheralConfig">peripheralConfig</a></li><li><a href="global.html#userConfig">userConfig</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Nov 14 2025 15:41:19 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -24,6 +24,18 @@ import { handleKeyNumberDown } from "../../utils/inputUtilities.js";
 import api from "../../config/axios.js";
 import { useAuthStore } from "../../stores/authStore.js";
 
+const FixedWrapper = (props) => (
+  <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 pt-12 overflow-y-auto animate-fade-in">
+    {props.children}
+  </div>
+);
+
+const ContentWrapper = (props) => (
+  <div className="bg-secondary rounded-lg shadow-xl w-full max-w-4xl flex flex-col my-8">
+    {props.children}
+  </div>
+);
+
 /**
  * @function DeviceSubForm
  * @description Subcomponente que renderiza un conjunto de campos para un único Equipo dentro del FieldArray.
@@ -391,6 +403,22 @@ export default function CreateDeviceForm({
 
   const isReqFlow = idRequerimiento !== null;
 
+  const SelectedFixedWrapper = isNestedForm ? React.Fragment : FixedWrapper;
+  const SelectedContentWrapper = isNestedForm ? React.Fragment : ContentWrapper;
+
+  const RenderedModalHeader = isNestedForm ? null : (
+    <header className="p-4 flex justify-between items-center border-b border-gray-200 bg-secondary z-10">
+      <h2 className="text-2xl font-bold text-primary">
+        {isReqFlow
+          ? `Registro para Requerimiento #${idRequerimiento}`
+          : "Registrar Nuevos Equipos"}
+      </h2>
+      <button onClick={onClose} className="text-text-main hover:opacity-70">
+        <FontAwesomeIcon icon={faTimes} size="lg" />
+      </button>
+    </header>
+  );
+
   // Lógica para obtener catálogos
   const [centros, setCentros] = useState([]);
   const [isLoadingCatalogs, setIsLoadingCatalogs] = useState(true);
@@ -436,41 +464,10 @@ export default function CreateDeviceForm({
     (isReqFlow && requiredCount === null) || // Mostrar si es requerimiento pero el límite aún no carga
     (isReqFlow && requiredCount !== null && currentCount < requiredCount);
 
-  const ModalFixedWrapper = isNestedForm
-    ? React.Fragment
-    : (props) => (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 pt-12 overflow-y-auto animate-fade-in">
-          {props.children}
-        </div>
-      );
-
-  // 2. Contenedor principal del modal (solo si NO está anidado)
-  const ModalContentWrapper = isNestedForm
-    ? React.Fragment
-    : (props) => (
-        <div className="bg-secondary rounded-lg shadow-xl w-full max-w-4xl flex flex-col my-8">
-          {props.children}
-        </div>
-      );
-
-  // 3. Encabezado del modal (solo si NO está anidado)
-  const ModalHeader = isNestedForm ? null : (
-    <header className="p-4 flex justify-between items-center border-b border-gray-200 bg-secondary z-10">
-      <h2 className="text-2xl font-bold text-primary">
-        {isReqFlow
-          ? `Registro para Requerimiento #${idRequerimiento}`
-          : "Registrar Nuevos Equipos"}
-      </h2>
-      <button onClick={onClose} className="text-text-main hover:opacity-70">
-        <FontAwesomeIcon icon={faTimes} size="lg" />
-      </button>
-    </header>
-  );
-
   return (
-    <ModalFixedWrapper>
-      <ModalContentWrapper>
-        {ModalHeader}{" "}
+    <SelectedFixedWrapper>
+      <SelectedContentWrapper>
+        {RenderedModalHeader}{" "}
         {/* Renderiza el encabezado solo si es un modal completo */}
         <FormikProvider value={formik}>
           <form
@@ -587,7 +584,7 @@ export default function CreateDeviceForm({
             </footer>
           </form>
         </FormikProvider>
-      </ModalContentWrapper>
-    </ModalFixedWrapper>
+      </SelectedContentWrapper>
+    </SelectedFixedWrapper>
   );
 }

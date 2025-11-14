@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/requirements/ModalLinkDevices.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/requirements/ModalLinkDevices.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file ModalLinkDevices.jsx
+ * @module Components/Requerimientos
+ * @description Modal orquestador para el proceso de Alistamiento (PENDIENTE_TI_ALISTAMIENTO).
+ * Componente de presentación que usa el hook useModalLinkDevices para la lógica de estado.
+ * @requires CreateDeviceForm
+ * @requires CreatePeripheralForm
+ * @requires @fortawesome/react-fontawesome
+ * @requires useModalLinkDevices
+ */
+import React from "react"; // No necesitamos useState, solo React
+import CreateDeviceForm from "../devices/CreateDevicesForm.jsx";
+import CreatePeripheralForm from "../devices/CreatePeripheralsForm.jsx";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faTools,
+  faLaptop,
+  faMouse,
+  faCheckCircle,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
+import { useModalLinkDevices } from "../../hooks/requirements/useModalLinkDevices.js";
+
+/**
+ * @function ModalLinkDevices
+ * @description Modal principal para gestionar la creación y vinculación de activos (Equipos/Periféricos)
+ * a un requerimiento específico.
+ * @param {object} props
+ * @param {object} props.req - Objeto del requerimiento completo, incluyendo 'TechnicalAnalysis'.
+ * @param {Function} props.onClose - Función para cerrar el modal.
+ * @param {Function} props.onFinishAlistamiento - Callback para notificar que el estado del requerimiento debe avanzar.
+ * @returns {JSX.Element}
+ */
+export default function ModalLinkDevices({
+  req,
+  onClose,
+  onFinishAlistamiento,
+}) {
+  const codReq = req.codigo_requerimiento;
+
+  const {
+    TAB_EQUIPOS,
+    TAB_PERIFERICOS,
+    equiposNecesarios,
+    perifericosNecesarios,
+    totalTareas,
+    tareasPendientes,
+    activeTab,
+    isLoading,
+    isSubmitting,
+    equiposCompletados,
+    perifericosCompletados,
+    isAlistamientoComplete,
+    equiposFaltantes,
+    perifericosFaltantes,
+    handleSetActiveTab,
+    handleSuccess,
+    handleComplete,
+  } = useModalLinkDevices(req);
+
+  const tabItemClasses =
+    "py-2 px-4 text-center cursor-pointer font-semibold transition-colors duration-200 border-b-2";
+  const tabIconClasses = "mr-2 text-lg";
+
+  // --- Renderizado Condicional: Carga ---
+  if (isLoading) {
+    return (
+      &lt;div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 pt-12">
+        {" "}
+        &lt;div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-lg text-center">
+          {" "}
+          &lt;h2 className="text-xl font-bold text-primary mb-4">
+            Cargando Estado...
+          &lt;/h2>{" "}
+          &lt;p className="text-gray-700 mb-6">
+            Verificando activos vinculados, por favor espere.
+          &lt;/p>{" "}
+        &lt;/div>{" "}
+      &lt;/div>
+    );
+  }
+
+  // --- Renderizado Condicional: No Tareas Necesarias ---
+  if (totalTareas === 0) {
+    return (
+      &lt;div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4">
+        {" "}
+        &lt;div className="bg-white rounded-lg shadow-xl w-full max-w-lg">
+          {" "}
+          &lt;h2 className="text-xl font-bold text-primary mb-4">
+            Alistamiento Completo{" "}
+          &lt;/h2>{" "}
+          &lt;p className="text-gray-700 mb-6">
+            El análisis técnico no requirió el registro de nuevos equipos ni
+            periféricos. Puede avanzar el requerimiento directamente.{" "}
+          &lt;/p>{" "}
+          &lt;div className="flex justify-end gap-3">
+            {" "}
+            &lt;button
+              onClick={onClose}
+              className="py-2 px-4 rounded-lg bg-gray-200 hover:bg-gray-300 font-semibold"
+            >
+              Cerrar{" "}
+            &lt;/button>{" "}
+            &lt;button
+              onClick={() => handleComplete(onFinishAlistamiento, onClose)}
+              disabled={isSubmitting}
+              className="py-2 px-4 rounded-lg bg-success text-white font-bold hover:bg-success/90"
+            >
+              Avanzar Requerimiento{" "}
+              &lt;FontAwesomeIcon icon={faCheckCircle} className="ml-2" />{" "}
+            &lt;/button>{" "}
+          &lt;/div>{" "}
+        &lt;/div>{" "}
+      &lt;/div>
+    );
+  }
+
+  // --- Renderizado Principal ---
+  return (
+    &lt;div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 pt-12 overflow-y-auto animate-fade-in">
+      {" "}
+      &lt;div className="bg-white rounded-lg shadow-xl p-4 md:p-6 w-full max-w-4xl">
+        {" "}
+        &lt;header className="justify-between items-center border-b border-gray-200 w-full bg-secondary z-10">
+          {" "}
+          &lt;div className="flex justify-between items-center w-full">
+            {" "}
+            &lt;h2 className="text-xl md:text-2xl font-bold text-primary flex ml-[60px] md:ml-0 items-center justify-between">
+              &lt;FontAwesomeIcon icon={faTools} className="mr-3" />
+              Alistamiento de Activos para {codReq}{" "}
+            &lt;/h2>{" "}
+            &lt;button
+              onClick={onClose}
+              className="text-text-main hover:opacity-70 ml-[70px] md:ml-0 mb-[150px] md:mb-[50px]"
+            >
+              &lt;FontAwesomeIcon icon={faTimes} size="md:lg sm" />{" "}
+            &lt;/button>{" "}
+          &lt;/div>{" "}
+          &lt;p className="text-xs md:text-sm text-gray-600 mb-4">
+            Complete el registro de los activos aprobados en el análisis técnico
+            para avanzar el requerimiento. Tareas pendientes:{" "}
+            &lt;span className="font-bold text-warning">
+              {tareasPendientes} de {totalTareas}{" "}
+            &lt;/span>{" "}
+          &lt;/p>{" "}
+        &lt;/header>
+        {/* --- NAVEGACIÓN DE PESTAÑAS (TABS) --- */}{" "}
+        &lt;nav className="flex border-b border-gray-300 mb-6">
+          {" "}
+          {equiposNecesarios &amp;&amp; (
+            &lt;button
+              disabled={equiposCompletados}
+              className={`${tabItemClasses} ${
+                activeTab === TAB_EQUIPOS
+                  ? "border-primary text-primary"
+                  : "border-transparent text-gray-500 hover:text-primary/70"
+              } ${
+                equiposCompletados
+                  ? "bg-success/10 text-success cursor-default"
+                  : ""
+              }`}
+              onClick={() => handleSetActiveTab(TAB_EQUIPOS)}
+            >
+              {" "}
+              &lt;FontAwesomeIcon
+                icon={faLaptop}
+                className={tabIconClasses}
+              />{" "}
+              {equiposCompletados
+                ? "✅ Equipos (Completado)"
+                : `1. Crear Equipos ${equiposFaltantes} faltante(s)`}{" "}
+            &lt;/button>
+          )}{" "}
+          {perifericosNecesarios &amp;&amp; (
+            &lt;button
+              disabled={perifericosCompletados}
+              className={`${tabItemClasses} ${
+                activeTab === TAB_PERIFERICOS
+                  ? "border-primary text-primary"
+                  : "border-transparent text-gray-500 hover:text-primary/70"
+              } ${
+                perifericosCompletados
+                  ? "bg-success/10 text-success cursor-default"
+                  : ""
+              }`}
+              onClick={() => handleSetActiveTab(TAB_PERIFERICOS)}
+            >
+              {" "}
+              &lt;FontAwesomeIcon icon={faMouse} className={tabIconClasses} />{" "}
+              {perifericosCompletados
+                ? "✅ Periféricos (Completado)"
+                : `2. Crear Periféricos ${perifericosFaltantes} faltante(s)`}{" "}
+            &lt;/button>
+          )}{" "}
+        &lt;/nav>
+        {/* --- CONTENIDO DE LA PESTAÑA ACTIVA --- */}{" "}
+        &lt;div className="min-h-[200px]">
+          {/* Solo renderiza si es la pestaña activa Y NO está completado */}{" "}
+          {activeTab === TAB_EQUIPOS &amp;&amp;
+            equiposNecesarios &amp;&amp;
+            !equiposCompletados &amp;&amp; (
+              &lt;div className="p-2">
+                {" "}
+                &lt;CreateDeviceForm
+                  idRequerimiento={req.id_requerimiento} // Usar el ID del requerimiento original
+                  onSuccess={(msg) => handleSuccess("device", msg)}
+                  onClose={onClose}
+                  isNestedForm={true}
+                  requiredCount={equiposFaltantes}
+                />{" "}
+              &lt;/div>
+            )}
+          {/* Solo renderiza si es la pestaña activa Y NO está completado */}{" "}
+          {activeTab === TAB_PERIFERICOS &amp;&amp;
+            perifericosNecesarios &amp;&amp;
+            !perifericosCompletados &amp;&amp; (
+              &lt;div className="p-2">
+                {" "}
+                &lt;CreatePeripheralForm
+                  idRequerimiento={req.id_requerimiento} // Usar el ID del requerimiento original
+                  onSuccess={(msg) => handleSuccess("peripheral", msg)}
+                  onClose={onClose}
+                  isNestedForm={true}
+                  requiredCount={perifericosFaltantes}
+                />{" "}
+              &lt;/div>
+            )}
+          {/* Mensaje de completado si no hay pestaña activa y el alistamiento está completo */}
+          {isAlistamientoComplete &amp;&amp; (
+            &lt;div className="text-center p-10 bg-success/5 rounded-lg border border-success/20">
+              &lt;FontAwesomeIcon
+                icon={faCheckCircle}
+                size="3x"
+                className="text-success mb-4"
+              />
+              &lt;p className="text-lg font-bold text-success">
+                ¡Alistamiento Completo!
+              &lt;/p>
+              &lt;p className="text-gray-600">
+                Puede finalizar el proceso y avanzar el estado del
+                requerimiento.
+              &lt;/p>
+            &lt;/div>
+          )}{" "}
+        &lt;/div>{" "}
+        &lt;footer className="mt-8 pt-4 border-t border-gray-200 flex justify-end gap-3">
+          {" "}
+          &lt;button
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="py-2 px-4 rounded-lg bg-gray-200 hover:bg-gray-300 font-semibold"
+          >
+            Cancelar{" "}
+          &lt;/button>{" "}
+          &lt;button
+            onClick={() => handleComplete(onFinishAlistamiento, onClose)}
+            disabled={!isAlistamientoComplete || isSubmitting}
+            className="py-2 px-4 rounded-lg bg-primary text-white font-bold hover:bg-primary-dark disabled:bg-primary/50 disabled:cursor-not-allowed transition-colors"
+          >
+            {" "}
+            {isSubmitting
+              ? "Avanzando Estado..."
+              : "Finalizar y Avanzar Requerimiento"}{" "}
+          &lt;/button>{" "}
+        &lt;/footer>{" "}
+      &lt;/div>{" "}
+    &lt;/div>
+  );
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Components.html">Components</a></li><li><a href="module-Components_Auth.html">Components/Auth</a></li><li><a href="module-Components_Devices.html">Components/Devices</a></li><li><a href="module-Components_History.html">Components/History</a></li><li><a href="module-Components_OperationCenters.html">Components/OperationCenters</a></li><li><a href="module-Components_Peripherals.html">Components/Peripherals</a></li><li><a href="module-Components_Requerimientos.html">Components/Requerimientos</a></li><li><a href="module-Components_Requirements.html">Components/Requirements</a></li><li><a href="module-Components_UI.html">Components/UI</a></li><li><a href="module-Components_Users.html">Components/Users</a></li><li><a href="module-Config.html">Config</a></li><li><a href="module-DateUtils.html">DateUtils</a></li><li><a href="module-Hooks.html">Hooks</a></li><li><a href="module-Hooks_Auth.html">Hooks/Auth</a></li><li><a href="module-Hooks_Catalogue.html">Hooks/Catalogue</a></li><li><a href="module-Hooks_Devices.html">Hooks/Devices</a></li><li><a href="module-Hooks_History.html">Hooks/History</a></li><li><a href="module-Hooks_OperationCenters.html">Hooks/OperationCenters</a></li><li><a href="module-Hooks_Requerimientos.html">Hooks/Requerimientos</a></li><li><a href="module-Hooks_Users.html">Hooks/Users</a></li><li><a href="module-InputHandlers.html">InputHandlers</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Routes_Admin.html">Routes/Admin</a></li><li><a href="module-Stores_Auth.html">Stores/Auth</a></li><li><a href="module-Utils.html">Utils</a></li><li><a href="module-hooks_requirements.html">hooks/requirements</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ActionButtons">ActionButtons</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#ConfirmationModal">ConfirmationModal</a></li><li><a href="global.html#LoginFormSkeleton">LoginFormSkeleton</a></li><li><a href="global.html#bajaConfig">bajaConfig</a></li><li><a href="global.html#centroOperacionConfig">centroOperacionConfig</a></li><li><a href="global.html#deviceConfig">deviceConfig</a></li><li><a href="global.html#formatActiveStatus">formatActiveStatus</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDeviceType">formatDeviceType</a></li><li><a href="global.html#formatStatus">formatStatus</a></li><li><a href="global.html#formatStatusRequirement">formatStatusRequirement</a></li><li><a href="global.html#formatUser">formatUser</a></li><li><a href="global.html#getRequerimientoDetailConfig">getRequerimientoDetailConfig</a></li><li><a href="global.html#logConfig">logConfig</a></li><li><a href="global.html#peripheralConfig">peripheralConfig</a></li><li><a href="global.html#userConfig">userConfig</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Nov 14 2025 15:41:19 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

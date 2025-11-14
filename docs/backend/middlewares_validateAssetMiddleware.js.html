@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: middlewares/validateAssetMiddleware.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: middlewares/validateAssetMiddleware.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file validateAssetSchema.js
+ * @module Middlewares
+ * @description Middleware para validar dinámicamente el esquema de los detalles de activos (`asset_details`).
+ * Utiliza Zod para verificar que cada objeto dentro del arreglo `asset_details` cumpla con el esquema
+ * correspondiente (equipo o periférico), basándose en el valor booleano de `is_equipo`.
+ * @requires z
+ * @requires ../schemas/deviceSchema.js
+ * @requires ../schemas/peripheralSchema.js
+ */
+import { z } from "zod";
+import { deviceObjectSchema } from "../schemas/deviceSchema.js";
+import { peripheralObjectSchema } from "../schemas/peripheralSchema.js";
+
+/**
+ * @function validateAssetDetails
+ * @description Middleware de Express que valida los detalles de los activos en el cuerpo de la solicitud (`req.body`).
+ * Elige el esquema de validación (`createDeviceSchema` o `createPeripheralSchema`) basándose en `req.body.is_equipo`.
+ * Luego, aplica el esquema seleccionado a cada elemento del arreglo `req.body.asset_details`.
+ * Si la validación es exitosa, sanitiza y adjunta el arreglo validado a `req.body.asset_details`.
+ * @param {object} req - El objeto de la solicitud de Express, se espera que contenga `is_equipo` (boolean) y `asset_details` (array).
+ * @param {object} res - El objeto de la respuesta de Express.
+ * @param {Function} next - La función callback para pasar el control al siguiente middleware.
+ * @returns {void} Llama a `next()` para continuar si la validación es exitosa, o devuelve una respuesta de error (400) si falla la validación de Zod o los campos de control.
+ */
+export const validateAssetDetails = (req, res, next) => {
+  try {
+    const { is_equipo, asset_details } = req.body;
+
+    if (typeof is_equipo !== "boolean" || !Array.isArray(asset_details)) {
+      return res.status(400).json({
+        message:
+          "Faltan campos de control: 'is_equipo' (boolean) o 'asset_details' debe ser un arreglo.",
+      });
+    }
+
+    let finalSchema;
+
+    // 1. Selección Dinámica del Schema (Define el esquema para UN activo)
+    if (is_equipo === true) {
+      finalSchema = deviceObjectSchema;
+    } else {
+      finalSchema = peripheralObjectSchema;
+    }
+
+    // 2. Aplicar validación a CADA activo y sanear el array (Uso de Zod.array)
+    const finalArraySchema = z.array(finalSchema);
+
+    // El parseo final valida todo el arreglo contra el esquema seleccionado
+    req.body.asset_details = finalArraySchema.parse(asset_details);
+
+    next();
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      console.log("🚀 ~ validateAssetDetails ~ error:", error);
+      return res.status(400).json({
+        status: "error",
+        message:
+          "Error de validación en los detalles del activo. Verifique los campos específicos de equipo/periférico en el arreglo.",
+        errors: error.errors.map((err) => ({
+          field: `asset_details[${err.path[0]}].${err.path.slice(1).join(".")}`,
+          message: err.message,
+        })),
+      });
+    }
+    next(error);
+  }
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Config.html">Config</a></li><li><a href="module-Constants.html">Constants</a></li><li><a href="module-Controllers.html">Controllers</a></li><li><a href="module-Middleware.html">Middleware</a></li><li><a href="module-Middlewares.html">Middlewares</a></li><li><a href="module-Models.html">Models</a></li><li><a href="module-Models_Catalogues.html">Models/Catalogues</a></li><li><a href="module-Repositories.html">Repositories</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Schemas.html">Schemas</a></li><li><a href="module-Services.html">Services</a></li><li><a href="module-Utils_Errors.html">Utils/Errors</a></li><li><a href="module-Utils_Tokens.html">Utils/Tokens</a></li></ul><h3>Classes</h3><ul><li><a href="module-Models_Catalogues-City.html">City</a></li><li><a href="module-Models_Catalogues-IdentificationType.html">IdentificationType</a></li><li><a href="module-Models_Catalogues-PeripheralType.html">PeripheralType</a></li><li><a href="module-Models-CostCenter.html">CostCenter</a></li><li><a href="module-Models-Decommission.html">Decommission</a></li><li><a href="module-Models-Device.html">Device</a></li><li><a href="module-Models-Log.html">Log</a></li><li><a href="module-Models-OperationCenter.html">OperationCenter</a></li><li><a href="module-Models-Peripheral.html">Peripheral</a></li><li><a href="module-Models-Permission.html">Permission</a></li><li><a href="module-Models-RefreshToken.html">RefreshToken</a></li><li><a href="module-Models-Requirement.html">Requirement</a></li><li><a href="module-Models-RequirementAsset.html">RequirementAsset</a></li><li><a href="module-Models-RequirementStatus.html">RequirementStatus</a></li><li><a href="module-Models-TechnicalAnalysis.html">TechnicalAnalysis</a></li><li><a href="module-Models-User.html">User</a></li><li><a href="module-Utils_Errors.AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AccountDisabledError.html">AccountDisabledError</a></li><li><a href="module-Utils_Errors-AlreadyDesactivated.html">AlreadyDesactivated</a></li><li><a href="module-Utils_Errors-AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AuthError.html">AuthError</a></li><li><a href="module-Utils_Errors-ConfigurationError.html">ConfigurationError</a></li><li><a href="module-Utils_Errors-DatabaseConnectionError.html">DatabaseConnectionError</a></li><li><a href="module-Utils_Errors-DuplicateError.html">DuplicateError</a></li><li><a href="module-Utils_Errors-ForbiddenError.html">ForbiddenError</a></li><li><a href="module-Utils_Errors-InvalidTokenError.html">InvalidTokenError</a></li><li><a href="module-Utils_Errors-NotFoundError.html">NotFoundError</a></li><li><a href="module-Utils_Errors-UserAlreadyExistsError.html">UserAlreadyExistsError</a></li><li><a href="module-Utils_Errors-UserNotFoundOrInvalidPasswordError.html">UserNotFoundOrInvalidPasswordError</a></li></ul><h3>Global</h3><ul><li><a href="global.html#generateRequirementCode">generateRequirementCode</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Nov 14 2025 15:41:16 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

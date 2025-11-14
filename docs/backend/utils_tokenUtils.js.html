@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: utils/tokenUtils.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: utils/tokenUtils.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file tokenUtils.js
+ * @module Utils/Tokens
+ * @description Módulo de utilidades para la creación y verificación de JSON Web Tokens (JWT).
+ * Centraliza la lógica para generar tokens de acceso y de refresco, así como para
+ * verificar la validez de los tokens de acceso, utilizando la configuración centralizada.
+ * @requires jsonwebtoken
+ * @requires crypto
+ * @requires ../config/jwt.config.js
+ */
+import jwt from "jsonwebtoken";
+import crypto from "crypto";
+import jwtConfig from "../config/jwt.config.js";
+
+/**
+ * @function generateAccessToken
+ * @description Genera un nuevo JSON Web Token de acceso (corta duración).
+ * Este token contiene el payload del usuario y se firma con el secreto de acceso.
+ * @param {object} userPayload - El objeto de datos del usuario a incluir en el token (ej. id, correo, rol).
+ * @returns {string} El token de acceso JWT firmado.
+ */
+export const generateAccessToken = (userPayload) => {
+  // Se utilizan el secreto y el tiempo de expiración desde el archivo de configuración.
+  return jwt.sign(userPayload, jwtConfig.accessSecret, {
+    expiresIn: jwtConfig.accessExpiresIn,
+  });
+};
+
+/**
+ * @function verifyAccessToken
+ * @description Verifica la firma y la expiración de un token de acceso.
+ * Si el token es válido, devuelve el payload decodificado. Si no, lanza un error.
+ * @param {string} token - El token de acceso JWT a verificar.
+ * @returns {object|string} El payload decodificado del token si es válido.
+ * @throws {JsonWebTokenError|TokenExpiredError} Lanza un error si el token es inválido o ha expirado.
+ */
+export const verifyAccessToken = (token) => {
+  // Se utiliza el secreto de acceso desde el archivo de configuración para la verificación.
+  return jwt.verify(token, jwtConfig.accessSecret);
+};
+
+/**
+ * @function generateRefreshToken
+ * @description Genera una cadena de texto aleatoria y segura para ser usada como token de refresco.
+ * Utiliza el módulo 'crypto' de Node.js para garantizar una alta entropía.
+ * @returns {string} Una cadena hexadecimal de 128 caracteres.
+ */
+export const generateRefreshToken = () => {
+  return crypto.randomBytes(64).toString("hex");
+};
+
+/**
+ * @function getRefreshTokenExpiration
+ * @description Calcula la fecha de expiración para un nuevo token de refresco.
+ * Basado en la configuración, se establece para 7 días en el futuro desde el momento de su creación.
+ * @returns {Date} Un objeto de fecha que representa el momento exacto de la expiración.
+ */
+export const getRefreshTokenExpiration = () => {
+  const expiration = new Date();
+  expiration.setDate(expiration.getDate() + 7);
+  return expiration;
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Config.html">Config</a></li><li><a href="module-Constants.html">Constants</a></li><li><a href="module-Controllers.html">Controllers</a></li><li><a href="module-Middleware.html">Middleware</a></li><li><a href="module-Middlewares.html">Middlewares</a></li><li><a href="module-Models.html">Models</a></li><li><a href="module-Models_Catalogues.html">Models/Catalogues</a></li><li><a href="module-Repositories.html">Repositories</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Schemas.html">Schemas</a></li><li><a href="module-Services.html">Services</a></li><li><a href="module-Utils_Errors.html">Utils/Errors</a></li><li><a href="module-Utils_Tokens.html">Utils/Tokens</a></li></ul><h3>Classes</h3><ul><li><a href="module-Models_Catalogues-City.html">City</a></li><li><a href="module-Models_Catalogues-IdentificationType.html">IdentificationType</a></li><li><a href="module-Models_Catalogues-PeripheralType.html">PeripheralType</a></li><li><a href="module-Models-CostCenter.html">CostCenter</a></li><li><a href="module-Models-Decommission.html">Decommission</a></li><li><a href="module-Models-Device.html">Device</a></li><li><a href="module-Models-Log.html">Log</a></li><li><a href="module-Models-OperationCenter.html">OperationCenter</a></li><li><a href="module-Models-Peripheral.html">Peripheral</a></li><li><a href="module-Models-Permission.html">Permission</a></li><li><a href="module-Models-RefreshToken.html">RefreshToken</a></li><li><a href="module-Models-Requirement.html">Requirement</a></li><li><a href="module-Models-RequirementAsset.html">RequirementAsset</a></li><li><a href="module-Models-RequirementStatus.html">RequirementStatus</a></li><li><a href="module-Models-TechnicalAnalysis.html">TechnicalAnalysis</a></li><li><a href="module-Models-User.html">User</a></li><li><a href="module-Utils_Errors.AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AccountDisabledError.html">AccountDisabledError</a></li><li><a href="module-Utils_Errors-AlreadyDesactivated.html">AlreadyDesactivated</a></li><li><a href="module-Utils_Errors-AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AuthError.html">AuthError</a></li><li><a href="module-Utils_Errors-ConfigurationError.html">ConfigurationError</a></li><li><a href="module-Utils_Errors-DatabaseConnectionError.html">DatabaseConnectionError</a></li><li><a href="module-Utils_Errors-DuplicateError.html">DuplicateError</a></li><li><a href="module-Utils_Errors-ForbiddenError.html">ForbiddenError</a></li><li><a href="module-Utils_Errors-InvalidTokenError.html">InvalidTokenError</a></li><li><a href="module-Utils_Errors-NotFoundError.html">NotFoundError</a></li><li><a href="module-Utils_Errors-UserAlreadyExistsError.html">UserAlreadyExistsError</a></li><li><a href="module-Utils_Errors-UserNotFoundOrInvalidPasswordError.html">UserNotFoundOrInvalidPasswordError</a></li></ul><h3>Global</h3><ul><li><a href="global.html#generateRequirementCode">generateRequirementCode</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Nov 14 2025 15:41:16 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

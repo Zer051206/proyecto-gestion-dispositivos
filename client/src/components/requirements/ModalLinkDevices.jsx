@@ -83,9 +83,9 @@ export default function ModalLinkDevices({
   // --- Renderizado Condicional: No Tareas Necesarias ---
   if (totalTareas === 0) {
     return (
-      <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 pt-12">
+      <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4">
         {" "}
-        <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-lg">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-lg">
           {" "}
           <h2 className="text-xl font-bold text-primary mb-4">
             Alistamiento Completo{" "}
@@ -103,7 +103,7 @@ export default function ModalLinkDevices({
               Cerrar{" "}
             </button>{" "}
             <button
-              onClick={() => handleComplete(onFinishAlistamiento, onClose)} // 🛑 Usar función del hook
+              onClick={() => handleComplete(onFinishAlistamiento, onClose)}
               disabled={isSubmitting}
               className="py-2 px-4 rounded-lg bg-success text-white font-bold hover:bg-success/90"
             >
@@ -169,12 +169,11 @@ export default function ModalLinkDevices({
               />{" "}
               {equiposCompletados
                 ? "✅ Equipos (Completado)"
-                : `1. Crear Equipos (${equiposFaltantes} faltante(s))`}{" "}
+                : `1. Crear Equipos ${equiposFaltantes} faltante(s)`}{" "}
             </button>
           )}{" "}
           {perifericosNecesarios && (
             <button
-              // 🛑 Deshabilitar si está completo
               disabled={perifericosCompletados}
               className={`${tabItemClasses} ${
                 activeTab === TAB_PERIFERICOS
@@ -185,13 +184,13 @@ export default function ModalLinkDevices({
                   ? "bg-success/10 text-success cursor-default"
                   : ""
               }`}
-              onClick={() => handleSetActiveTab(TAB_PERIFERICOS)} // 🛑 Usar función del hook
+              onClick={() => handleSetActiveTab(TAB_PERIFERICOS)}
             >
               {" "}
               <FontAwesomeIcon icon={faMouse} className={tabIconClasses} />{" "}
               {perifericosCompletados
                 ? "✅ Periféricos (Completado)"
-                : `2. Crear Periféricos (${perifericosFaltantes} faltante(s))`}{" "}
+                : `2. Crear Periféricos ${perifericosFaltantes} faltante(s)`}{" "}
             </button>
           )}{" "}
         </nav>
@@ -205,10 +204,10 @@ export default function ModalLinkDevices({
                 {" "}
                 <CreateDeviceForm
                   idRequerimiento={req.id_requerimiento} // Usar el ID del requerimiento original
-                  onSuccess={(msg) => handleSuccess("device", msg)} // 🛑 Usar función del hook
+                  onSuccess={(msg) => handleSuccess("device", msg)}
                   onClose={onClose}
                   isNestedForm={true}
-                  requiredCount={equiposFaltantes} // 🛑 Pasar la cantidad faltante al formulario
+                  requiredCount={equiposFaltantes}
                 />{" "}
               </div>
             )}
@@ -220,10 +219,10 @@ export default function ModalLinkDevices({
                 {" "}
                 <CreatePeripheralForm
                   idRequerimiento={req.id_requerimiento} // Usar el ID del requerimiento original
-                  onSuccess={(msg) => handleSuccess("peripheral", msg)} // 🛑 Usar función del hook
+                  onSuccess={(msg) => handleSuccess("peripheral", msg)}
                   onClose={onClose}
                   isNestedForm={true}
-                  requiredCount={perifericosFaltantes} // 🛑 Pasar la cantidad faltante al formulario
+                  requiredCount={perifericosFaltantes}
                 />{" "}
               </div>
             )}
@@ -255,8 +254,8 @@ export default function ModalLinkDevices({
             Cancelar{" "}
           </button>{" "}
           <button
-            onClick={() => handleComplete(onFinishAlistamiento, onClose)} // 🛑 Usar función del hook
-            disabled={!isAlistamientoComplete || isSubmitting} // 🛑 Control del hook
+            onClick={() => handleComplete(onFinishAlistamiento, onClose)}
+            disabled={!isAlistamientoComplete || isSubmitting}
             className="py-2 px-4 rounded-lg bg-primary text-white font-bold hover:bg-primary-dark disabled:bg-primary/50 disabled:cursor-not-allowed transition-colors"
           >
             {" "}

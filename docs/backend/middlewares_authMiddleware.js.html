@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: middlewares/authMiddleware.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: middlewares/authMiddleware.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file authMiddleware.js
+ * @module Middlewares
+ * @description Middleware de autenticación principal para proteger las rutas de la API.
+ * Se encarga de verificar la validez del JSON Web Token (JWT) de acceso proporcionado
+ * en la cabecera de la solicitud.
+ * @requires ../utils/tokenUtils.js
+ * @requires ../repositories/userRepository.js
+ * @requires ../utils/customErrors.js
+ */
+import { verifyAccessToken } from "../utils/tokenUtils.js";
+import * as userRepository from "../repositories/userRepository.js";
+import {
+  InvalidTokenError,
+  AccountDisabledError,
+} from "../utils/customErrors.js";
+
+/**
+ * @function authMiddleware
+ * @description Middleware de Express que protege las rutas privadas. Realiza los siguientes pasos:
+ * 1. Extrae el token JWT de la cabecera 'Authorization'.
+ * 2. Valida la firma y la expiración del token.
+ * 3. Busca al usuario en la base de datos usando el ID contenido en el token.
+ * 4. Verifica que el usuario exista y que su cuenta esté activa.
+ * 5. Si todo es correcto, adjunta la información del usuario al objeto `req` para que las
+ * siguientes funciones en la cadena (otros middlewares o controladores) tengan acceso a ella.
+ * 6. Si alguna verificación falla, pasa un error al manejador de errores centralizado.
+ * @param {object} req - El objeto de la solicitud de Express.
+ * @param {object} res - El objeto de la respuesta de Express.
+ * @param {Function} next - La función callback para pasar el control al siguiente middleware.
+ * @async
+ */
+const authMiddleware = async (req, res, next) => {
+  try {
+    // 1. Extraer el token de la cabecera.
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      throw new InvalidTokenError(
+        "Acceso no autorizado. Token no proporcionado."
+      );
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    // 2. Verificar el token. Si es inválido o ha expirado, jwt.verify lanzará un error.
+    const decoded = verifyAccessToken(token);
+
+    // 3. Buscar al usuario en la base de datos para asegurar que todavía existe.
+    const user = await userRepository.findById(decoded.id_usuario);
+
+    // 4. Verificar que el usuario exista y esté activo.
+    if (!user || !user.activo) {
+      throw new AccountDisabledError(
+        "Acceso denegado. La cuenta no existe o ha sido desactivada."
+      );
+    }
+
+    const permissionsList = user.Permissions
+      ? user.Permissions.map((p) => p.nombre)
+      : [];
+
+    const permissionsObject = {};
+
+    const allPermissionFlags = [
+      "CAN_SIGN_TI_ANALYSIS",
+      "CAN_LINK_ASSETS",
+      "CAN_SIGN_RH_PAYMENT",
+      "CAN_SIGN_TI_READY",
+      "CAN_SIGN_RH_DELIVERY",
+    ];
+
+    allPermissionFlags.forEach((flag) => {
+      // Establece la flag en 'true' si el nombre del permiso está en la lista del usuario.
+      permissionsObject[flag] = permissionsList.includes(flag);
+    });
+
+    // 5. Adjuntar la información esencial del usuario a la petición.
+    // Esto enriquece el objeto `req` para que esté disponible en los controladores posteriores.
+    req.user = {
+      id_usuario: user.id_usuario,
+      nombre: user.nombre,
+      correo: user.correo,
+      rol: user.rol,
+      id_centro_operacion: user.id_centro_operacion,
+      permisos: permissionsList,
+      ...permissionsObject,
+    };
+    // Si todas las verificaciones son exitosas, pasamos el control al siguiente middleware o controlador.
+    next();
+  } catch (error) {
+    // Si ocurre cualquier error durante el proceso, lo pasamos al manejador de errores central.
+    next(error);
+  }
+};
+
+export default authMiddleware;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Config.html">Config</a></li><li><a href="module-Constants.html">Constants</a></li><li><a href="module-Controllers.html">Controllers</a></li><li><a href="module-Middleware.html">Middleware</a></li><li><a href="module-Middlewares.html">Middlewares</a></li><li><a href="module-Models.html">Models</a></li><li><a href="module-Models_Catalogues.html">Models/Catalogues</a></li><li><a href="module-Repositories.html">Repositories</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Schemas.html">Schemas</a></li><li><a href="module-Services.html">Services</a></li><li><a href="module-Utils_Errors.html">Utils/Errors</a></li><li><a href="module-Utils_Tokens.html">Utils/Tokens</a></li></ul><h3>Classes</h3><ul><li><a href="module-Models_Catalogues-City.html">City</a></li><li><a href="module-Models_Catalogues-IdentificationType.html">IdentificationType</a></li><li><a href="module-Models_Catalogues-PeripheralType.html">PeripheralType</a></li><li><a href="module-Models-CostCenter.html">CostCenter</a></li><li><a href="module-Models-Decommission.html">Decommission</a></li><li><a href="module-Models-Device.html">Device</a></li><li><a href="module-Models-Log.html">Log</a></li><li><a href="module-Models-OperationCenter.html">OperationCenter</a></li><li><a href="module-Models-Peripheral.html">Peripheral</a></li><li><a href="module-Models-Permission.html">Permission</a></li><li><a href="module-Models-RefreshToken.html">RefreshToken</a></li><li><a href="module-Models-Requirement.html">Requirement</a></li><li><a href="module-Models-RequirementAsset.html">RequirementAsset</a></li><li><a href="module-Models-RequirementStatus.html">RequirementStatus</a></li><li><a href="module-Models-TechnicalAnalysis.html">TechnicalAnalysis</a></li><li><a href="module-Models-User.html">User</a></li><li><a href="module-Utils_Errors.AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AccountDisabledError.html">AccountDisabledError</a></li><li><a href="module-Utils_Errors-AlreadyDesactivated.html">AlreadyDesactivated</a></li><li><a href="module-Utils_Errors-AppError.html">AppError</a></li><li><a href="module-Utils_Errors-AuthError.html">AuthError</a></li><li><a href="module-Utils_Errors-ConfigurationError.html">ConfigurationError</a></li><li><a href="module-Utils_Errors-DatabaseConnectionError.html">DatabaseConnectionError</a></li><li><a href="module-Utils_Errors-DuplicateError.html">DuplicateError</a></li><li><a href="module-Utils_Errors-ForbiddenError.html">ForbiddenError</a></li><li><a href="module-Utils_Errors-InvalidTokenError.html">InvalidTokenError</a></li><li><a href="module-Utils_Errors-NotFoundError.html">NotFoundError</a></li><li><a href="module-Utils_Errors-UserAlreadyExistsError.html">UserAlreadyExistsError</a></li><li><a href="module-Utils_Errors-UserNotFoundOrInvalidPasswordError.html">UserNotFoundOrInvalidPasswordError</a></li></ul><h3>Global</h3><ul><li><a href="global.html#generateRequirementCode">generateRequirementCode</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Nov 14 2025 15:41:16 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

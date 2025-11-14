@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/users/DashboardUser.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/users/DashboardUser.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file DashboardUser.jsx
+ * @module Components/Users
+ * @description Página principal para la gestión de usuarios. Permite a los administradores
+ * visualizar, buscar, filtrar y gestionar el estado de todos los usuarios del sistema.
+ * Incluye funcionalidades para cambiar entre vistas de tabla y tarjetas, y modales para
+ * ver detalles y cambiar el estado de un usuario.
+ */
+import React, { useState } from "react";
+import { useDashboardUser } from "../../hooks/users/useDashboardUser.js";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faPlus,
+  faEye,
+  faToggleOn,
+  faToggleOff,
+  faExclamationTriangle,
+  faTable,
+  faThLarge,
+} from "@fortawesome/free-solid-svg-icons";
+import api from "../../config/axios.js";
+import CreateUserModal from "./CreateUserForm.jsx";
+import { toast } from "react-hot-toast";
+import DetailModal from "../utils/DetailModal.jsx";
+import { userConfig } from "../../hooks/utils/detailConfig.js";
+import { formatDate } from "../../utils/dateFormat.js";
+
+// --- SUBCOMPONENTES ---
+
+/**
+ * @function ConfirmStatusChangeModal
+ * @description Modal de confirmación para activar o desactivar la cuenta de un usuario.
+ * @param {object} props - Propiedades del componente.
+ * @returns {JSX.Element}
+ */
+const ConfirmStatusChangeModal = ({
+  user,
+  onConfirm,
+  onCancel,
+  isSubmitting,
+}) => (
+  &lt;div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    &lt;div className="bg-secondary rounded-lg shadow-xl p-6 w-full max-w-md text-center animate-fade-in-up">
+      &lt;div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-warning/10 mb-4">
+        &lt;FontAwesomeIcon
+          icon={faExclamationTriangle}
+          className="h-6 w-6 text-warning"
+        />
+      &lt;/div>
+      &lt;h3 className="text-xl font-bold text-text-main mb-2">
+        Confirmar Cambio de Estado
+      &lt;/h3>
+      &lt;p className="text-text-main mb-6">
+        Estás a punto de{" "}
+        &lt;strong className={user.activo ? "text-accent" : "text-success"}>
+          {user.activo ? "desactivar" : "activar"}
+        &lt;/strong>{" "}
+        la cuenta de{" "}
+        &lt;strong className="font-semibold">
+          {user.nombre} {user.apellido}
+        &lt;/strong>
+        .
+      &lt;/p>
+      &lt;div className="flex justify-center gap-4">
+        &lt;button
+          onClick={onCancel}
+          disabled={isSubmitting}
+          className="py-2 px-4 rounded-lg bg-gray-300 hover:bg-gray-400 font-semibold"
+        >
+          Cancelar
+        &lt;/button>
+        &lt;button
+          onClick={onConfirm}
+          disabled={isSubmitting}
+          className={`py-2 px-4 rounded-lg text-white font-bold hover:opacity-90 ${
+            user.activo ? "bg-accent" : "bg-success"
+          }`}
+        >
+          {isSubmitting
+            ? "Procesando..."
+            : `Sí, ${user.activo ? "Desactivar" : "Activar"}`}
+        &lt;/button>
+      &lt;/div>
+    &lt;/div>
+  &lt;/div>
+);
+
+/**
+ * @function UserTable
+ * @description Componente que renderiza una tabla de usuarios.
+ * @param {object} props - Propiedades del componente.
+ * @returns {JSX.Element}
+ */
+const UserTable = ({ users, onAction }) => (
+  &lt;div className="overflow-auto bg-secondary rounded-lg shadow-md max-h-[500px] animate-fade-in">
+    &lt;table className="w-full text-left text-text-main">
+      &lt;thead className="bg-gray-100/80">
+        &lt;tr>
+          &lt;th className="p-4 whitespace-nowrap font-semibold">Nombre&lt;/th>
+          &lt;th className="p-4 whitespace-nowrap font-semibold hidden sm:table-cell">
+            Identificación
+          &lt;/th>
+          &lt;th className="p-4 whitespace-nowrap font-semibold">Rol&lt;/th>
+          &lt;th className="p-4 whitespace-nowrap font-semibold ">Centro Op.&lt;/th>
+          &lt;th className="p-4 whitespace-nowrap font-semibold">Estado&lt;/th>
+          &lt;th className="p-4 whitespace-nowrap font-semibold text-center">
+            Acciones
+          &lt;/th>
+        &lt;/tr>
+      &lt;/thead>
+      &lt;tbody>
+        {users.map((user) => (
+          &lt;tr
+            key={user.id_usuario}
+            className="border-t border-gray-200 hover:bg-gray-50"
+          >
+            &lt;td className="p-4 whitespace-nowrap">
+              &lt;p className="font-bold">
+                {user.nombre} {user.apellido}
+              &lt;/p>
+              &lt;p className="text-sm text-gray-500">{user.correo}&lt;/p>
+            &lt;/td>
+            &lt;td className="p-4 whitespace-nowrap font-mono hidden md:table-cell">
+              {user.identificacion}
+            &lt;/td>
+            &lt;td className="p-4 whitespace-nowrap">{user.rol}&lt;/td>
+            &lt;td className="p-4 whitespace-nowrap">
+              {user.CentroAsignado?.codigo ||
+                (user.rol === "Admin" ? "Global" : "N/A")}
+            &lt;/td>
+            &lt;td className="p-4 whitespace-nowrap">
+              &lt;span
+                className={`px-2 py-1 text-xs font-bold rounded-full ${
+                  user.activo
+                    ? "bg-success/20 text-success"
+                    : "bg-error/20 text-error"
+                }`}
+              >
+                {user.activo ? "Activo" : "Inactivo"}
+              &lt;/span>
+            &lt;/td>
+            &lt;td className="p-4 whitespace-nowrap text-center space-x-4">
+              &lt;button
+                onClick={() => onAction("details", user)}
+                className="text-primary hover:opacity-70"
+                title="Ver Detalles"
+              >
+                &lt;FontAwesomeIcon icon={faEye} />
+              &lt;/button>
+              &lt;button
+                onClick={() => onAction("status", user)}
+                className="text-accent hover:opacity-70"
+                title="Cambiar Estado"
+              >
+                &lt;FontAwesomeIcon
+                  icon={user.activo ? faToggleOn : faToggleOff}
+                  className={user.activo ? "text-success" : "text-gray-400"}
+                />
+              &lt;/button>
+            &lt;/td>
+          &lt;/tr>
+        ))}
+      &lt;/tbody>
+    &lt;/table>
+  &lt;/div>
+);
+
+/**
+ * @function UserCards
+ * @description Componente que renderiza una cuadrícula de tarjetas de usuarios.
+ * @param {object} props - Propiedades del componente.
+ * @returns {JSX.Element}
+ */
+const UserCards = ({ users, onAction }) => (
+  &lt;div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in">
+    {users.map((user) => (
+      &lt;div
+        key={user.id_usuario}
+        className="bg-secondary rounded-lg shadow p-4 flex flex-col justify-between"
+      >
+        &lt;div>
+          &lt;div className="flex justify-between items-start mb-2">
+            &lt;div>
+              &lt;p className="font-bold text-lg text-text-main">
+                {user.nombre} {user.apellido}
+              &lt;/p>
+              &lt;p className="text-sm text-primary font-semibold">{user.rol}&lt;/p>
+            &lt;/div>
+            &lt;span
+              className={`px-2 py-1 text-xs font-bold rounded-full ${
+                user.activo
+                  ? "bg-success/20 text-success"
+                  : "bg-error/20 text-error"
+              }`}
+            >
+              {user.activo ? "Activo" : "Inactivo"}
+            &lt;/span>
+          &lt;/div>
+          &lt;p className="text-sm text-neutral-taupe">{user.correo}&lt;/p>
+          {user.rol === "Encargado" &amp;&amp; (
+            &lt;p className="text-sm text-neutral-taupe">
+              Centro: {user.CentroAsignado?.codigo || "N/A"} -{" "}
+              {user.CentroAsignado?.direccion}
+            &lt;/p>
+          )}
+        &lt;/div>
+        &lt;div className="mt-4 pt-4 border-t border-gray-200 flex justify-end space-x-4">
+          &lt;button
+            onClick={() => onAction("details", user)}
+            className="text-primary hover:opacity-70"
+            title="Ver Detalles"
+          >
+            &lt;FontAwesomeIcon icon={faEye} />
+          &lt;/button>
+          &lt;button
+            onClick={() => onAction("status", user)}
+            className="text-accent hover:opacity-70"
+            title="Cambiar Estado"
+          >
+            &lt;FontAwesomeIcon
+              icon={user.activo ? faToggleOn : faToggleOff}
+              className={user.activo ? "text-success" : "text-gray-400"}
+            />
+          &lt;/button>
+        &lt;/div>
+      &lt;/div>
+    ))}
+  &lt;/div>
+);
+
+/**
+ * @function DashboardSkeleton
+ * @description Componente de esqueleto de carga que imita la estructura del Dashboard de Usuarios.
+ * @returns {JSX.Element}
+ */
+const DashboardSkeleton = () => (
+  &lt;div className="w-full animate-pulse">
+    {/* Esqueleto de la Cabecera */}
+    &lt;header className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+      &lt;div className="h-10 bg-gray-200 rounded w-1/3">&lt;/div>
+      &lt;div className="flex items-center gap-4">
+        &lt;div className="h-10 bg-gray-200 rounded w-32">&lt;/div>
+        &lt;div className="h-10 bg-gray-200 rounded w-20">&lt;/div>
+      &lt;/div>
+    &lt;/header>
+
+    {/* Esqueleto de los Filtros */}
+    &lt;div className="flex flex-col md:flex-row gap-4 mb-6">
+      &lt;div className="h-10 bg-gray-200 rounded w-full md:w-1/2">&lt;/div>
+      &lt;div className="h-10 bg-gray-200 rounded w-full md:w-48">&lt;/div>
+    &lt;/div>
+
+    {/* Esqueleto de la Tabla */}
+    &lt;div className="bg-secondary rounded-lg shadow-md p-4">
+      &lt;div className="space-y-3">
+        {[...Array(5)].map((_, i) => (
+          &lt;div
+            key={i}
+            className="flex items-center space-x-4 p-2 border-b border-gray-200 last:border-b-0"
+          >
+            &lt;div className="flex-1 space-y-2">
+              &lt;div className="h-4 bg-gray-200 rounded w-3/4">&lt;/div>
+              &lt;div className="h-3 bg-gray-200 rounded w-1/2">&lt;/div>
+            &lt;/div>
+            &lt;div className="h-4 bg-gray-200 rounded w-24 hidden sm:block">&lt;/div>
+            &lt;div className="h-4 bg-gray-200 rounded w-16 hidden lg:block">&lt;/div>
+            &lt;div className="h-6 bg-gray-200 rounded-full w-20">&lt;/div>
+          &lt;/div>
+        ))}
+      &lt;/div>
+    &lt;/div>
+  &lt;/div>
+);
+
+/**
+ * @function UserDashboard
+ * @description Componente principal de la página de gestión de usuarios.
+ * Orquesta la obtención de datos, los filtros, el cambio de vistas (tabla/tarjetas) y la gestión de modales.
+ * @returns {JSX.Element}
+ */
+export default function UserDashboard() {
+  const { users, isLoading, error, refetch, setSearchTerm, setSortBy } =
+    useDashboardUser();
+  const [viewMode, setViewMode] = useState("table");
+  const [modal, setModal] = useState({ type: null, data: null });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  /**
+   * @function handleAction
+   * @description Abre un modal de un tipo específico con los datos de un usuario.
+   * @param {'createUser'|'details'|'status'} type - El tipo de modal a abrir.
+   * @param {object|null} user - Los datos del usuario para el modal.
+   */
+  const handleAction = (type, user = null) => setModal({ type, data: user });
+
+  /**
+   * @function closeModal
+   * @description Cierra cualquier modal que esté abierto.
+   */
+  const closeModal = () => setModal({ type: null, data: null });
+
+  /**
+   * @function handleSuccess
+   * @description Callback que se ejecuta tras una creación exitosa de usuario. Muestra una notificación.
+   * @param {string} message - El mensaje de éxito a mostrar.
+   */
+  const handleSuccess = (message) => {
+    toast.success(message);
+    refetch();
+    closeModal();
+  };
+
+  /**
+   * @async
+   * @function handleStatusChange
+   * @description Maneja la lógica para cambiar el estado (activo/inactivo) de un usuario.
+   * Muestra notificaciones de carga, éxito y error.
+   */
+  const handleStatusChange = async () => {
+    if (modal.type !== "status") return;
+
+    const user = modal.data;
+    const newState = !user.activo;
+    const actionText = newState ? "activado" : "desactivado";
+
+    setIsSubmitting(true);
+
+    try {
+      await toast.promise(
+        api.patch(`/api/usuarios/${user.id_usuario}/estado`, {
+          activo: newState,
+        }),
+        {
+          loading: `Cambiando estado de ${user.nombre}...`,
+          success: `¡Usuario ${actionText} exitosamente!`,
+          error: (err) =>
+            err.response?.data?.message ||
+            `Error al ${actionText.slice(0, -1)}ar el usuario.`,
+        }
+      );
+    } catch (err) {
+      console.log("Fallo la promesa del toast al cambiar estado:", err);
+    } finally {
+      closeModal();
+      refetch();
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isLoading) return &lt;DashboardSkeleton />;
+  if (error)
+    return (
+      &lt;div className="text-center flex justify-center items-center w-full p-10 text-error font-semibold">
+        {error}
+      &lt;/div>
+    );
+
+  return (
+    &lt;div className="w-full mb-10">
+      &lt;header className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+        &lt;h1 className="text-4xl font-bold text-text-main">
+          Gestión de Usuarios
+        &lt;/h1>
+        &lt;div className="flex items-center gap-4">
+          &lt;button
+            onClick={() => handleAction("createUser")}
+            className="bg-primary text-text-light font-semibold py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-primary-dark transition-colors"
+          >
+            &lt;FontAwesomeIcon icon={faPlus} />
+            &lt;span>Crear Usuario&lt;/span>
+          &lt;/button>
+          &lt;div className="bg-gray-200 p-1 rounded-lg flex gap-1">
+            &lt;button
+              onClick={() => setViewMode("table")}
+              className={`p-2 rounded-md transition-colors ${
+                viewMode === "table" ? "bg-primary text-white" : "text-gray-600"
+              }`}
+              title="Vista de Tabla"
+            >
+              &lt;FontAwesomeIcon icon={faTable} />
+            &lt;/button>
+            &lt;button
+              onClick={() => setViewMode("card")}
+              className={`p-2 rounded-md transition-colors ${
+                viewMode === "card" ? "bg-primary text-white" : "text-gray-600"
+              }`}
+              title="Vista de Tarjetas"
+            >
+              &lt;FontAwesomeIcon icon={faThLarge} />
+            &lt;/button>
+          &lt;/div>
+        &lt;/div>
+      &lt;/header>
+
+      &lt;div className="flex flex-col md:flex-row gap-4 mb-6">
+        &lt;input
+          type="text"
+          placeholder="Buscar por nombre, correo o identificación..."
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full md:w-1/2 p-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary outline-none"
+        />
+        &lt;select
+          onChange={(e) => setSortBy(e.target.value)}
+          className="w-full md:w-auto p-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary outline-none"
+        >
+          &lt;option value="nombre_asc">Nombre (A-Z)&lt;/option>
+          &lt;option value="nombre_desc">Nombre (Z-A)&lt;/option>
+          &lt;option value="identificacion_asc">Identificación (Asc)&lt;/option>
+          &lt;option value="identificacion_desc">Identificación (Desc)&lt;/option>
+        &lt;/select>
+      &lt;/div>
+
+      {users.length === 0 ? (
+        &lt;div className="text-center w-full p-10 text-neutral-taupe">
+          No hay usuarios que coincidan con tu búsqueda.
+        &lt;/div>
+      ) : viewMode === "table" ? (
+        &lt;UserTable users={users} onAction={handleAction} />
+      ) : (
+        &lt;UserCards users={users} onAction={handleAction} />
+      )}
+
+      {/* --- RENDERIZADO DE TODOS LOS MODALES --- */}
+      {modal.type === "createUser" &amp;&amp; (
+        &lt;CreateUserModal onClose={closeModal} onSuccess={handleSuccess} />
+      )}
+      {modal.type === "details" &amp;&amp; (
+        &lt;DetailModal
+          item={modal.data}
+          onClose={closeModal}
+          config={userConfig}
+          title="Detalles del Usuario"
+          formatDate={formatDate}
+        />
+      )}
+      {modal.type === "status" &amp;&amp; (
+        &lt;ConfirmStatusChangeModal
+          user={modal.data}
+          onCancel={closeModal}
+          onConfirm={handleStatusChange}
+          isSubmitting={isSubmitting}
+        />
+      )}
+    &lt;/div>
+  );
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Components.html">Components</a></li><li><a href="module-Components_Auth.html">Components/Auth</a></li><li><a href="module-Components_Devices.html">Components/Devices</a></li><li><a href="module-Components_History.html">Components/History</a></li><li><a href="module-Components_OperationCenters.html">Components/OperationCenters</a></li><li><a href="module-Components_Peripherals.html">Components/Peripherals</a></li><li><a href="module-Components_Requerimientos.html">Components/Requerimientos</a></li><li><a href="module-Components_Requirements.html">Components/Requirements</a></li><li><a href="module-Components_UI.html">Components/UI</a></li><li><a href="module-Components_Users.html">Components/Users</a></li><li><a href="module-Config.html">Config</a></li><li><a href="module-DateUtils.html">DateUtils</a></li><li><a href="module-Hooks.html">Hooks</a></li><li><a href="module-Hooks_Auth.html">Hooks/Auth</a></li><li><a href="module-Hooks_Catalogue.html">Hooks/Catalogue</a></li><li><a href="module-Hooks_Devices.html">Hooks/Devices</a></li><li><a href="module-Hooks_History.html">Hooks/History</a></li><li><a href="module-Hooks_OperationCenters.html">Hooks/OperationCenters</a></li><li><a href="module-Hooks_Requerimientos.html">Hooks/Requerimientos</a></li><li><a href="module-Hooks_Users.html">Hooks/Users</a></li><li><a href="module-InputHandlers.html">InputHandlers</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Routes_Admin.html">Routes/Admin</a></li><li><a href="module-Stores_Auth.html">Stores/Auth</a></li><li><a href="module-Utils.html">Utils</a></li><li><a href="module-hooks_requirements.html">hooks/requirements</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ActionButtons">ActionButtons</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#ConfirmationModal">ConfirmationModal</a></li><li><a href="global.html#LoginFormSkeleton">LoginFormSkeleton</a></li><li><a href="global.html#bajaConfig">bajaConfig</a></li><li><a href="global.html#centroOperacionConfig">centroOperacionConfig</a></li><li><a href="global.html#deviceConfig">deviceConfig</a></li><li><a href="global.html#formatActiveStatus">formatActiveStatus</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDeviceType">formatDeviceType</a></li><li><a href="global.html#formatStatus">formatStatus</a></li><li><a href="global.html#formatStatusRequirement">formatStatusRequirement</a></li><li><a href="global.html#formatUser">formatUser</a></li><li><a href="global.html#getRequerimientoDetailConfig">getRequerimientoDetailConfig</a></li><li><a href="global.html#logConfig">logConfig</a></li><li><a href="global.html#peripheralConfig">peripheralConfig</a></li><li><a href="global.html#userConfig">userConfig</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Nov 14 2025 15:41:19 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
