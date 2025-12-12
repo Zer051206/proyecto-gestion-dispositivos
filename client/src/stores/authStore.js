@@ -72,7 +72,6 @@ export const useAuthStore = create((set, get) => ({
    */
   logout: async () => {
     try {
-      // CORREGIDO: Typo de 'refresToken' a 'refreshToken'
       const refreshToken = localStorage.getItem("refreshToken");
       if (refreshToken) {
         await api.post("/auth/logout", { refreshToken });
