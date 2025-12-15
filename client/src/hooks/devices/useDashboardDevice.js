@@ -92,7 +92,8 @@ export const useDashboardDevice = () => {
         // Lógica de filtrado por término de búsqueda en serial o etiqueta
         const term = searchTerm.toLowerCase();
         const serial = asset.serial || asset.serial_periferico || "";
-        return serial.toLowerCase().includes(term);
+        const tipo_periferico = asset.tipo_periferico || "";
+        return serial.toLowerCase().includes(term) || tipo_periferico.toLowerCase().includes(term);
       });
   }, [originalAssets, searchTerm, filterStatus]);
 

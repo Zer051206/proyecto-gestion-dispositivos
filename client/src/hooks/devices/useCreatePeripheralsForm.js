@@ -23,7 +23,7 @@ export const initialPeripheralValues = {
   serial_periferico: "",
   marca_periferico: "",
   activo_fijo: false,
-  codigo_activo_fijo: "",
+  codigo_activo_fijo: null,
   id_tipo_periferico: "",
   id_centro_operacion: "",
   estado_periferico: true,

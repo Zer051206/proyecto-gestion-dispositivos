@@ -119,6 +119,7 @@ const AssetTable = ({ assets, onAction }) => (
         <tr>
           <th className="p-4 font-semibold">Tipo</th>
           <th className="p-4 font-semibold">Serial</th>
+          <th className="p-4 font-semibold hidden md:table-cell">tamaño disco duro (equipo) / tipo periferico (periferico)</th>
           <th className="p-4 font-semibold hidden md:table-cell">Centro Op.</th>
           <th className="p-4 font-semibold">Estado</th>
           <th className="p-4 font-semibold text-center">Acciones</th>
@@ -147,6 +148,17 @@ const AssetTable = ({ assets, onAction }) => (
                 <span className="text-xs text-gray-500">
                   {asset.equipo_etiqueta || asset.etiqueta_periferico || ""}
                 </span>
+              </td>
+              <td className="p-4 whitespace-nowrap text-center">
+                {asset.type === "device" ? (
+                  <span className="font-semibold">
+                    {asset.tamano_disco_duro} GB
+                  </span>
+                ) : (
+                  <span className="font-semibold">
+                    {asset.PeripheralType?.tipo_periferico}
+                  </span>
+                )}
               </td>
               <td className="p-4 hidden md:table-cell whitespace-nowrap">
                 {asset.OperationCenter?.codigo || "N/A"}
