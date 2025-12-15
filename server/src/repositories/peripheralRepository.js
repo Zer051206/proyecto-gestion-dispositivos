@@ -12,6 +12,7 @@ const PeripheralType = db.PeripheralType;
 const OperationCenter = db.OperationCenter;
 const User = db.User;
 const CenterCost = db.CenterCost;
+const City = db.City;
 
 /**
  * @async
@@ -23,7 +24,12 @@ export const findAll = async () => {
   return Peripheral.findAll({
     include: [
       { model: PeripheralType, attributes: ["tipo_periferico"] },
-      { model: OperationCenter, attributes: ["codigo", "direccion"] },
+      { model: OperationCenter, include: [
+          {
+            model: City, 
+            attributes: ["nombre_ciudad"], 
+          },
+        ], attributes: ["codigo", "direccion"] },
       { model: User, as: "Creador", attributes: ["nombre", "apellido"] },
       {
         model: CenterCost,

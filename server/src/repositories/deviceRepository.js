@@ -11,6 +11,7 @@ const Device = db.Device;
 const OperationCenter = db.OperationCenter;
 const User = db.User;
 const CenterCost = db.CenterCost;
+const City = db.City;
 
 /**
  * @async
@@ -21,13 +22,22 @@ const CenterCost = db.CenterCost;
 export const findAll = async () => {
   return Device.findAll({
     include: [
-      { model: OperationCenter, attributes: ["codigo", "direccion"] },
+      {
+        model: OperationCenter,
+        include: [
+          {
+            model: City, 
+            attributes: ["nombre_ciudad"], 
+          },
+        ],
+        attributes: ["codigo", "direccion"], 
+      },
       {
         model: User,
         as: "Creador",
         attributes: ["nombre", "apellido"],
       },
-      { model: CenterCost, attibutes: ["codigo_centro_costo", "centro_costo"] },
+      { model: CenterCost, attributes: ["codigo_centro_costo", "centro_costo"] },
     ],
   });
 };

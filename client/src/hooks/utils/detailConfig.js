@@ -134,11 +134,11 @@ export const peripheralConfig = [
   { label: "Activo Fijo", key: "activo_fijo", format: formatStatus },
   { label: "Código Activo Fijo", key: "codigo_activo_fijo", conditional: true },
 
-  { label: "Centro de Operación (Código)", key: "OperationCenter.codigo" },
+  { label: "Centro de Operación", key: "OperationCenter.direccion" },
+  { label: "Ciudad", key: "OperationCenter.City.nombre_ciudad" },
   {
-    label: "Centro de Costos (Código)",
-    key: "CentroCosto.codigo_centro_costo",
-    conditional: true,
+    label: "Centro de Costos",
+    key: "CenterCost.centro_costo"
   },
   {
     label: "Registrado por",

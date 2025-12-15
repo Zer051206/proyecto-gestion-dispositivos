@@ -361,7 +361,6 @@ export default function DashboardDevice() {
    * Muestra un estado de carga y notificaciones de éxito/error.
    */
   const handleExport = async () => {
-    console.log("🚀 ~ handleExport ~ assets:", originalAssets);
     if (originalAssets.length === 0) {
       toast.error("No hay datos para exportar.");
       return;
