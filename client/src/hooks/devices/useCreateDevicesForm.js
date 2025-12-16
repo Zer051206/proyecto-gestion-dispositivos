@@ -219,7 +219,7 @@ export const useCreateDevicesForm = (onSuccess, idRequerimiento = null) => {
       coIdFromReq: coIdFromReq,
     },
     validationSchema: validationSchema,
-    onSubmit: handleSubmitLogic, // <-- ASIGNACIÓN CORRECTA DEL SUBMIT
+    onSubmit: handleSubmitLogic, 
   });
 
   useEffect(() => {

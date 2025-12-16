@@ -157,7 +157,7 @@ const DeviceSubForm = React.memo(
                     key={c.id_centro_operacion}
                     value={c.id_centro_operacion}
                   >
-                    {c.codigo} - {c.direccion}
+                    {c.codigo} - {c.direccion} - {c.City.nombre_ciudad}
                   </option>
                 ))}
               </select>
