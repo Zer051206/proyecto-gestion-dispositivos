@@ -107,7 +107,7 @@ export const deviceConfig = [
   { label: "Serial Pantalla", key: "serial_pantalla", conditional: true },
 
   { label: "Alquilado", key: "equipo_alquilado", format: formatStatus },
-  { label: "Empresa Alquila", key: "empresa_alquila", conditional: true },
+{ label: "Empresa Alquila", key: "empresa_alquila", conditional: true },
 
   { label: "Centro de Operación (Código)", key: "OperationCenter.codigo" },
   {
@@ -133,7 +133,6 @@ export const peripheralConfig = [
   { label: "Estado", key: "estado_periferico", format: formatActiveStatus },
   { label: "Activo Fijo", key: "activo_fijo", format: formatStatus },
   { label: "Código Activo Fijo", key: "codigo_activo_fijo", conditional: true },
-
   { label: "Centro de Operación", key: "OperationCenter.direccion" },
   { label: "Ciudad", key: "OperationCenter.City.nombre_ciudad" },
   {
