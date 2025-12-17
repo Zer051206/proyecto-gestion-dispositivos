@@ -92,7 +92,8 @@ export const deviceConfig = [
   { label: "Estado", key: "estado_equipo", format: formatActiveStatus },
   { label: "Activo Fijo", key: "activo_fijo", format: formatStatus },
   { label: "Código Activo Fijo", key: "codigo_activo_fijo", conditional: true },
-
+  { label: "Centro de Operación", key: "OperationCenter.direccion" },
+  { label: "Ciudad", key: "OperationCenter.City.nombre_ciudad" },
   { label: "Disco Duro (GB)", key: "tamano_disco_duro" },
   {
     label: "T. Gráfica Instalada",
