@@ -10,6 +10,7 @@
  */
 import db from "../models/index.js";
 import * as operationCenterRepository from "../repositories/operationCenterRepository.js";
+import * as centerCostRepository from "../repositories/centerCostRepository.js";
 import * as logRepository from "../repositories/logRepository.js";
 import {
   AlreadyDesactivated,
@@ -205,5 +206,69 @@ export const stateOperationCenter = async (
     );
 
     return updatedOperationCenter;
+  });
+};
+
+export const getAllCenterCosts = async () => {
+  const centerCosts = await centerCostRepository.findAll();
+  return centerCosts;
+};
+
+export const createCenterCost = async (
+  centerCostsData,
+  ip_usuario,
+  id_usuario
+) => {
+  return db.sequelize.transaction(async (t) => {
+    const creationPromises = centerCostsData.map(async (centerCostData) => {
+      const { codigo_centro_costo, id_centro_operacion } = centerCostData;
+
+      const operationCenter = await operationCenterRepository.findById(
+        id_centro_operacion,
+        { transaction: t }
+      );
+
+      if (!operationCenter) {
+        throw new NotFoundError(
+          `El centro de operación con ID ${id_centro_operacion} no existe.`
+        );
+      }
+
+      const existingCenterCost = await centerCostRepository.findByCode(
+        codigo_centro_costo,
+        { transaction: t }
+      );
+
+      if (existingCenterCost) {
+        throw new DuplicateError(
+          `El centro de costo con código '${codigo_centro_costo}' ya existe.`
+        );
+      }
+
+      const newCenterCost = await centerCostRepository.create(centerCostData, {
+        transaction: t,
+      });
+
+      await logRepository.create(
+        {
+          accion: "CREAR_CENTRO_COSTO",
+          ip_usuario: ip_usuario,
+          descripcion: `Se creó el centro de costo '${newCenterCost.centro_costo}' (Código: ${newCenterCost.codigo_centro_costo}) asociado al centro de operación ${operationCenter.codigo}.`,
+          id_usuario: id_usuario,
+        },
+        { transaction: t }
+      );
+
+      return newCenterCost;
+    });
+
+    const createdCenterCosts = await Promise.all(creationPromises);
+
+    logger.info(
+      { adminId: id_usuario, count: createdCenterCosts.length },
+      `${createdCenterCosts.length} centro(s) de costo creado(s) exitosamente.`
+    );
+
+    return createdCenterCosts;
   });
 };

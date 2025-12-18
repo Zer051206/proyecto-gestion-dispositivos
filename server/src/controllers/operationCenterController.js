@@ -9,7 +9,7 @@
  * @requires ../config/logger.js
  */
 import * as operationCenterService from "../services/operationCenterService.js";
-import { createOperationCenterSchema } from "../schemas/operationCenterSchema.js";
+import { createOperationCenterSchema, createCenterCostSchema } from "../schemas/operationCenterSchema.js";
 import logger from "../config/logger.js";
 
 /**
@@ -147,6 +147,45 @@ export const stateOperationCenter = async (req, res, next) => {
       message: "Centro de operacion cerrado exitosamente.",
       success: true,
       operationCenter: updatedOperationCenter,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAllCenterCosts = async (req, res, next) => {
+  try {
+    const allCenterCosts = await operationCenterService.getAllCenterCosts();
+    return res.status(200).json({
+      message: "Centros de costo obtenidos exitosamente.",
+      success: true,
+      centerCosts: allCenterCosts,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export const createCenterCost = async (req, res, next) => {
+  try {
+    const ip_usuario = req.ip;
+    const id_usuario = req.user.id_usuario;
+    const createValidateData = createCenterCostSchema.parse(req.body);
+
+    logger.info(
+      { adminId: id_usuario, count: createValidateData.length },
+      "Solicitud para crear nuevo(s) centro(s) de costo"
+    );
+
+    const newCenterCost = await operationCenterService.createCenterCost(
+      createValidateData,
+      ip_usuario,
+      id_usuario
+    );
+    return res.status(201).json({
+      message: "centro de costo creado con exito.",
+      success: true,
+      centerCost: newCenterCost,
     });
   } catch (error) {
     next(error);

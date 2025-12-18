@@ -55,3 +55,35 @@ export const createOperationCenterSchema = z.array(operationCenterObjectSchema);
  */
 export const updateOperationCenterSchema =
   operationCenterObjectSchema.partial();
+
+/**
+ * @const {z.ZodObject} CenterCostObjectSchema
+ * @description Esquema de Zod para validar un único objeto de Centro de Costo.
+ * Define el tipo de dato y las restricciones para cada propiedad.
+ */
+export const centerCostSchema = z.object({
+  codigo_centro_costo: z
+    .string({ required_error: "El código del centro de costo es obligatorio." })
+    .trim()
+    .min(1, "El código no puede estar vacío.")
+    .max(20, "El código no puede exceder los 20 caracteres."),
+
+  centro_costo: z
+    .string({ required_error: "El nombre del centro de costo es obligatorio." })
+    .trim()
+    .min(3, "El nombre debe tener al menos 3 caracteres.")
+    .max(100, "El nombre es demasiado largo."),
+
+  id_centro_operacion: z.coerce
+    .number({ required_error: "El centro de operación es obligatorio." })
+    .int()
+    .positive("Debe seleccionar un centro de operación válido."),
+});
+
+/**
+ * @const {z.ZodArray} createCenterCostSchema
+ * @description Esquema para la creación masiva de centros de costo. 
+ * Espera un array que contenga al menos un objeto válido.
+ * Utilizado en la ruta `POST /api/centros-costo`.
+ */
+export const createCenterCostSchema = z.array(centerCostSchema).min(1, "Debe enviar al menos un centro de costo.");

@@ -74,4 +74,24 @@ router.patch(
   operationCenterController.stateOperationCenter
 );
 
+/**
+ * @route   GET /api/centros-costo
+ * @description Obtiene todos los centros de costo existentes.
+ * @access Private (Admin)
+ * @returns {Array<object>} 200 - Un array con todos los centros de costo.
+ */
+router.get("/centros-costo", operationCenterController.getAllCenterCosts);
+
+/**
+ * @route   POST /api/centros-costo
+ * @description Crea uno o más centros de costo nuevos en el sistema.
+ * Espera un array de objetos en el cuerpo de la petición.
+ * @access Private (Admin)
+ * @param {Array<object>} req.body - Un array de objetos, cada uno representando un nuevo centro.
+ * @returns {Array<object>} 201 - Un array con los nuevos centros creados.
+ * @returns {Error} 400 - Si los datos de validación fallan.
+ * @returns {Error} 409 - Si uno de los códigos de centro ya existe.
+ */
+router.post("/centros-costo", operationCenterController.createCenterCost)
+
 export default router;

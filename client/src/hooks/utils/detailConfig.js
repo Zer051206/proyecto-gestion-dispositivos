@@ -388,3 +388,30 @@ export const getRequerimientoDetailConfig = (requerimiento, formatDate) => {
 
   return config;
 };
+
+/**
+ * @const {Array<object>} centroCostoConfig
+ * @description Configuración para el DetailModal de un Centro de Costo.
+ */
+export const centroCostoConfig = [
+  { label: "Código C.C.", key: "codigo_centro_costo" },
+  { label: "Nombre Centro de Costo", key: "centro_costo" },
+  { 
+    label: "Sede (Código)", 
+    key: "OperationCenter.codigo" 
+  },
+  { 
+    label: "Dirección de Sede", 
+    key: "OperationCenter.direccion" 
+  },
+  { 
+    label: "Ciudad", 
+    key: "OperationCenter.City.nombre_ciudad",
+    conditional: true 
+  },
+  {
+    label: "ID Sistema",
+    key: "id_centro_costo",
+    conditional: true // Solo se muestra si es necesario para soporte técnico
+  }
+];

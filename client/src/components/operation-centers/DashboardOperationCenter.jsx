@@ -17,13 +17,16 @@ import {
   faExclamationTriangle,
   faTable,
   faThLarge,
+  faCoins,
+  faBuilding
 } from "@fortawesome/free-solid-svg-icons";
 import api from "../../config/axios.js";
 import CreateOperationCenterForm from "./CreateOperationCenterForm.jsx";
+import CreateCenterCostForm from "./CreateCenterCostForm.jsx";
 import { toast } from "react-hot-toast";
 import DetailModal from "../utils/DetailModal.jsx";
 import { formatDate } from "../../utils/dateFormat.js";
-import { centroOperacionConfig } from "../../hooks/utils/detailConfig.js";
+import { centroOperacionConfig, centroCostoConfig } from "../../hooks/utils/detailConfig.js";
 
 // --- SUBCOMPONENTES ---
 
@@ -78,6 +81,48 @@ const ConfirmStatusChangeModal = ({
     </div>
   </div>
 );
+
+/**
+ * @function CostCenterTable
+ * @description Tabla para visualizar los Centros de Costo.
+ */
+const CostCenterTable = ({ costCenters, onAction }) => (
+  <div className="overflow-auto bg-secondary rounded-lg max-h-[500px] shadow-md border border-gray-100">
+    <table className="w-full text-left text-text-main">
+      <thead className="bg-gray-100/80">
+        <tr>
+          <th className="p-4 font-semibold">Código C.C.</th>
+          <th className="p-4 font-semibold">Centro de Costo</th>
+          <th className="p-4 font-semibold">Sede (Operación)</th>
+          <th className="p-4 font-semibold text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {costCenters.map((cc) => (
+          <tr key={cc.id_centro_costo} className="border-t border-gray-200 hover:bg-gray-50 transition-colors">
+            <td className="p-4 font-bold text-primary">{cc.codigo_centro_costo}</td>
+            <td className="p-4">{cc.centro_costo}</td>
+            <td className="p-4">
+              <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-xs font-bold border border-blue-100">
+                {cc.OperationCenter.codigo || "N/A"} - {cc.OperationCenter.direccion || "N/A"} - {cc.OperationCenter.City?.nombre_ciudad || "N/A"}
+              </span>
+            </td>
+            <td className="p-4 text-center">
+              <button
+                onClick={() => onAction("detailsCost", cc)}
+                className="text-primary hover:opacity-70 transition-opacity"
+                title="Ver Detalles"
+              >
+                <FontAwesomeIcon icon={faEye} />
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
+
 
 /**
  * @function CenterTable
@@ -262,11 +307,15 @@ const DashboardSkeleton = () => (
  * @returns {JSX.Element}
  */
 export default function DashboardOperationCenter() {
-  const { centers, isLoading, error, refetch, setSearchTerm, setSortBy } =
+  const { centers, costCenters, isLoading, error, refetch, setSearchTerm, setSortBy } =
     useDashboardOperationCenter();
   const [viewMode, setViewMode] = useState("table");
   const [modal, setModal] = useState({ type: null, data: null });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState("operationCenters");
+  
+  // costCenters ya viene procesado del hook
+  const allCostCenters = costCenters;
 
   const handleAction = (type, center = null) =>
     setModal({ type, data: center });
@@ -329,16 +378,27 @@ export default function DashboardOperationCenter() {
   return (
     <div className="w-full mb-10">
       <header className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-4xl font-bold text-text-main">
-          Gestión de Centros de Operación
-        </h1>
+        <div>
+          <h1 className="text-4xl font-bold text-text-main">Configuración Operativa</h1>
+          <p className="text-neutral-taupe">Gestione sus sedes y centros de costo</p>
+        </div>
         <div className="flex items-center gap-4">
+         {/* Botón Crear Sede */}
           <button
             onClick={() => handleAction("createCenter")}
-            className="bg-primary text-text-light font-semibold py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-primary-dark"
+            className="flex-1 lg:flex-none bg-primary text-text-light font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-primary-dark transition-all shadow-md active:scale-95"
           >
             <FontAwesomeIcon icon={faPlus} />
-            <span>Crear Centro</span>
+            <span>Crear Sede</span>
+          </button>
+
+          {/* Botón Crear Centro de Costo */}
+          <button
+            onClick={() => handleAction("createCostCenter")}
+            className="flex-1 lg:flex-none bg-accent-secondary text-text-light font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-md active:scale-95"
+          >
+            <FontAwesomeIcon icon={faPlus} />
+            <span>Crear C.C.</span>
           </button>
           <div className="bg-gray-200 p-1 rounded-lg flex gap-1">
             <button
@@ -361,6 +421,29 @@ export default function DashboardOperationCenter() {
         </div>
       </header>
 
+      <div className="flex border-b border-gray-200 mb-6 overflow-x-auto">
+        <button
+          onClick={() => setActiveTab("operationCenters")}
+          className={`py-2 px-6 font-bold flex items-center gap-2 whitespace-nowrap transition-all ${
+            activeTab === "operationCenters" 
+            ? "border-b-4 border-primary text-primary bg-primary/5" 
+            : "text-gray-400 hover:text-text-main"
+          }`}
+        >
+          <FontAwesomeIcon icon={faBuilding} /> Sedes
+        </button>
+        <button
+          onClick={() => setActiveTab("costCenters")}
+          className={`py-2 px-6 font-bold flex items-center gap-2 whitespace-nowrap transition-all ${
+            activeTab === "costCenters" 
+            ? "border-b-4 border-primary text-primary bg-primary/5" 
+            : "text-gray-400 hover:text-text-main"
+          }`}
+        >
+          <FontAwesomeIcon icon={faCoins} /> Centros de Costo
+        </button>
+      </div>
+
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <input
           type="text"
@@ -377,23 +460,46 @@ export default function DashboardOperationCenter() {
         </select>
       </div>
 
-      {centers.length === 0 ? (
-        <div className="text-center w-full p-10">
-          No hay centros que coincidan.
-        </div>
-      ) : viewMode === "table" ? (
-        <CenterTable centers={centers} onAction={handleAction} />
+{/* CONTENIDO PRINCIPAL */}
+      {activeTab === "operationCenters" ? (
+        centers.length === 0 ? (
+          <div className="text-center p-10 bg-secondary rounded-lg">No hay sedes registradas.</div>
+        ) : viewMode === "table" ? (
+          <CenterTable centers={centers} onAction={handleAction} />
+        ) : (
+          <CenterCards centers={centers} onAction={handleAction} />
+        )
       ) : (
-        <CenterCards centers={centers} onAction={handleAction} />
+        allCostCenters.length === 0 ? (
+          <div className="text-center p-10 bg-secondary rounded-lg">No hay centros de costo registrados.</div>
+        ) : (
+          <CostCenterTable costCenters={allCostCenters} onAction={handleAction} />
+        )
       )}
 
       {/* RENDERIZADO DE MODALES */}
+      {modal.type === "createCostCenter" && (
+        <CreateCenterCostForm 
+          onClose={closeModal} 
+          onSuccess={() => handleSuccess("Centros de costo registrados")}
+          centrosOperacion={centers} 
+        />
+      )}
       {modal.type === "createCenter" && (
         <CreateOperationCenterForm
           onClose={closeModal}
           onSuccess={handleSuccess}
         />
       )}
+      {modal.type === "detailsCost" && (
+  <DetailModal
+    item={modal.data}
+    config={centroCostoConfig}
+    title={`Detalles C.C.: ${modal.data.centro_costo}`}
+    onClose={closeModal}
+    formatDate={formatDate}
+  />
+)}  
       {modal.type === "details" && (
         <DetailModal
           item={modal.data}

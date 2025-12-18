@@ -40,7 +40,7 @@ const DetailRow = ({ label, value, multiline }) => (
   <div className="text-base text-text-main">
     <strong className="font-semibold text-text-main/70">{label}:</strong>
     {multiline ? (
-      <p className="mt-1 p-2 bg-surface-light rounded-md whitespace-pre-wrap">
+      <p className="mt-3 p-2 bg-surface-light rounded-md whitespace-pre-wrap">
         {value}
       </p>
     ) : (
@@ -70,7 +70,6 @@ export default function DetailModal({
   themeColor = "primary", // Color por defecto
   layoutType = "single",
 }) {
-  console.log("🚀 ~ DetailModal ~ item:", item);
   if (!item) return null;
 
   const titleColor = `text-${themeColor}`; // ej. text-primary
@@ -176,7 +175,7 @@ export default function DetailModal({
         {/* --- Fin Contenido Dinámico --- */}
 
         {/* --- Botón de Cierre --- */}
-        <div className="mt-6 flex justify-end">
+        <div className="mt-3 flex justify-end">
           <button
             onClick={onClose}
             className={`px-6 py-2 font-semibold rounded-md shadow-md transition-colors ${buttonClass}`}

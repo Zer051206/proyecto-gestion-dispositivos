@@ -39,6 +39,13 @@ export const useDashboardOperationCenter = () => {
 
   /**
    * @state
+   * @description Almacena la lista original de centros de costo obtenida de la API.
+   * @type {Array}
+   */
+  const [costCenters, setCostCenters] = useState([]);
+
+  /**
+   * @state
    * @description Almacena un mensaje de error si la petición a la API falla.
    * @type {Array}
    */
@@ -60,8 +67,10 @@ export const useDashboardOperationCenter = () => {
       setIsLoading(true);
       setError(null);
       const response = await api.get("/api/centros-operacion");
+      const responseCostCenters = await api.get("/api/centros-costo");
       // Se extrae el array 'operationCenters' de la respuesta, con un fallback a un array vacío.
       setCenters(response.data.operationCenters || []);
+      setCostCenters(responseCostCenters.data.centerCosts || []);
     } catch (err) {
       setError(
         "Error al cargar los centros de operación. Intenta recargar la página."
@@ -123,9 +132,73 @@ export const useDashboardOperationCenter = () => {
       });
   }, [centers, searchTerm, sortBy]);
 
+
+  const processedCostCenters = useMemo(() => {
+    return [...costCenters]
+      .filter((center) => {
+        const term = searchTerm.toLowerCase();
+        if (!term) return true;
+        
+        const codigo = String(center.codigo_centro_costo || "").toLowerCase();
+        const nombre = (center.centro_costo || "").toLowerCase();
+        
+        // También buscamos por el nombre de la sede si está disponible
+        const sede = center.OperationCenter 
+          ? (center.OperationCenter.codigo + " " + (center.OperationCenter.City?.nombre_ciudad || "")).toLowerCase()
+          : "";
+
+        return (
+          codigo.includes(term) ||
+          nombre.includes(term) ||
+          sede.includes(term)
+        );
+      })
+      .sort((a, b) => {
+        // Mapeo de campos de ordenamiento genéricos a específicos de costos
+        let fieldName = "codigo_centro_costo";
+        const [field, order] = sortBy.split("_");
+        const isAsc = order === "asc";
+
+        // Si el filtro dice 'codigo', usamos 'codigo_centro_costo'
+        if (field === "codigo") {
+           fieldName = "codigo_centro_costo";
+        } else {
+           fieldName = "centro_costo"; // Default fallback
+        }
+
+        let valA = a[fieldName];
+        let valB = b[fieldName];
+
+        // Manejo específico para códigos numéricos
+        if (fieldName === "codigo_centro_costo") {
+          const numA = parseInt(String(valA), 10);
+          const numB = parseInt(String(valB), 10);
+
+          if (!isNaN(numA) && !isNaN(numB)) {
+             if (numA < numB) return isAsc ? -1 : 1;
+             if (numA > numB) return isAsc ? 1 : -1;
+             return 0;
+          }
+        }
+
+        // Ordenamiento estándar de strings
+        valA = String(valA || "").toLowerCase();
+        valB = String(valB || "").toLowerCase();
+
+        if (valA < valB) return isAsc ? -1 : 1;
+        if (valA > valB) return isAsc ? 1 : -1;
+
+        return 0;
+      });
+  }, [costCenters, searchTerm, sortBy]);
+  console.log("🚀 ~ useDashboardOperationCenter ~ processedCostCenters:", processedCostCenters)
+
+  
+
   // Devuelve el estado y las funciones que el componente de la UI necesitará.
   return {
     centers: processedCenters,
+    costCenters: processedCostCenters,
     isLoading,
     error,
     refetch: fetchCenters,

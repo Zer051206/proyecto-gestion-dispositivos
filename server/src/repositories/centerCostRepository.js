@@ -7,6 +7,37 @@
  */
 import db from "../models/index.js";
 const CenterCost = db.CenterCost;
+const OperationCenter = db.OperationCenter;
+const City = db.City;
+
+export const create = async (centerCostData, options = {}) => {
+  return await CenterCost.create(centerCostData, options);
+}
+
+export const findAll = async (options = {}) => {
+  return await CenterCost.findAll({
+    include: [
+      {
+        model: OperationCenter,
+        attributes: ['id_centro_operacion', 'codigo', 'direccion'],
+        include: [
+          {
+            model: City,
+            attributes: ['id_ciudad', 'nombre_ciudad'],
+          },
+        ],
+      },
+    ],
+    ...options,
+  });
+}
+
+export const findByCode = async (code, options = {}) => {
+  return await CenterCost.findOne({
+    where: { codigo_centro_costo: code },
+    ...options,
+  });
+}
 
 /**
  * @async
