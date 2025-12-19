@@ -67,6 +67,13 @@ export const useDashboardOperationCenter = () => {
 
   /**
    * @state
+   * @description Almacena la lista original de centros de costo obtenida de la API.
+   * @type {Array}
+   */
+  const [costCenters, setCostCenters] = useState([]);
+
+  /**
+   * @state
    * @description Almacena un mensaje de error si la petición a la API falla.
    * @type {Array}
    */
@@ -88,8 +95,10 @@ export const useDashboardOperationCenter = () => {
       setIsLoading(true);
       setError(null);
       const response = await api.get("/api/centros-operacion");
+      const responseCostCenters = await api.get("/api/centros-costo");
       // Se extrae el array 'operationCenters' de la respuesta, con un fallback a un array vacío.
       setCenters(response.data.operationCenters || []);
+      setCostCenters(responseCostCenters.data.centerCosts || []);
     } catch (err) {
       setError(
         "Error al cargar los centros de operación. Intenta recargar la página."
@@ -151,9 +160,73 @@ export const useDashboardOperationCenter = () => {
       });
   }, [centers, searchTerm, sortBy]);
 
+
+  const processedCostCenters = useMemo(() => {
+    return [...costCenters]
+      .filter((center) => {
+        const term = searchTerm.toLowerCase();
+        if (!term) return true;
+        
+        const codigo = String(center.codigo_centro_costo || "").toLowerCase();
+        const nombre = (center.centro_costo || "").toLowerCase();
+        
+        // También buscamos por el nombre de la sede si está disponible
+        const sede = center.OperationCenter 
+          ? (center.OperationCenter.codigo + " " + (center.OperationCenter.City?.nombre_ciudad || "")).toLowerCase()
+          : "";
+
+        return (
+          codigo.includes(term) ||
+          nombre.includes(term) ||
+          sede.includes(term)
+        );
+      })
+      .sort((a, b) => {
+        // Mapeo de campos de ordenamiento genéricos a específicos de costos
+        let fieldName = "codigo_centro_costo";
+        const [field, order] = sortBy.split("_");
+        const isAsc = order === "asc";
+
+        // Si el filtro dice 'codigo', usamos 'codigo_centro_costo'
+        if (field === "codigo") {
+           fieldName = "codigo_centro_costo";
+        } else {
+           fieldName = "centro_costo"; // Default fallback
+        }
+
+        let valA = a[fieldName];
+        let valB = b[fieldName];
+
+        // Manejo específico para códigos numéricos
+        if (fieldName === "codigo_centro_costo") {
+          const numA = parseInt(String(valA), 10);
+          const numB = parseInt(String(valB), 10);
+
+          if (!isNaN(numA) &amp;&amp; !isNaN(numB)) {
+             if (numA &lt; numB) return isAsc ? -1 : 1;
+             if (numA > numB) return isAsc ? 1 : -1;
+             return 0;
+          }
+        }
+
+        // Ordenamiento estándar de strings
+        valA = String(valA || "").toLowerCase();
+        valB = String(valB || "").toLowerCase();
+
+        if (valA &lt; valB) return isAsc ? -1 : 1;
+        if (valA > valB) return isAsc ? 1 : -1;
+
+        return 0;
+      });
+  }, [costCenters, searchTerm, sortBy]);
+  console.log("🚀 ~ useDashboardOperationCenter ~ processedCostCenters:", processedCostCenters)
+
+  
+
   // Devuelve el estado y las funciones que el componente de la UI necesitará.
   return {
     centers: processedCenters,
+    costCenters: processedCostCenters,
     isLoading,
     error,
     refetch: fetchCenters,
@@ -171,13 +244,13 @@ export const useDashboardOperationCenter = () => {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Components.html">Components</a></li><li><a href="module-Components_Auth.html">Components/Auth</a></li><li><a href="module-Components_Devices.html">Components/Devices</a></li><li><a href="module-Components_History.html">Components/History</a></li><li><a href="module-Components_OperationCenters.html">Components/OperationCenters</a></li><li><a href="module-Components_Peripherals.html">Components/Peripherals</a></li><li><a href="module-Components_Requerimientos.html">Components/Requerimientos</a></li><li><a href="module-Components_Requirements.html">Components/Requirements</a></li><li><a href="module-Components_UI.html">Components/UI</a></li><li><a href="module-Components_Users.html">Components/Users</a></li><li><a href="module-Config.html">Config</a></li><li><a href="module-DateUtils.html">DateUtils</a></li><li><a href="module-Hooks.html">Hooks</a></li><li><a href="module-Hooks_Auth.html">Hooks/Auth</a></li><li><a href="module-Hooks_Catalogue.html">Hooks/Catalogue</a></li><li><a href="module-Hooks_Devices.html">Hooks/Devices</a></li><li><a href="module-Hooks_History.html">Hooks/History</a></li><li><a href="module-Hooks_OperationCenters.html">Hooks/OperationCenters</a></li><li><a href="module-Hooks_Requerimientos.html">Hooks/Requerimientos</a></li><li><a href="module-Hooks_Users.html">Hooks/Users</a></li><li><a href="module-InputHandlers.html">InputHandlers</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Routes_Admin.html">Routes/Admin</a></li><li><a href="module-Stores_Auth.html">Stores/Auth</a></li><li><a href="module-Utils.html">Utils</a></li><li><a href="module-hooks_requirements.html">hooks/requirements</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ActionButtons">ActionButtons</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#ConfirmationModal">ConfirmationModal</a></li><li><a href="global.html#LoginFormSkeleton">LoginFormSkeleton</a></li><li><a href="global.html#bajaConfig">bajaConfig</a></li><li><a href="global.html#centroOperacionConfig">centroOperacionConfig</a></li><li><a href="global.html#deviceConfig">deviceConfig</a></li><li><a href="global.html#formatActiveStatus">formatActiveStatus</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDeviceType">formatDeviceType</a></li><li><a href="global.html#formatStatus">formatStatus</a></li><li><a href="global.html#formatStatusRequirement">formatStatusRequirement</a></li><li><a href="global.html#formatUser">formatUser</a></li><li><a href="global.html#getRequerimientoDetailConfig">getRequerimientoDetailConfig</a></li><li><a href="global.html#logConfig">logConfig</a></li><li><a href="global.html#peripheralConfig">peripheralConfig</a></li><li><a href="global.html#userConfig">userConfig</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Components.html">Components</a></li><li><a href="module-Components_Auth.html">Components/Auth</a></li><li><a href="module-Components_Devices.html">Components/Devices</a></li><li><a href="module-Components_History.html">Components/History</a></li><li><a href="module-Components_OperationCenters.html">Components/OperationCenters</a></li><li><a href="module-Components_Peripherals.html">Components/Peripherals</a></li><li><a href="module-Components_Requerimientos.html">Components/Requerimientos</a></li><li><a href="module-Components_Requirements.html">Components/Requirements</a></li><li><a href="module-Components_UI.html">Components/UI</a></li><li><a href="module-Components_Users.html">Components/Users</a></li><li><a href="module-Config.html">Config</a></li><li><a href="module-DateUtils.html">DateUtils</a></li><li><a href="module-Hooks.html">Hooks</a></li><li><a href="module-Hooks_Auth.html">Hooks/Auth</a></li><li><a href="module-Hooks_Catalogue.html">Hooks/Catalogue</a></li><li><a href="module-Hooks_Devices.html">Hooks/Devices</a></li><li><a href="module-Hooks_History.html">Hooks/History</a></li><li><a href="module-Hooks_OperationCenters.html">Hooks/OperationCenters</a></li><li><a href="module-Hooks_Requerimientos.html">Hooks/Requerimientos</a></li><li><a href="module-Hooks_Users.html">Hooks/Users</a></li><li><a href="module-InputHandlers.html">InputHandlers</a></li><li><a href="module-Routes.html">Routes</a></li><li><a href="module-Routes_Admin.html">Routes/Admin</a></li><li><a href="module-Stores_Auth.html">Stores/Auth</a></li><li><a href="module-Utils.html">Utils</a></li><li><a href="module-hooks_requirements.html">hooks/requirements</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ActionButtons">ActionButtons</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#ConfirmationModal">ConfirmationModal</a></li><li><a href="global.html#LoginFormSkeleton">LoginFormSkeleton</a></li><li><a href="global.html#bajaConfig">bajaConfig</a></li><li><a href="global.html#centroCostoConfig">centroCostoConfig</a></li><li><a href="global.html#centroOperacionConfig">centroOperacionConfig</a></li><li><a href="global.html#deviceConfig">deviceConfig</a></li><li><a href="global.html#formatActiveStatus">formatActiveStatus</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDeviceType">formatDeviceType</a></li><li><a href="global.html#formatStatus">formatStatus</a></li><li><a href="global.html#formatStatusRequirement">formatStatusRequirement</a></li><li><a href="global.html#formatUser">formatUser</a></li><li><a href="global.html#getRequerimientoDetailConfig">getRequerimientoDetailConfig</a></li><li><a href="global.html#logConfig">logConfig</a></li><li><a href="global.html#peripheralConfig">peripheralConfig</a></li><li><a href="global.html#userConfig">userConfig</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Nov 14 2025 15:41:19 GMT-0500 (hora estándar de Colombia)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Dec 19 2025 08:50:44 GMT-0500 (hora estándar de Colombia)
 </footer>
 
 <script> prettyPrint(); </script>
