@@ -48,6 +48,7 @@ import errorHandler from "./src/middlewares/errorMiddleware.js";
 const allowedOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
+  "http://192.168.1.202:5173",
   process.env.CLIENT_ORIGIN,
 ].filter(Boolean);
 
@@ -142,7 +143,7 @@ async function startServer() {
     await db.sequelize.authenticate();
     console.log("✅ Conexión a MariaDB establecida exitosamente.");
 
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Servidor Express iniciado en http://localhost:${PORT}`);
     });
   } catch (error) {

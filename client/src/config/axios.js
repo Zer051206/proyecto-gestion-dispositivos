@@ -47,7 +47,7 @@ const processQueue = (error, token = null) => {
  * @description Instancia de Axios preconfigurada para ser utilizada en toda la aplicación.
  */
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000",
+  baseURL: "http://192.168.1.202:3000",
   withCredentials: true,
   timeout: 10000,
   headers: { "Content-Type": "application/json" },
